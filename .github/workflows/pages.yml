@@ -1,0 +1,34 @@
+# 화면(public 폴더)을 GitHub Pages에 올린다 → https://wnsgur9900.github.io/rl_class_school/
+# main에 public 폴더가 바뀐 채로 올라오면 자동 실행. Actions 탭의 "Run workflow"로 직접 실행도 가능.
+# 처음 한 번: 저장소 Settings → Pages → Source를 "GitHub Actions"로 바꿔야 한다.
+name: 화면 배포 (GitHub Pages)
+
+on:
+  push:
+    branches: [main]
+    paths: ["public/**", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public          # public 폴더만 웹에 올림 (코드·로그는 올리지 않음)
+      - id: deployment
+        uses: actions/deploy-pages@v4
