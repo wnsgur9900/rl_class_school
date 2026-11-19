@@ -1,0 +1,2162 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>론팟 강화학습 둘러보기</title>
+<style>
+:root{
+  --bg:#f6f2e9; --card:#ffffff; --soft:#faf7f0; --ink:#1c2526; --muted:#5b6668; --faint:#8a9496; --line:#e6dfd0;
+  --teal:#0f766e; --teal-ink:#115e59; --teal-soft:#e3f3ef; --wood:#8b5e34; --wood-soft:#f3e8d8;
+  --good:#15803d; --good-soft:#dcfce7; --warn:#c2410c; --warn-soft:#ffedd5; --bad:#b91c1c; --bad-soft:#fee2e2;
+  --a0:#d6d3d1; --a1:#3b82f6; --a2:#f59e0b;
+  --radius:14px; --shadow:0 1px 2px rgba(60,40,10,.04),0 6px 20px rgba(60,40,10,.06);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.65 "Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+b,strong{font-weight:700}
+button,select{font:inherit;color:inherit}
+.muted{color:var(--muted)} .faint{color:var(--faint)} .small{font-size:13px}
+a{color:var(--teal);font-weight:700;text-underline-offset:3px}
+.num{font-variant-numeric:tabular-nums}
+
+/* 머리 줄 */
+.top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;padding:10px 20px;background:rgba(246,242,233,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;line-height:1.25;min-width:0}
+.brand small{display:block;font-weight:400;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.logo{flex:none;width:32px;height:32px;border-radius:10px;background:var(--teal);color:#fff;display:grid;place-items:center;font-size:16px}
+.spacer{flex:1}
+
+/* 버튼 · 칩 · 단추 묶음 */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--card);padding:7px 14px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;transition:border-color .15s,background .15s}
+.btn:hover{border-color:#c9bfa9}
+.btn.primary{background:var(--teal);border-color:var(--teal);color:#fff}
+.btn.primary:hover{background:var(--teal-ink)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:999px;font-size:12.5px;font-weight:600;background:var(--soft);border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.chip.rain{background:#dbeafe;border-color:#bfdbfe;color:#1d4ed8}
+.chip.hol{background:#ede9fe;border-color:#ddd6fe;color:#6d28d9}
+.chip.cold{background:#cffafe;border-color:#a5f3fc;color:#0e7490}
+.chip.me{background:#fef3c7;border-color:#fde68a;color:#92400e}
+.badge{display:inline-block;padding:1px 9px;border-radius:999px;font-size:12px;font-weight:700}
+.badge.good{background:var(--good-soft);color:var(--good)}
+.badge.bad{background:var(--bad-soft);color:var(--bad)}
+.badge.teal{background:var(--teal-soft);color:var(--teal-ink)}
+.seg{display:inline-flex;flex-wrap:wrap;background:var(--soft);border:1px solid var(--line);border-radius:11px;padding:3px;gap:2px}
+.seg button{border:0;background:none;padding:5px 12px;border-radius:8px;font-size:13.5px;cursor:pointer;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
+.seg button:hover{color:var(--ink)}
+.seg button.on{background:var(--card);color:var(--ink);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.seg.sm button{padding:3px 10px;font-size:12.5px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;flex:none}
+select{border:1px solid var(--line);background:var(--card);border-radius:9px;padding:6px 10px;font-size:14px;max-width:100%}
+
+/* 배치 */
+.layout{display:grid;grid-template-columns:232px minmax(0,1fr);gap:28px;max-width:1280px;margin:0 auto;padding:22px 20px 90px}
+nav.steps{position:sticky;top:74px;align-self:start;display:flex;flex-direction:column;gap:2px}
+.navbtn{display:flex;gap:10px;align-items:flex-start;text-align:left;padding:8px 10px;border-radius:11px;border:0;background:none;cursor:pointer}
+.navbtn .n{flex:none;width:24px;height:24px;margin-top:1px;border-radius:50%;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--muted)}
+.navbtn .t{display:block;font-weight:700;font-size:14px;line-height:1.35}
+.navbtn .s{display:block;font-size:12px;color:var(--muted);line-height:1.35}
+.navbtn:hover{background:rgba(255,255,255,.55)}
+.navbtn.seen .n{border-color:var(--teal);color:var(--teal)}
+.navbtn.active{background:var(--card);box-shadow:var(--shadow)}
+.navbtn.active .n{background:var(--teal);border-color:var(--teal);color:#fff}
+.step{display:none}
+.step.active{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.kicker{font-size:13px;font-weight:700;color:var(--teal);letter-spacing:.02em}
+.step h1{font-size:28px;line-height:1.3;margin:4px 0 8px;letter-spacing:-.01em}
+.lead{font-size:16px;color:var(--muted);margin:0 0 20px;max-width:800px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px;margin-bottom:16px;min-width:0}
+.card h2{font-size:17px;margin:0 0 2px;line-height:1.4}
+.card h2 .muted{font-size:13px;font-weight:400;margin-left:4px}
+.hint{font-size:13px;color:var(--muted);margin:0 0 12px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.grid2>.card,.grid3>.card{margin-bottom:0}
+.grid2,.grid3{margin-bottom:16px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row-between{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.callout{background:var(--teal-soft);border-radius:11px;padding:11px 14px;font-size:14px;margin-top:12px}
+.callout.warn{background:var(--warn-soft)}
+.callout.bad{background:var(--bad-soft)}
+.callout.plain{background:var(--soft);border:1px solid var(--line)}
+.where{font-size:13px;color:var(--muted);margin:6px 0 0;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.file{font-family:Consolas,"D2Coding",ui-monospace,monospace;font-size:12.5px;background:var(--wood-soft);color:var(--wood);padding:1px 8px;border-radius:6px;white-space:nowrap}
+.term{border-bottom:1.5px dotted var(--teal);cursor:help}
+details.why{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:16px;overflow:hidden}
+details.why summary{cursor:pointer;padding:13px 20px;font-weight:700;list-style:none;display:flex;align-items:center;gap:8px}
+details.why summary::-webkit-details-marker{display:none}
+details.why summary::before{content:"▸";color:var(--teal);transition:transform .15s}
+details.why[open] summary::before{transform:rotate(90deg)}
+details.why summary span{font-weight:400;color:var(--muted);font-size:13px}
+details.why .body{padding:0 20px 16px;overflow-x:auto}
+table.t{border-collapse:collapse;width:100%;font-size:13.5px}
+table.t th,table.t td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t th{font-size:12.5px;color:var(--muted);font-weight:700;background:var(--soft)}
+table.t td.r,table.t th.r{text-align:right;white-space:nowrap}
+table.t tr.hl td{background:#f1faf7}
+#score{min-width:640px}
+#score td:first-child,#score td .badge{white-space:nowrap}
+.foot{display:flex;justify-content:space-between;gap:12px;margin-top:26px;flex-wrap:wrap}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--muted);margin-bottom:6px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px}
+.legend i.line{height:3px;border-radius:2px}
+
+/* 도움말 풍선 */
+.tip{position:fixed;z-index:60;pointer-events:none;background:#1c2526;color:#fff;font-size:13px;line-height:1.55;padding:9px 11px;border-radius:9px;max-width:320px;opacity:0;transition:opacity .08s;box-shadow:0 6px 20px rgba(0,0,0,.2)}
+.tip.on{opacity:1}
+.tip .tt{font-weight:700;margin-bottom:2px}
+.tip .sw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px}
+
+/* 그래프 */
+svg.chart{display:block;max-width:100%}
+svg.chart text{font-size:11px;fill:var(--faint)}
+svg.chart .grid{stroke:#eee7da;stroke-width:1}
+svg.chart .cursor{stroke:var(--ink);stroke-width:1.2;stroke-dasharray:3 3}
+svg.chart .hover{stroke:#9ca3af;stroke-width:1}
+
+/* 0단계 */
+.hero-row{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap}
+.hero-box{flex:1 1 180px;border-radius:12px;padding:14px 16px;font-size:15px;line-height:1.5}
+.hero-box.good{background:#fef3c7} .hero-box.bad{background:var(--bad-soft)} .hero-box.teal{background:var(--teal-soft)}
+.hero-vs{align-self:center;font-weight:700;color:var(--muted);font-size:13px}
+.loop{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.lnode{flex:1 1 150px;text-align:left;border:1.5px solid var(--line);background:var(--soft);border-radius:12px;padding:10px 12px;cursor:pointer;transition:all .2s}
+.lnode .lwho{display:inline-block;font-size:11.5px;font-weight:700;padding:0 7px;border-radius:999px;margin-bottom:4px}
+.lnode .lwho.ai{background:var(--teal-soft);color:var(--teal-ink)} .lnode .lwho.env{background:var(--wood-soft);color:var(--wood)}
+.lnode .lk{display:block;font-weight:700}
+.lnode .lv{display:block;font-size:13px;color:var(--muted)}
+.lnode.on{border-color:var(--teal);background:#fff;box-shadow:0 0 0 4px rgba(15,118,110,.12)}
+.larrow{color:var(--faint);font-weight:700}
+.loop-back{font-size:13px;color:var(--muted);margin-top:8px}
+.loop-text{margin-top:10px;background:var(--soft);border:1px solid var(--line);border-radius:11px;padding:11px 14px;font-size:14px;min-height:66px}
+dl.kv{display:grid;grid-template-columns:auto 1fr;gap:7px 14px;margin:6px 0 0;font-size:14px}
+dl.kv dt{font-weight:700;color:var(--teal-ink);white-space:nowrap}
+dl.kv dd{margin:0}
+dl.kv dd small{color:var(--muted)}
+ol.progress{list-style:none;padding:0;margin:8px 0 0;display:flex;flex-direction:column;gap:10px}
+ol.progress li{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+ol.progress .pd{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;margin-top:1px}
+ol.progress .done .pd{background:var(--teal);color:#fff}
+ol.progress .now .pd{background:var(--teal);color:#fff;box-shadow:0 0 0 4px rgba(15,118,110,.18)}
+ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);color:var(--muted)}
+.tour{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:10px}
+.tcard{text-align:left;border:1px solid var(--line);background:var(--soft);border-radius:12px;padding:12px 14px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;gap:2px}
+.tcard:hover{background:#fff;border-color:var(--teal);transform:translateY(-1px)}
+.tcard .tn{font-size:12px;font-weight:700;color:var(--teal)}
+.tcard b{font-size:15px}
+.tcard span{font-size:12.5px;color:var(--muted)}
+.tcard em{font-style:normal;font-size:13px;font-weight:700;color:var(--ink);margin-top:4px}
+
+/* 1단계 */
+.actions3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:16px}
+.act-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;border-top:5px solid var(--a0)}
+.act-card.a1{border-top-color:var(--a1)} .act-card.a2{border-top-color:var(--a2)}
+.act-card h3{margin:0 0 10px;font-size:16px}
+.act-card h3 small{font-weight:400;color:var(--muted);font-size:12px;margin-left:4px}
+.phone{background:#1f2937;border-radius:14px;padding:10px;margin-bottom:10px;min-height:76px;display:flex;align-items:center}
+.noti{background:rgba(255,255,255,.95);border-radius:10px;padding:8px 10px;font-size:12.5px;line-height:1.45;width:100%}
+.noti .app{font-size:11px;color:var(--muted);display:flex;justify-content:space-between}
+.noti.empty{background:transparent;color:#9ca3af;text-align:center}
+.facts{list-style:none;padding:0;margin:0;font-size:13.5px;display:grid;gap:4px}
+.facts li{display:flex;justify-content:space-between;gap:8px;border-bottom:1px dashed var(--line);padding-bottom:3px}
+.facts li:last-child{border-bottom:0}
+.gl{display:grid;gap:8px;font-size:14px}
+.gl div{display:flex;gap:10px;align-items:flex-start}
+.gl .ic{flex:none;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:16px;background:var(--soft)}
+.ev{display:grid;gap:10px;margin-top:14px}
+.ev-row{display:grid;grid-template-columns:96px 1fr 80px;gap:10px;align-items:center;font-size:14px}
+.ev-track{background:var(--soft);border-radius:7px;height:26px;overflow:hidden}
+.ev-bar{height:100%;border-radius:7px;transition:width .35s ease}
+.ev-val{text-align:right;font-weight:700}
+.goal{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:10px 0}
+.goal div{border-radius:12px;padding:12px 14px;background:var(--soft);border:1px solid var(--line)}
+.goal b{display:block;font-size:20px;margin-top:2px}
+.formula{font-size:14px;background:var(--soft);border:1px dashed var(--line);border-radius:10px;padding:10px 12px}
+
+/* 2단계 */
+.funnel{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap}
+.fstep{flex:1 1 150px;border-radius:12px;padding:10px 12px;background:var(--soft);border:1px solid var(--line);font-size:13px}
+.fstep b{display:block;font-size:15px}
+.farrow{align-self:center;color:var(--faint);font-weight:700}
+.people-wrap{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;margin-top:8px}
+.people{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;max-width:480px}
+.pdot{aspect-ratio:1;border-radius:50%;border:2px solid transparent;cursor:pointer;font-size:11px;font-weight:700;display:grid;place-items:center;padding:0;transition:transform .12s}
+.pdot:hover{transform:scale(1.15)}
+.pdot.sel{border-color:var(--ink);box-shadow:0 0 0 2px #fff inset}
+.trait-desc{font-size:14px;background:var(--soft);border-radius:10px;padding:9px 12px;margin:6px 0 12px}
+.person{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:14px 16px;align-self:start}
+.person h3{margin:0;font-size:18px}
+.person .meta{font-size:13px;color:var(--muted);margin:2px 0 8px}
+.person .sum{font-size:14px;margin:0 0 12px}
+.tb{margin-bottom:12px}
+.tb-top{display:flex;justify-content:space-between;font-size:13.5px}
+.tb-track{position:relative;height:10px;background:#ebe4d6;border-radius:5px;margin:5px 0 3px}
+.tb-val{position:absolute;top:-3px;width:16px;height:16px;border-radius:50%;background:var(--teal);border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transform:translateX(-50%)}
+.tb-tgt{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--wood);transform:translateX(-50%)}
+.tb-cap{font-size:12.5px;color:var(--muted)}
+.ev-list{margin:4px 0 0;padding-left:18px;font-size:13px;color:var(--muted)}
+.mean-check{display:grid;gap:4px;font-size:13px;margin-top:8px}
+
+/* 3단계 */
+.rules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.rule{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:13px 15px;box-shadow:var(--shadow)}
+.rule .rh{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.rule .rn{width:24px;height:24px;border-radius:7px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px;flex:none}
+.rule .rg{font-size:12px;font-weight:700}
+.rule .rt{font-weight:700;font-size:14.5px}
+.rule .rf{font-size:13px;display:grid;gap:3px}
+.rule .rf div{display:grid;grid-template-columns:34px 1fr;gap:6px}
+.rule .rf span{color:var(--faint);font-weight:700;font-size:12px}
+.play-grid{display:grid;grid-template-columns:340px minmax(0,1fr);gap:20px;margin-top:10px}
+.play-left{display:flex;flex-direction:column;gap:10px}
+.play-left label{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13.5px;font-weight:700}
+.play-left label select{flex:1;max-width:230px}
+.today{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.today .d{font-weight:700;font-size:16px}
+.today .chips{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0 2px}
+.act-btns{display:grid;gap:8px}
+.abtn{display:grid;grid-template-columns:14px 1fr auto;gap:10px;align-items:center;text-align:left;border:1.5px solid var(--line);background:var(--card);border-radius:12px;padding:10px 12px;cursor:pointer;transition:all .15s}
+.abtn:hover:not(:disabled){border-color:var(--teal);box-shadow:0 0 0 3px rgba(15,118,110,.1)}
+.abtn:disabled{opacity:.45;cursor:not-allowed}
+.abtn .an{font-weight:700;font-size:14.5px;display:block}
+.abtn .ad{font-size:12px;color:var(--muted);display:block}
+.abtn .ap{font-size:18px;font-weight:700;text-align:right;line-height:1.2}
+.abtn .ap small{display:block;font-size:11px;font-weight:400;color:var(--muted)}
+.explain{font-size:13px;background:var(--teal-soft);border-radius:10px;padding:9px 11px;line-height:1.6}
+.gauges{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.gauge{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.g-top{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;font-weight:700}
+.g-top b{font-size:22px}
+.g-track{position:relative;height:12px;background:#ebe4d6;border-radius:6px;margin:6px 0 4px;overflow:hidden}
+.g-zone{position:absolute;top:0;bottom:0;right:0;opacity:.22}
+.g-fill{position:absolute;top:0;bottom:0;left:0;border-radius:6px;transition:width .25s}
+.g-cap{font-size:12px;color:var(--muted)}
+.sim-total{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0}
+.stile{background:var(--soft);border:1px solid var(--line);border-radius:11px;padding:8px 10px}
+.stile span{display:block;font-size:12px;color:var(--muted)}
+.stile b{font-size:17px}
+.sim-last{font-size:13.5px;border-radius:10px;padding:9px 12px;background:var(--soft);border:1px solid var(--line);margin-bottom:10px;min-height:44px}
+.sim-last.out{background:var(--bad-soft);border-color:#fecaca}
+
+/* 4단계 */
+.rulecards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.rc{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:13px 14px;box-shadow:var(--shadow);border-left:5px solid}
+.rc b.nm{display:block;font-size:15px}
+.rc .ds{font-size:12.5px;color:var(--muted);min-height:38px;margin:2px 0 8px}
+.rc .big{font-size:20px;font-weight:700}
+.rc .sm{font-size:12.5px;color:var(--muted)}
+.check{display:grid;grid-template-columns:28px 1fr;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.check:last-child{border-bottom:0}
+.check .ok{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#fff}
+.check .why{font-size:13px;color:var(--muted)}
+
+/* 5단계 */
+.obs-g{margin-bottom:10px}
+.obs-g .gt{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px}
+.obs-g .row .chip{background:#fff}
+.alist{display:grid;gap:6px;font-size:14px}
+.alist div{display:flex;align-items:center;gap:8px}
+.rtable{font-size:14px;display:grid;gap:6px}
+.rtable div{display:flex;justify-content:space-between;gap:8px;border-bottom:1px dashed var(--line);padding-bottom:4px}
+.facts-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.ftile{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.ftile b{display:block;font-size:20px}
+.ftile span{font-size:12.5px;color:var(--muted)}
+
+/* 6단계 */
+.ctl-row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-end}
+.lbl{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px}
+.rp{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px}
+.rp>.card{margin-bottom:0}
+.rp-day{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.rp-day .d{font-size:19px;font-weight:700;line-height:1.3}
+.rp-day .chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
+.rp-day .dn{font-size:13px;color:var(--muted);text-align:right}
+.rp-day .dn b{font-size:22px;color:var(--ink)}
+.pgrid{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;max-width:540px;margin:6px auto 0}
+.cell{position:relative;aspect-ratio:1;border-radius:8px;background:var(--a0);transition:background .2s;cursor:default}
+.cell.a1{background:var(--a1)} .cell.a2{background:var(--a2)}
+.cell.out{background:#3f3f46}
+.cell .cn{position:absolute;left:4px;top:2px;font-size:9.5px;font-weight:700;color:rgba(0,0,0,.45)}
+.cell.a1 .cn,.cell.out .cn{color:rgba(255,255,255,.7)}
+.cell .mk{position:absolute;inset:0;display:grid;place-items:center;font-size:15px;font-weight:700;color:#fff;opacity:0}
+.cell.rep .mk{opacity:1}
+.cell.rep .mk::after{content:"✓";width:20px;height:20px;border-radius:50%;background:var(--good);display:grid;place-items:center;font-size:12px}
+.cell.out .mk{opacity:1}
+.cell.out .mk::after{content:"🔕";font-size:13px;filter:grayscale(1) brightness(1.8)}
+.cell.outnow{box-shadow:0 0 0 3px var(--bad)}
+.cell .fb{position:absolute;left:4px;right:4px;bottom:4px;height:4px;border-radius:2px;background:rgba(0,0,0,.14);overflow:hidden}
+.cell .fb i{display:block;height:100%;background:#fff;transition:width .2s}
+.cell.a0 .fb i{background:#57534e}
+.cell .fb i.hi{background:var(--bad)!important}
+.player{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;margin:14px 0 10px}
+.timeline{display:flex;gap:2px;height:30px;align-items:stretch}
+.tl{flex:1;border:0;padding:0;border-radius:3px;cursor:pointer;position:relative;min-width:0}
+.tl.me::after{content:"";position:absolute;left:50%;bottom:-7px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:#d97706}
+.tl.cur{outline:2.5px solid var(--ink);outline-offset:1px;z-index:1}
+.tl.past{opacity:.95} .tl.future{opacity:.45}
+.rp-side{display:flex;flex-direction:column;gap:12px}
+.rp-side .card{margin:0;padding:14px 16px}
+.kl{font-size:12.5px;color:var(--muted);font-weight:700}
+.kbig{font-size:26px;font-weight:700;line-height:1.25}
+.kmid{font-size:22px;font-weight:700;line-height:1.25}
+.ksub{font-size:13px}
+.meter{position:relative;height:10px;background:#ebe4d6;border-radius:5px;margin:8px 0 4px;overflow:visible}
+.meter i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;transition:width .2s}
+.meter b{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink)}
+.today-list{display:grid;gap:3px;font-size:13.5px;margin-top:6px}
+.today-list div{display:flex;justify-content:space-between;gap:8px}
+
+/* 7단계 */
+.phase{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
+.ph{border-radius:12px;padding:10px 12px;background:var(--soft);border:1px solid var(--line)}
+.ph.hot{background:var(--bad-soft);border-color:#fecaca}
+.ph .pt{font-size:12.5px;font-weight:700;color:var(--muted)}
+.ph .pv{display:flex;justify-content:space-between;font-size:13.5px}
+.story{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.story div{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14px}
+.story b.sn{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--bad);color:#fff;font-size:12px;margin-right:6px}
+
+/* 8단계 */
+.flow{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap}
+.flow .fb2{flex:1 1 140px;background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px}
+.flow .fb2 b{display:block;font-size:14.5px}
+.fgroup h3{font-size:15px;margin:0 0 8px}
+.flist{display:grid;gap:6px}
+.fitem{display:grid;grid-template-columns:minmax(150px,auto) 1fr auto;gap:10px;align-items:center;font-size:13.5px;padding:6px 0;border-bottom:1px dashed var(--line)}
+.fitem:last-child{border-bottom:0}
+.fitem .file{justify-self:start}
+.fitem a,.fitem button.go{font-size:12.5px;color:var(--teal);font-weight:700;background:none;border:0;cursor:pointer;padding:0;white-space:nowrap}
+
+/* 용어 풀이 서랍 */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(400px,92vw);background:var(--card);box-shadow:-10px 0 30px rgba(0,0,0,.12);z-index:50;transform:translateX(105%);transition:transform .25s ease;display:flex;flex-direction:column}
+.drawer.open{transform:none}
+.drawer-head{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line);font-size:16px}
+.drawer-head button{border:0;background:none;font-size:18px;cursor:pointer;color:var(--muted)}
+.glist{overflow:auto;padding:8px 18px 30px}
+.glist div{padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
+.glist b{display:block;color:var(--teal-ink)}
+.fatal{padding:30px;font-size:16px}
+
+.row select{min-width:0;flex:1 1 160px}
+
+/* 9단계 */
+.scene-wrap{position:relative;border-radius:14px;overflow:hidden;background:#1b2340}
+#scene{display:block;width:100%;cursor:crosshair}
+.ov{position:absolute;top:12px;background:rgba(255,255,255,.9);backdrop-filter:blur(6px);border-radius:12px;padding:10px 13px;box-shadow:0 6px 22px rgba(0,0,0,.22);font-size:13px;line-height:1.5;pointer-events:none}
+.ov-left{left:12px;width:256px}
+.ov-right{right:12px;width:250px}
+.ov .clock{font-size:26px;font-weight:800;letter-spacing:.02em;line-height:1.25}
+.ov .chips{display:flex;gap:4px;flex-wrap:wrap;margin:4px 0}
+.ov .ov-phase{margin-top:5px;font-weight:700;color:var(--teal-ink)}
+.ov .kv2{display:flex;justify-content:space-between;gap:8px}
+.ov .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:5px 0 8px}
+.ov .tiles div{background:var(--soft);border-radius:8px;padding:3px 6px;text-align:center;font-size:11.5px;color:var(--muted);border-top:3px solid}
+.ov .tiles b{display:block;font-size:16px;color:var(--ink)}
+.ov hr{border:0;border-top:1px solid var(--line);margin:6px 0}
+.sc-ctl{display:flex;flex-wrap:wrap;gap:14px 22px;margin-top:14px}
+.seg button:disabled{opacity:.35;cursor:not-allowed}
+@media (max-width:760px){
+  .scene-wrap{overflow:visible;background:none}
+  #scene{border-radius:12px}
+  .ov{position:static;width:auto;margin-top:8px;box-shadow:none;border:1px solid var(--line);background:var(--card)}
+}
+@media (max-width:1060px){
+  .rp{grid-template-columns:minmax(0,1fr)}
+  .people-wrap{grid-template-columns:minmax(0,1fr)}
+  .play-grid{grid-template-columns:minmax(0,1fr)}
+  .rulecards{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:900px){
+  .layout{grid-template-columns:minmax(0,1fr);gap:12px}
+  nav.steps{position:static;flex-direction:row;overflow-x:auto;padding-bottom:4px}
+  .navbtn{flex:none}
+  .navbtn .s{display:none}
+  .grid3,.actions3,.rules,.story,.phase{grid-template-columns:minmax(0,1fr)}
+  .facts-row,.sim-total{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:640px){
+  .grid2,.goal,.rulecards,.gauges{grid-template-columns:minmax(0,1fr)}
+  .step h1{font-size:23px}
+  .brand small{display:none}
+  .top .chip{display:none}
+  .fitem{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="logo">L</span><div>론팟 마포 · 푸시 알림 강화학습<small>서울미디어대학원대학교 「심층강화학습기술의 이해와 응용」 프로젝트1</small></div></div>
+  <div class="spacer"></div>
+  <span class="chip" id="verChip"></span>
+  <button class="btn" id="glossBtn">📖 용어 풀이</button>
+</header>
+
+<div class="layout">
+  <nav class="steps" id="nav" aria-label="단계"></nav>
+  <main id="main">
+
+  <!-- 0 ─────────────────────────────────────────── -->
+  <section class="step" data-title="한눈에 보기" data-sub="무엇을 왜 만들었나">
+    <div class="kicker">0단계 · 시작</div>
+    <h1>AI에게 ‘알림 보내는 법’을 가르친 프로젝트</h1>
+    <p class="lead">코인세탁방 기기 현황 공유 앱 <b>론팟</b>이 서울 마포구 유저 100명에게 <b>매일 저녁 6시</b> 어떤 알림을 보낼지, <span class="term" data-t="강화학습">강화학습</span>으로 정합니다. 왼쪽 단계를 차례로 눌러 보거나, 아래 카드에서 궁금한 곳으로 바로 가세요.</p>
+
+    <div class="card">
+      <h2>왜 어려운 문제일까?</h2>
+      <p class="hint">한 번의 선택이 아니라, 오늘의 선택이 내일의 유저 상태를 바꾸기 때문입니다.</p>
+      <div class="hero-row">
+        <div class="hero-box good">오늘만 보면<br><b>300P 리워드 알림</b>이 늘 가장 이득</div>
+        <div class="hero-vs">하지만</div>
+        <div class="hero-box bad">알림을 자주 받으면 귀찮아져서<br><b>알림을 꺼 버림</b> (다시 못 돌아옴)</div>
+        <div class="hero-vs">그래서</div>
+        <div class="hero-box teal"><b>언제 · 누구에게 · 무엇을</b><br>아껴 보낼지 배워야 함</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>강화학습 한 바퀴</h2>
+      <p class="hint">정답을 알려 주지 않습니다. AI가 직접 해 보고, 받은 점수를 보며 점수가 높아지는 쪽으로 스스로 고쳐 갑니다. 상자를 눌러 보세요.</p>
+      <div class="loop" id="loop"></div>
+      <div class="loop-back">↺ 다음 날로 넘어가 다시 ① — 90일이 한 판, 이걸 수만 판 반복하며 배움</div>
+      <div class="loop-text" id="loopText"></div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h2>설계 카드 한 장 요약</h2>
+        <p class="hint">교수님 예시 화면의 ‘프로젝트 소개’와 같은 내용입니다.</p>
+        <dl class="kv" id="introCard"></dl>
+      </div>
+      <div class="card">
+        <h2>지금 어디까지 왔나</h2>
+        <ol class="progress">
+          <li class="done"><span class="pd">✓</span><div><b>1회차</b> — 문제 정의(강의 양식의 ‘매장 정의’), 반응 규칙 6줄<br><span class="muted small">무엇을 결정하고, 고객이 어떻게 반응하는지 글로 정함</span></div></li>
+          <li class="now"><span class="pd">✓</span><div><b>2회차 (지금)</b> — 가상 유저 · 가상 환경 · 점검 · 첫 학습(v1)<br><span class="muted small">이익은 늘었지만 알림 끈 사람이 너무 많아 목표 미달</span></div></li>
+          <li class="next"><span class="pd">3</span><div><b>3회차</b> — 보상 고치기(v2·v3), 화면 반영, 웹 배포<br><span class="muted small">‘알림 끄기’를 점수에 넣어 다시 학습</span></div></li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>우리가 만든 것, 단계별로 둘러보기</h2>
+      <p class="hint">카드를 누르면 그 단계로 갑니다.</p>
+      <div class="tour" id="tour"></div>
+    </div>
+  </section>
+
+  <!-- 1 ─────────────────────────────────────────── -->
+  <section class="step" data-title="무엇을 정하나" data-sub="결정 · 행동 · 성공 척도">
+    <div class="kicker">1단계 · 문제 정의 <span class="faint">(강의 양식 이름은 ‘매장 정의’ — 우리는 가게가 아니라 앱의 마케팅 알림 문제)</span></div>
+    <h1>매일 18:00, 유저 한 명 한 명에게 셋 중 하나</h1>
+    <p class="lead">AI가 정하는 것은 딱 하나, <b>“오늘 이 유저에게 어떤 알림을 보낼까”</b>입니다. 100명에게 각자 따로 정합니다. 이 세 가지가 AI의 <span class="term" data-t="행동">행동</span>입니다.</p>
+    <div class="actions3" id="actionCards"></div>
+    <p class="hint" style="margin-top:-8px">알림 문구는 이해를 돕기 위한 예시입니다. 확률은 평균적인 유저 기준이며, 사람마다 다릅니다(2단계).</p>
+
+    <div class="grid2">
+      <div class="card">
+        <h2>얻는 것</h2>
+        <div class="gl" id="gains"></div>
+      </div>
+      <div class="card">
+        <h2>잃는 것</h2>
+        <div class="gl" id="losses"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row-between">
+        <div><h2>오늘 하루만 보면, 무엇이 가장 이득일까?</h2>
+        <p class="hint">평균적인 유저 한 명에게 보냈을 때 기대되는 순이익 = 제보 확률 × 남는 돈</p></div>
+        <div class="seg" id="dayType"></div>
+      </div>
+      <div class="ev" id="evBars"></div>
+      <div class="callout" id="evNote"></div>
+    </div>
+
+    <div class="card">
+      <h2>성공 척도 — 처음부터 끝까지 바꾸지 않는 기준</h2>
+      <p class="hint">AI가 받는 점수(보상)와는 다릅니다. 보상은 바꿀 수 있지만, 잘했는지는 늘 이 기준으로 판단합니다.</p>
+      <div class="goal" id="goal"></div>
+      <div class="formula" id="formula"></div>
+    </div>
+
+    <details class="why"><summary>왜 이 숫자? <span>발표 Q&amp;A용</span></summary><div class="body"><table class="t">
+      <tr><th>값</th><th>숫자</th><th>왜 이렇게 정했나</th></tr>
+      <tr><td>고객 수</td><td>100명</td><td>강의 기준(페르소나 100명). 고객마다 따로 결정하므로 패턴을 보기에 충분하고 계산이 가벼움</td></tr>
+      <tr><td>결정 시각</td><td>매일 18:00</td><td>퇴근·하교 뒤 빨래하러 나가는 시간대 — 알림이 행동으로 이어지기 쉬움 (가정)</td></tr>
+      <tr><td>한 판의 길이</td><td>90일</td><td>분기 성과를 보는 단위. 피로도·의존도가 쌓여 결과가 드러나기에 충분하고, 학습이 느려지지 않음</td></tr>
+      <tr><td>제보 1건 가치</td><td>1,500원 (가정)</td><td>제보 1건이 다른 유저의 헛걸음을 막아 앱 이용·전환으로 이어지는 가치를 객단가처럼 둠</td></tr>
+      <tr><td>리워드</td><td>300P = 300원 (가정)</td><td>제보 가치의 20%(원가율 20%) — 리워드로 받은 제보도 건당 1,200원이 남게</td></tr>
+      <tr><td>수신거부 한도</td><td>5명 (5%)</td><td>이익만 쫓다 유저 기반을 잃지 않도록 두 번째 조건으로 고정</td></tr>
+      <tr><td>고정비</td><td>제외</td><td>서버·인건비는 어떤 알림을 보내든 같아서 결정에 영향이 없음</td></tr>
+      <tr><td>수신거부 비용</td><td>이익에서 안 뺌</td><td>알림을 끄면 이후 제보가 사라져 이미 이익에 반영됨 → 또 빼면 두 번 빼는 셈</td></tr>
+      <tr><td>현재 운영 (가정)</td><td>토요일 전원 일반 + 25일 전원 리워드</td><td>흔한 “주 1회 공지 + 월 1회 이벤트” 운영을 비교 기준선으로 둠</td></tr>
+    </table></div></details>
+    <p class="where">📁 관련 파일 <span class="file">project_spec.md 1절</span><span class="file">config.py</span></p>
+  </section>
+
+  <!-- 2 ─────────────────────────────────────────── -->
+  <section class="step" data-title="가상 고객 100명" data-sub="누구에게 보내나">
+    <div class="kicker">2단계 · 가상 고객</div>
+    <h1>실제 고객 대신, 닮은 가상 인물 100명</h1>
+    <p class="lead">실제 유저 데이터가 없어서, 공개된 <span class="term" data-t="페르소나">가상 인물 데이터</span>에서 우리 앱의 주 고객과 닮은 사람만 골랐습니다. 사람마다 성향이 달라서 같은 알림에도 다르게 반응합니다.</p>
+
+    <div class="card">
+      <h2>어떻게 골랐나</h2>
+      <div class="funnel" id="funnel"></div>
+    </div>
+
+    <div class="card">
+      <div class="row-between">
+        <div><h2>성향 3가지</h2>
+        <p class="hint">반응 규칙 가운데 <b>사람마다 다른 숫자만</b> 성향으로 만들었습니다. 탭을 바꾸고, 동그라미를 눌러 한 사람씩 보세요.</p></div>
+        <div class="seg" id="traitSeg"></div>
+      </div>
+      <div class="trait-desc" id="traitDesc"></div>
+      <div class="people-wrap">
+        <div>
+          <div class="people" id="people"></div>
+          <div class="row-between small" style="margin-top:10px;max-width:480px">
+            <div class="seg sm" id="sortSeg"></div>
+            <div class="muted" id="traitLegend"></div>
+          </div>
+          <div id="hist" style="max-width:480px;margin-top:10px"></div>
+          <div class="mean-check" id="meanCheck"></div>
+        </div>
+        <div class="person" id="person"></div>
+      </div>
+    </div>
+
+    <details class="why"><summary>왜 이렇게 골랐나? <span>발표 Q&amp;A용</span></summary><div class="body"><table class="t">
+      <tr><th>항목</th><th>내용</th></tr>
+      <tr><td>왜 자취 가구만</td><td>배우자·자녀와 사는 가구는 대개 집에 세탁기가 있어 코인세탁방 앱의 주 고객이 아님</td></tr>
+      <tr><td>20대 무직을 넣은 이유</td><td>자취생·취업준비생으로 봄 (가정) — 주 고객 “20~40대 자취생 및 직장인”에 맞추기 위해</td></tr>
+      <tr><td>성향 칸이 3개인 이유</td><td>2절 반응 규칙 중 사람마다 달라야 자연스러운 숫자만 칸으로 (나머지는 모두에게 같은 값)</td></tr>
+      <tr><td>성향을 정한 방법</td><td>소개글·식생활·운동·취미 글과 직업·주거 형태를 근거로 AI가 추정하고, 근거 인용과 확신도를 함께 기록 (나이·성별만으로 정하지 않음)</td></tr>
+      <tr><td>검사</td><td><span class="file">check.py</span> — 100명 · 범위 · 근거 빈칸 · 칸별 평균이 목표의 ±10% 안 → 통과</td></tr>
+      <tr><td>확신도 ‘낮음’</td><td>소개글에 빨래 이야기가 드물어 생기는 것이 정상. 낮음인 사람은 기준표 가운데 값 근처로 둠</td></tr>
+    </table></div></details>
+    <p class="where">📁 관련 파일 <span class="file">make_personas.py</span><span class="file">data/personas.csv</span><span class="file">data/customer_traits.csv</span><span class="file">check.py</span><span class="file">project_spec.md 3절</span></p>
+  </section>
+
+  <!-- 3 ─────────────────────────────────────────── -->
+  <section class="step" data-title="반응 규칙 · 직접 해 보기" data-sub="가상 유저의 법칙">
+    <div class="kicker">3단계 · 반응 규칙 = 가상 유저의 법칙</div>
+    <h1>알림을 받으면 가상 고객은 어떻게 반응할까</h1>
+    <p class="lead">가상 유저 100명(<span class="term" data-t="환경">환경</span>)은 알림에 아래 6가지 규칙으로 반응합니다. 숫자는 모두 <span class="term" data-t="가정">가정</span>입니다. 아래 <b>직접 해 보기</b>에서 한 사람에게 90일 동안 알림을 보내 보면, 왜 ‘매일 리워드’가 답이 아닌지 바로 보입니다.</p>
+    <div class="rules" id="rules"></div>
+
+    <div class="card">
+      <h2>직접 해 보기 — 한 사람에게 90일 동안 알림 보내기</h2>
+      <p class="hint">버튼을 하나 누를 때마다 하루가 지나갑니다. 날짜·날씨·공휴일은 2025년 실제 기록입니다. 계산은 <span class="file">env.py</span>와 같은 규칙·숫자를 씁니다.</p>
+      <div class="play-grid">
+        <div class="play-left">
+          <label>고객 <select id="simCust"></select></label>
+          <label>시작 날짜 <select id="simEp"></select></label>
+          <div class="today" id="simToday"></div>
+          <div class="act-btns" id="simBtns"></div>
+          <div class="explain" id="simExplain"></div>
+          <div class="row"><select id="simAuto" style="flex:1"></select><button class="btn primary" id="simRun">▶ 끝까지 자동</button></div>
+          <div class="row"><button class="btn" id="simReset">↺ 같은 운으로 처음부터</button><button class="btn" id="simReseed">🎲 새로운 운</button></div>
+        </div>
+        <div>
+          <div class="gauges" id="simGauges"></div>
+          <div class="sim-total" id="simTotal"></div>
+          <div class="sim-last" id="simLast"></div>
+          <div class="legend" id="simLegend"></div>
+          <div id="simHist"></div>
+        </div>
+      </div>
+      <div class="callout plain">💡 <b>같은 운</b>은 날마다의 우연(제보할지, 알림을 끌지)을 고정한 것입니다. 같은 운에서 전략만 바꿔 보면 공정하게 비교할 수 있습니다. 실제 평가도 모든 규칙에 같은 운(<span class="term" data-t="시드">시드</span>)을 썼습니다.</div>
+    </div>
+
+    <details class="why"><summary>왜 이 숫자? <span>발표 Q&amp;A용</span></summary><div class="body"><table class="t">
+      <tr><th>번호</th><th>규칙</th><th>숫자</th><th>왜</th></tr>
+      <tr><td>1</td><td>일반 알림 → 제보 확률 ↑</td><td>8% → 20%</td><td>자취생이 주 1~2회 코인세탁방에 가고(하루 약 14~28%), 그중 앱 제보까지 하는 비율을 8%로 봄. 알림은 “가는 김에 제보”를 2.5배로 끌어올림</td></tr>
+      <tr><td>2</td><td>리워드 알림 → 제보 확률 ↑, 비용</td><td>45%, 건당 300원</td><td>돈이 걸린 보상은 일반 알림의 2배 이상 효과. 그래서 오늘만 보면 늘 리워드가 이득 → 누적 효과가 견제해야 함</td></tr>
+      <tr><td>3</td><td>알림 피로도 (0~100)</td><td>+15, 쉬면 −5, 75 이상이면 매일 20% 수신거부</td><td>4일에 1번(주 1~2회) 보내면 피로가 안 쌓임 = 마케팅 푸시 권장 빈도 수준. 매일 보내면 5일 만에 위험선</td></tr>
+      <tr><td>4</td><td>보상 의존도 (0~100)</td><td>리워드 +20, 없는 날 −5, 60 이상이면 일반·자발 제보 ×0.5</td><td>보상에 익숙해지면 보상 없이는 안 움직임(과잉정당화 효과). 리워드만 4일마다 보내면 약 48일째 위험선</td></tr>
+      <tr><td>5</td><td>날씨·달력</td><td>비·공휴일·주말 ×1.4 (겹쳐도 1번), 한파 ×0.7, 월말 리워드 ×1.2</td><td>비 오는 날·주말은 건조기·빨래 수요 ↑, 한파엔 외출을 꺼림, 급여일 전엔 포인트가 더 아쉬움</td></tr>
+      <tr><td>6</td><td>우연</td><td>매일 ×0.85~1.15</td><td>같은 조건에서도 사람마다 그날 사정이 다름</td></tr>
+    </table>
+    <p class="small muted">처음 초안에 있던 “하루 전체 제보가 적으면 가치가 줄어드는” 규칙은 뺐습니다 → 고객끼리 서로 영향을 주지 않아서 고객마다 따로 학습할 수 있습니다.</p></div></details>
+    <p class="where">📁 관련 파일 <span class="file">project_spec.md 2절</span><span class="file">env.py (맨 위 가정값)</span><span class="file">data/external_factors.csv</span><span class="file">make_external_factors.py</span></p>
+  </section>
+
+  <!-- 4 ─────────────────────────────────────────── -->
+  <section class="step" data-title="학습 전 점검" data-sub="가상 환경이 상식대로 움직이나">
+    <div class="kicker">4단계 · 환경 타당성 검증</div>
+    <h1>AI를 가르치기 전에, 가상 환경부터 시험</h1>
+    <p class="lead">가상 환경(가상 유저의 반응)이 엉터리면 AI도 엉터리를 배웁니다. 그래서 사람이 정한 단순한 <span class="term" data-t="시험 규칙">시험 규칙</span> 4개를 <b>2025년 네 분기 × 100명</b>에게 똑같은 조건으로 돌려 보고, 결과가 상식에 맞는지 확인했습니다.</p>
+    <div class="rulecards" id="testRules"></div>
+    <div class="grid2">
+      <div class="card"><h2>90일 동안 쌓인 순이익</h2><p class="hint">네 분기 평균 · 그래프 위에 마우스를 올려 보세요</p><div id="chProfit"></div></div>
+      <div class="card"><h2>알림을 켜 둔 사람 수</h2><p class="hint">100명에서 시작, 알림을 끄면 줄어듭니다</p><div id="chActive"></div></div>
+    </div>
+    <div class="card">
+      <h2>통과 기준 4가지</h2>
+      <p class="hint">하나라도 실패하면 가상 환경(반응 규칙)을 고친 뒤에 학습합니다.</p>
+      <div id="checks"></div>
+      <div class="callout warn" id="memo"></div>
+    </div>
+    <p class="where">📁 관련 파일 <span class="file">simulate.py</span><span class="file">results/sanity_check.md</span><span class="file">results/logs/</span></p>
+  </section>
+
+  <!-- 5 ─────────────────────────────────────────── -->
+  <section class="step" data-title="AI 학습" data-sub="PPO로 수만 판 연습">
+    <div class="kicker">5단계 · 강화학습 (PPO)</div>
+    <h1>AI가 수만 판을 연습하며 배운다</h1>
+    <p class="lead">AI(<span class="term" data-t="에이전트">에이전트</span>)는 2016~2024년 실제 달력 위에서, 무작위로 뽑은 고객 한 명과 90일을 보내는 연습을 수만 번 반복했습니다. 매일 아래 숫자 11개를 보고 행동 3개 중 하나를 고르며, 그날 번 돈을 점수로 받습니다.</p>
+    <div class="grid3">
+      <div class="card"><h2>AI가 보는 것 <span class="muted">상태 11칸</span></h2><div id="obsList"></div>
+        <div class="callout plain small">🙈 일부러 안 보여 준 것: 오늘 제보할지 · 오늘의 우연 · 오늘 알림을 끌지 — 저녁 6시에는 아직 모르는 ‘미래’라서</div></div>
+      <div class="card"><h2>AI가 고르는 것 <span class="muted">행동 3개</span></h2><div class="alist" id="actList"></div>
+        <div class="callout plain small">처음엔 거의 무작위로 고르다가, 점수가 잘 나온 선택을 점점 더 자주 고르게 됩니다. 이 “상황 → 선택” 규칙이 <span class="term" data-t="정책">정책</span>입니다.</div></div>
+      <div class="card"><h2>AI가 받는 점수 <span class="muted" id="rewVer"></span></h2><div class="rtable" id="rewTable"></div>
+        <div class="callout warn small" id="rewNote"></div></div>
+    </div>
+    <div class="card">
+      <h2>연습 방법</h2>
+      <div class="facts-row" id="trainFacts"></div>
+    </div>
+    <div class="card">
+      <h2>학습 곡선 — 연습할수록 점수가 올랐나</h2>
+      <p class="hint">가로: 지금까지 내린 결정 수 · 세로: 한 판(고객 1명 × 90일) 평균 점수, 1점 = 1,000원</p>
+      <div id="chCurve"></div>
+      <div class="callout" id="curveNote"></div>
+    </div>
+    <details class="why"><summary>왜 PPO? 왜 CPU? <span>발표 Q&amp;A용</span></summary><div class="body"><table class="t">
+      <tr><th>질문</th><th>답</th></tr>
+      <tr><td>왜 PPO?</td><td>행동이 선택지 3개라 연속 행동용 SAC는 못 씀. 가상 환경 계산이 빨라(결정 1번 약 0.18ms) 경험이 충분하므로, 경험을 재사용하는 DQN보다 안정적인 PPO(한 번에 너무 크게 바뀌지 않게 막는 장치)를 택함</td></tr>
+      <tr><td>왜 CPU?</td><td>관측이 숫자 11개인 작은 신경망이라 CPU로 충분히 빠르고, 시간 대부분은 가상 환경 계산. 시험 학습 3만 번 5초, 본 학습 200만 번 약 6분</td></tr>
+      <tr><td>왜 2016~2024년으로 연습?</td><td>9년치 실제 날씨로 여러 계절·이상 날씨를 경험하게. 평가는 연습에 안 쓴 2025년으로 (처음 보는 날씨에서도 잘하는지)</td></tr>
+      <tr><td>왜 ÷1,000?</td><td>점수 크기를 작게 맞춰 학습을 안정시키려고 (하루 최대 1.5점). 성공 척도 계산에는 영향 없음</td></tr>
+    </table></div></details>
+    <p class="where">📁 관련 파일 <span class="file">train.py</span><span class="file">reward.py</span><span class="file">results/learning_curve_v1.png</span><span class="file">results/models/v1/model.zip</span><span class="file">results/experience_sample_v1.csv</span></p>
+  </section>
+
+  <!-- 6 ─────────────────────────────────────────── -->
+  <section class="step" data-title="결과 재생" data-sub="100명에게 날마다 무엇을 보냈나">
+    <div class="kicker">6단계 · 평가 결과 재생</div>
+    <h1>2025년, 100명에게 날마다 무엇을 보냈고 어떻게 됐나</h1>
+    <p class="lead">연습에 쓰지 않은 2025년 네 분기에서, 같은 운(시드)으로 규칙들을 돌린 기록입니다. 칸 하나가 유저 한 명입니다. <b>▶ 재생</b>을 누르거나 아래 날짜 막대를 눌러 보세요.</p>
+    <div class="card">
+      <div class="ctl-row">
+        <div><div class="lbl">재생할 기록</div><div class="seg" id="rpRec"></div></div>
+        <div><div class="lbl">평가 기간 (2025년)</div><div class="seg" id="rpEp"></div></div>
+      </div>
+    </div>
+    <div class="rp">
+      <div class="card">
+        <div class="rp-day" id="rpDay"></div>
+        <div class="legend" id="rpLegend"></div>
+        <div class="pgrid" id="rpGrid"></div>
+        <div class="player">
+          <button class="btn" id="rpFirst" title="처음으로">⏮</button>
+          <button class="btn" id="rpPrev">◀ 이전 날</button>
+          <button class="btn primary" id="rpPlay" style="min-width:104px">▶ 재생</button>
+          <button class="btn" id="rpNext">다음 날 ▶</button>
+          <div class="seg sm" id="rpSpeed"></div>
+        </div>
+        <div class="timeline" id="rpTimeline"></div>
+        <div class="legend small" id="tlLegend" style="margin-top:12px"></div>
+      </div>
+      <div class="rp-side" id="rpSide"></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h2 id="rpChartTitle">누적 순이익</h2>
+      <p class="hint">이번 판(선택한 분기)에서 날마다 쌓인 순이익 · 그래프를 누르면 그날로 이동</p>
+      <div id="rpChart"></div>
+    </div>
+    <p class="where">📁 관련 파일 <span class="file">public/data/replay_*.json</span><span class="file">simulate.py</span><span class="file">results/summary_v1.md</span></p>
+  </section>
+
+  <!-- 7 ─────────────────────────────────────────── -->
+  <section class="step" data-title="진단 · 다음 할 일" data-sub="왜 목표를 못 이뤘나">
+    <div class="kicker">7단계 · 결과 진단</div>
+    <h1>이익은 1등, 그런데 목표는 미달 — ‘막판 몰아주기’</h1>
+    <p class="lead">학습된 AI는 가장 많은 이익을 냈지만, 성공 척도의 두 번째 조건(알림 끈 사람 5명 이하)을 크게 어겼습니다. 날짜별로 펼쳐 보면 이유가 보입니다.</p>
+    <div class="card">
+      <h2>성적표 <span class="muted">2025년 네 분기 평균</span></h2>
+      <div style="overflow-x:auto"><table class="t" id="score"></table></div>
+      <div class="callout" id="verdict"></div>
+    </div>
+    <div class="card">
+      <div class="row-between">
+        <div><h2>날짜별로 펼쳐 보기</h2><p class="hint">위: 알림을 켜 둔 유저에게 그날 무엇을 보냈나 (비율) · 아래: 평균 피로도와 누적 수신거부</p></div>
+        <div class="seg sm" id="dgRec"></div>
+      </div>
+      <div id="chShare"></div>
+      <div id="chFat" style="margin-top:6px"></div>
+      <div class="phase" id="phase"></div>
+      <p class="small muted" id="timing" style="margin:10px 0 0"></p>
+    </div>
+    <div class="card">
+      <h2>왜 이렇게 배웠을까</h2>
+      <div class="story">
+        <div><b class="sn">1</b><b>점수(보상 v1)에 ‘알림 끄기’가 없음</b><br>점수는 그날 번 돈뿐. 유저가 알림을 꺼도 점수를 깎지 않습니다.</div>
+        <div><b class="sn">2</b><b>끝나기 직전엔 잃을 게 적음</b><br>80일째에 알림을 끄면 잃는 건 남은 열흘치 이익뿐. 그보다 리워드로 당장 버는 돈이 큽니다.</div>
+        <div><b class="sn">3</b><b>그래서 막판에 몰아 보냄</b><br>AI는 “마지막 2주엔 리워드를 몰아 보내 이익을 짜내고, 유저는 떠나도 된다”를 배웠습니다.</div>
+      </div>
+      <div class="callout">이건 코드 오류가 아니라 <b>점수 설계의 허점</b>입니다. AI는 우리가 준 점수를 정확히 최대로 만들었을 뿐, 점수에 없는 목표(수신거부 5명 이하)는 신경 쓰지 않았습니다(<span class="term" data-t="보상 해킹">보상 해킹</span>). 잘한 점도 있습니다 — 처음 60일은 피로도를 위험선 아래로 관리하며 리워드를 아껴 썼으니, 누적 효과 자체는 배웠습니다.</div>
+    </div>
+    <div class="card">
+      <h2>3회차에 할 일 — 점수(보상) 고치기</h2>
+      <p class="hint"><span class="file">reward.py</span> 한 파일만 고치고, 같은 평가 조건(2025년 네 분기, 같은 시드)에서 성공 척도로 비교합니다. 나빠진 점(예: 이익 감소)도 기록합니다.</p>
+      <div class="grid2" style="margin-bottom:0" id="nextPlans"></div>
+    </div>
+    <p class="where">📁 관련 파일 <span class="file">results/summary_v1.md</span><span class="file">project_spec.md 5절</span><span class="file">presentation_notes.md</span></p>
+  </section>
+
+  <!-- 8 ─────────────────────────────────────────── -->
+  <section class="step" data-title="만든 파일 지도" data-sub="어떤 파일이 무엇을 하나">
+    <div class="kicker">8단계 · 파일 지도</div>
+    <h1>폴더 안 파일이 각각 하는 일</h1>
+    <p class="lead">데이터를 만들고 → 가상 환경(유저 반응 규칙)을 정하고 → 돌려 보고 → 결과를 이 화면으로 봅니다. 파일 이름 옆 <b>단계로 →</b>를 누르면 그 파일이 만든 내용을 볼 수 있습니다.</p>
+    <div class="card">
+      <h2>흐름</h2>
+      <div class="flow">
+        <div class="fb2"><b>① 입력 데이터</b>가상 고객 100명 · 성향 · 2016~2025 날씨·공휴일</div><div class="farrow">→</div>
+        <div class="fb2"><b>② 가상 환경</b>문제 정의 숫자 · 반응 규칙 · 보상</div><div class="farrow">→</div>
+        <div class="fb2"><b>③ 돌려 보기</b>시험 규칙 점검 · PPO 학습 · 평가</div><div class="farrow">→</div>
+        <div class="fb2"><b>④ 결과</b>요약표 · 학습 곡선 · 날짜별 기록 · 모델</div><div class="farrow">→</div>
+        <div class="fb2"><b>⑤ 이 화면</b>public/index.html</div>
+      </div>
+    </div>
+    <div id="fileGroups"></div>
+    <div class="card">
+      <h2>실행 방법</h2>
+      <p class="hint"><span class="file">run.bat</span>을 더블클릭하면 번호 메뉴가 뜹니다. 실행할 때마다 <span class="file">results/runs/</span>에 기록이 쌓이고, 1번·4번이 끝나면 이 화면의 데이터(<span class="file">public/data/viewer_data.js</span>)도 새로 바뀝니다 (새로고침하면 반영).</p>
+      <table class="t">
+        <tr><th>번호</th><th>하는 일</th><th>결과</th></tr>
+        <tr><td>1</td><td>가상 환경 점검 (시험 규칙 4개)</td><td>results/sanity_check.md · 이 화면 4·6단계</td></tr>
+        <tr><td>2</td><td>시험 학습 (1분 안쪽, 오류 확인)</td><td>화면에 걸린 시간</td></tr>
+        <tr><td>3</td><td>본 학습 (약 6분)</td><td>results/models/ · 학습 곡선</td></tr>
+        <tr><td>4</td><td>학습된 AI 평가</td><td>results/summary_v1.md · 이 화면 5·6·7단계</td></tr>
+      </table>
+    </div>
+    <p class="where">📁 데이터 출처 — 가상 고객: NVIDIA Nemotron-Personas-Korea (CC BY 4.0, 실제 인물 아님) · 날씨: Open-Meteo (CC BY 4.0, 마포구청 좌표) · 공휴일: python-holidays</p>
+  </section>
+
+  <!-- 9 ─────────────────────────────────────────── -->
+  <section class="step" data-title="그림으로 보기" data-sub="저녁 6시, 마포구에 알림이 퍼진다">
+    <div class="kicker">9단계 · 한 장면으로 보기</div>
+    <h1>저녁 6시, 마포구 유저 100명에게 알림이 도착하면</h1>
+    <p class="lead">우리가 만든 것은 가게가 아니라 <b>앱 유저에게 보내는 마케팅 연락(푸시 알림)을 가장 효율적으로 보내는 방법</b>을 찾는 AI입니다. 2025년 평가 기록을 그대로 그림으로 옮겼습니다. 아래에서 <b>전략 · 계절 · 상황</b>을 골라 보고, 창문에 마우스를 올려 보세요.</p>
+    <div class="card">
+      <div class="scene-wrap" id="scWrap">
+        <canvas id="scene" aria-label="마포구 저녁 장면: 론팟 알림 센터가 원룸에 사는 유저 100명에게 알림을 보내고, 유저가 코인세탁방에서 기기 현황을 제보하는 모습"></canvas>
+        <div class="ov ov-left" id="scDay"></div>
+        <div class="ov ov-right" id="scKpi"></div>
+      </div>
+      <div class="legend" id="scLegend" style="margin-top:12px"></div>
+      <div class="sc-ctl">
+        <div><div class="lbl">① 전략 — 누가 알림을 정하나</div><div class="seg" id="scRec"></div></div>
+        <div><div class="lbl">② 계절 (2025년)</div><div class="seg" id="scEp"></div></div>
+        <div><div class="lbl">③ 상황 — 이 계절의 이런 날로 이동</div><div class="seg" id="scPreset"></div></div>
+      </div>
+      <div class="player" style="justify-content:flex-start">
+        <button class="btn" id="scFirst" title="첫날로">⏮</button>
+        <button class="btn" id="scPrev">◀ 이전 날</button>
+        <button class="btn primary" id="scPlay" style="min-width:122px">▶ 연속 재생</button>
+        <button class="btn" id="scNext">다음 날 ▶</button>
+        <div class="seg sm" id="scSpeed"></div>
+      </div>
+      <div class="timeline" id="scTimeline"></div>
+      <div class="callout" id="scNote" style="margin-top:18px"></div>
+    </div>
+    <p class="where">🎨 그림 파일 없이 코드(Canvas 2D)로 그렸습니다. 누가 어떤 알림을 받았고 누가 제보·수신거부했는지, 그날의 비·한파·주말은 모두 평가 기록과 실제 날씨 그대로입니다. 📁 <span class="file">public/index.html</span><span class="file">public/data/viewer_data.js</span><span class="file">screen_design.md (참고)</span></p>
+  </section>
+
+  </main>
+</div>
+
+<aside class="drawer" id="gloss" inert>
+  <div class="drawer-head"><b>📖 용어 풀이</b><button id="glossClose" aria-label="닫기">✕</button></div>
+  <div class="glist" id="glossList"></div>
+</aside>
+<div class="tip" id="tip"></div>
+
+<script src="data/viewer_data.js"></script>
+<script>
+'use strict';
+/* ───────── 화면 설정 — 보기 좋게 하려고 정한 숫자 (가정) ───────── */
+const UI = {
+  loopMs: 2200,                                   // 0단계 '강화학습 한 바퀴'가 다음 상자로 넘어가는 간격
+  simStepMs: 60,                                  // 3단계 '끝까지 자동'에서 하루가 지나가는 간격
+  playSpeeds: [[1, '천천히'], [3, '보통'], [10, '빠르게']],  // 6단계 재생: 1초에 며칠
+  phases: [[1, 60], [61, 75], [76, 90]],          // 7단계 구간 (presentation_notes.md와 같게)
+  candidates: 781,                                // 2단계: 조건에 맞는 후보 수 (make_personas.py 실행 결과)
+  personaSeed: 42,                                // 2단계: 100명을 뽑은 시드 (config.py PERSONA_SEED)
+  sceneDayMs: [10000, 6000, 3000],                // 9단계: 하루(17:30~23:30) 장면 길이 ms — 느리게·보통·빠르게
+};
+const COLORS = {
+  action: ['#d6d3d1', '#3b82f6', '#f59e0b'],
+  rec: { none: '#a8a29e', max_reward: '#d97706', random: '#8b5cf6', current: '#2563eb' },
+  ppo: '#0f766e', good: '#15803d', bad: '#b91c1c', fatigue: '#dc2626', dep: '#d97706', wood: '#8b5e34',
+};
+
+/* ───────── 데이터 ───────── */
+const D = window.VIEWER_DATA;
+if (!D) {
+  document.getElementById('main').innerHTML = '<div class="card fatal"><b>재생 데이터를 찾지 못했습니다.</b><br>public/data/viewer_data.js 가 필요합니다. run.bat → 1번(가상 환경 점검)을 먼저 실행하세요.</div>';
+  throw new Error('viewer_data.js 없음');
+}
+const P = D.project, RU = P.rules, MONEY = P.money, N_DAYS = P.episode_days;
+const PEOPLE = D.personas, N_PEOPLE = PEOPLE.length;
+const REC_KEYS = Object.keys(D.replays);
+const TEST_KEYS = ['none', 'max_reward', 'random', 'current'].filter(k => D.replays[k]);
+const MY_RULE = REC_KEYS.find(k => D.replays[k].is_my_rule) || TEST_KEYS[TEST_KEYS.length - 1];
+const PPO_KEY = REC_KEYS.filter(k => k.startsWith('ppo_')).pop() || null;
+const CURVE_KEY = Object.keys(D.curves).pop() || null;
+const SHORT = { none: '아무것도 안 함', max_reward: '매일 전원 리워드', random: '무작위', current: '현재 운영 (가정)' };
+const recName = k => SHORT[k] || (k.startsWith('ppo_') ? `학습된 AI ${k.slice(4)}` : D.replays[k].label);
+const recColor = k => COLORS.rec[k] || COLORS.ppo;
+const WD = ['월', '화', '수', '목', '금', '토', '일'];
+const ACT = ['안 보냄', '일반 알림', '리워드 알림'];
+const CAL = D.replays[REC_KEYS[0]].episodes.map(e => e.days);   // 판별 날짜·날씨 (모든 기록이 같음)
+const TG = k => P.traits[k].target;
+const AVG_TRAITS = { report_propensity: TG('report_propensity'), reward_sensitivity: TG('reward_sensitivity'), fatigue_sensitivity: TG('fatigue_sensitivity') };
+
+/* ───────── 작은 도구 ───────── */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const num = (x, d = 0) => Number(x).toLocaleString('ko-KR', { minimumFractionDigits: d, maximumFractionDigits: d });
+const won = x => num(Math.round(x)) + '원';
+const man = x => { const m = x / 10000; return (Math.abs(m) >= 100 ? num(Math.round(m)) : num(m, 1).replace(/\.0$/, '')) + '만 원'; };
+const pct = (x, d = 0) => num(x * 100, d) + '%';
+const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+const mean = a => a.reduce((s, x) => s + x, 0) / (a.length || 1);
+const nameOf = p => (p.summary.match(/^(\S+?) 씨/) || [])[1] || `고객 ${p.id}`;
+const dateLabel = day => `${day.date.slice(0, 4)}.${day.date.slice(5, 7)}.${day.date.slice(8, 10)} (${WD[day.weekday]})`;
+const epLabel = s => { const m = +s.slice(5, 7); return `${m}~${m + 2}월`; };
+
+function flags(day) {
+  const w = day.weather, dom = +day.date.slice(8, 10);
+  const rain = w.precip_mm >= RU.RAIN_MM, weekend = day.weekday >= 5, holiday = !!day.holiday;
+  return { rain, weekend, holiday, up: rain || weekend || holiday, cold: w.temp_min <= RU.COLD_TEMP_MIN, monthEnd: dom >= P.month_end_start_day };
+}
+function upName(f) { return [f.rain && '비', f.holiday && '공휴일', !f.holiday && f.weekend && '주말'].filter(Boolean).join('·'); }
+function dayChips(day) {
+  const f = flags(day), w = day.weather, c = [];
+  if (f.rain) c.push(['rain', `🌧 비 ${num(w.precip_mm, 1)}mm`]);
+  if (f.holiday) c.push(['hol', `🎌 ${day.holiday}`]); else if (f.weekend) c.push(['hol', '🗓 주말']);
+  if (f.cold) c.push(['cold', `🥶 한파 ${num(w.temp_min, 1)}℃`]);
+  if (f.monthEnd) c.push(['me', '💰 월말']);
+  if (!c.length) c.push(['', '평범한 평일']);
+  return c.map(([k, t]) => `<span class="chip ${k}">${esc(t)}</span>`).join('');
+}
+function dayEffect(day) {
+  const f = flags(day), e = [];
+  if (f.up) e.push(`${upName(f)} → 제보 ×${RU.DEMAND_UP}`);
+  if (f.cold) e.push(`한파 → 제보 ×${RU.COLD_MULTIPLIER}`);
+  if (f.monthEnd) e.push(`월말 → 리워드 제보 ×${RU.MONTH_END_REWARD_MULTIPLIER}`);
+  return e.length ? e.join(' · ') : '날씨·달력 효과 없음';
+}
+function weatherLine(day) {
+  const w = day.weather, f = flags(day);
+  return `${f.rain ? '🌧 비' : '☀ 비 안 옴'} · 최저 ${num(w.temp_min, 1)}℃ / 최고 ${num(w.temp_max, 1)}℃`;
+}
+function dayColor(day) {
+  const f = flags(day);
+  return f.rain ? '#93c5fd' : (f.weekend || f.holiday) ? '#ddd6fe' : f.cold ? '#a5f3fc' : '#e7e0d2';
+}
+
+/* 반응 규칙 1·2·4·5 — env.py report_probability와 같은 계산 */
+function reportProb(a, t, f, dep) {
+  let p;
+  if (a === 2) { p = RU.REWARD_PROB_BASE + RU.REWARD_PROB_SLOPE * t.reward_sensitivity; if (f.monthEnd) p *= RU.MONTH_END_REWARD_MULTIPLIER; }
+  else { p = t.report_propensity; if (a === 1) p *= RU.GENERAL_PUSH_MULTIPLIER; if (dep >= RU.DEPENDENCY_DANGER) p *= RU.DEPENDENCY_PENALTY; }
+  if (f.up) p *= RU.DEMAND_UP;
+  if (f.cold) p *= RU.COLD_MULTIPLIER;
+  return p;
+}
+function probExplain(a, t, f, dep) {
+  const s = [];
+  if (a === 2) {
+    s.push(`리워드 기본 ${pct(RU.REWARD_PROB_BASE)} + ${pct(RU.REWARD_PROB_SLOPE)} × 리워드 민감도 ${t.reward_sensitivity.toFixed(2)}`);
+    if (f.monthEnd) s.push(`× 월말 ${RU.MONTH_END_REWARD_MULTIPLIER}`);
+  } else {
+    s.push(`기본 제보 성향 ${pct(t.report_propensity, 1)}`);
+    if (a === 1) s.push(`× 일반 알림 ${RU.GENERAL_PUSH_MULTIPLIER}`);
+    if (dep >= RU.DEPENDENCY_DANGER) s.push(`× 의존도 ${RU.DEPENDENCY_DANGER} 이상 ${RU.DEPENDENCY_PENALTY}`);
+  }
+  if (f.up) s.push(`× ${upName(f)} ${RU.DEMAND_UP}`);
+  if (f.cold) s.push(`× 한파 ${RU.COLD_MULTIPLIER}`);
+  return `<b>${ACT[a]}</b> 제보 확률 = ${s.join(' ')} = <b>${pct(Math.min(1, reportProb(a, t, f, dep)), 1)}</b><br><span class="muted">여기에 그날의 우연 ×${RU.CHANCE_LOW}~${RU.CHANCE_HIGH}가 곱해집니다 (규칙 6)</span>`;
+}
+
+/* 기록 통계 (판별 · 네 판 평균) */
+const _st = {};
+function epStats(k, e) {
+  const key = k + '|' + e;
+  if (_st[key]) return _st[key];
+  const days = D.replays[k].episodes[e].days;
+  // fat · fatSum = 결정할 때(18:00, 알림 보내기 전)의 피로도 — AI가 보고 판단하는 값. 첫날은 0, 그 뒤는 전날 끝의 값
+  const s = { cum: [], cumRew: [], active: [], outs: [], counts: [], reports: [], fat: [], fatSum: [], outToday: [], outDay: new Array(N_PEOPLE).fill(null) };
+  let cum = 0, cr = 0, outs = 0;
+  days.forEach((d, di) => {
+    cum += d.profit; cr += d.reward;
+    const c = [0, 0, 0]; let rep = 0, fs = 0, n = 0, ot = 0;
+    for (let i = 0; i < d.action.length; i++) {
+      const a = d.action[i];
+      if (a >= 0) { c[a]++; rep += d.reported[i]; fs += di ? days[di - 1].fatigue[i] : 0; n++; }
+      if (d.opted_out[i]) { ot++; s.outDay[i] = di; }
+    }
+    outs += ot;
+    s.cum.push(cum); s.cumRew.push(cr); s.active.push(N_PEOPLE - outs); s.outs.push(outs);
+    s.counts.push(c); s.reports.push(rep); s.fat.push(n ? fs / n : null); s.fatSum.push(fs); s.outToday.push(ot);
+  });
+  return (_st[key] = s);
+}
+function avgStats(k) {
+  if (_st[k]) return _st[k];
+  const eps = D.replays[k].episodes.map((_, e) => epStats(k, e));
+  const avg = f => Array.from({ length: N_DAYS }, (_, d) => { const v = eps.map(s => f(s, d)).filter(x => x != null); return v.length ? mean(v) : null; });
+  const share = Array.from({ length: N_DAYS }, (_, d) => {
+    const t = [0, 0, 0]; eps.forEach(s => s.counts[d].forEach((c, j) => t[j] += c));
+    const sum = t[0] + t[1] + t[2]; return sum ? t.map(x => x / sum) : null;
+  });
+  const s = { eps, cum: avg((s, d) => s.cum[d]), active: avg((s, d) => s.active[d]), outs: avg((s, d) => s.outs[d]), fat: avg((s, d) => s.fat[d]), share,
+    outDays: eps.flatMap(s => s.outDay.filter(x => x != null).map(x => x + 1)).sort((a, b) => a - b) };
+  return (_st[k] = s);
+}
+
+/* ───────── 도움말 풍선 ───────── */
+const tip = $('#tip');
+function showTip(html, x, y) {
+  tip.innerHTML = html; tip.classList.add('on');
+  const r = tip.getBoundingClientRect();
+  let L = x + 14, T = y + 14;
+  if (L + r.width > innerWidth - 8) L = x - r.width - 14;
+  if (T + r.height > innerHeight - 8) T = y - r.height - 14;
+  tip.style.left = Math.max(8, L) + 'px'; tip.style.top = Math.max(8, T) + 'px';
+}
+function hideTip() { tip.classList.remove('on'); }
+
+/* ───────── 용어 ───────── */
+const GLOSSARY = {
+  '강화학습': '정답을 알려 주지 않고, 직접 해 보고 받은 점수(보상)를 보며 점수가 높아지는 쪽으로 행동을 고쳐 가는 학습 방법.',
+  '에이전트': '결정을 내리는 주인공. 여기서는 매일 18시에 유저마다 알림을 고르는 ‘CRM 매니저 AI’.',
+  '환경': 'AI의 행동에 반응하는 세계. 여기서는 가상 유저 100명과 반응 규칙으로 만든 컴퓨터 속 세계(env.py). 강의 자료에서는 ‘가상 매장’이라고 부름.',
+  '매장 정의': '강의 양식에 붙은 이름. 우리 프로젝트에서는 가게가 아니라 ‘론팟 앱이 유저에게 보내는 마케팅 알림’ 문제를 정의한 절(project_spec.md 1절).',
+  '상태': 'AI가 결정할 때 보는 숫자 목록. 여기서는 11개(고객 성향, 피로도, 의존도, 오늘 날씨, 남은 날 등). ‘관측’이라고도 함.',
+  '행동': 'AI가 고를 수 있는 선택지. 여기서는 안 보냄 · 일반 알림 · 300P 리워드 알림 3개.',
+  '보상': 'AI가 행동 하나마다 받는 점수. 여기서는 그날 순이익 ÷ 1,000 (1,000원 = 1점). 성공 척도와 달리 버전을 바꿔 가며 고칠 수 있음.',
+  '스텝': '결정 한 번. 여기서는 하루.',
+  '에피소드': '처음부터 끝까지 한 판. 여기서는 고객 한 명의 90일 (알림을 끄면 그날 끝).',
+  '정책': '상황(상태)을 보고 행동을 고르는 규칙. 학습의 결과물(results/models/v1/model.zip).',
+  'PPO': '정책을 조금씩, 한 번에 너무 크게 바뀌지 않게 고쳐 가는 강화학습 방법. 안정적이라 많이 씀.',
+  '학습 곡선': '연습할수록 점수가 어떻게 변했는지 그린 그래프. 오르다 평평해지면 그 점수로 배울 만큼 배운 것.',
+  '성공 척도': '프로젝트가 잘됐는지 판단하는 고정 기준. 90일 순이익(100명 합) 최대 + 수신거부 5명 이하.',
+  '수신거부': '유저가 앱 알림을 꺼 버리는 것. 다시는 알림을 못 보내므로 영구 이탈로 봄.',
+  '알림 피로도': '알림을 받을수록 쌓이는 귀찮음(0~100). 75 이상이면 매일 20% 확률로 알림을 끔.',
+  '보상 의존도': '리워드를 받을수록 쌓이는 “포인트 없으면 안 함” 습관(0~100). 60 이상이면 리워드 없는 날 제보가 반으로.',
+  '페르소나': '가상 인물 소개. 실제 사람이 아니라 통계에 맞게 만든 인물(NVIDIA Nemotron-Personas-Korea).',
+  '시드': '무작위 뽑기의 출발 번호. 같은 시드면 같은 결과가 나와서 규칙끼리 공정하게 비교할 수 있음.',
+  '가정': '실제 데이터가 없어서 합리적으로 정해 둔 숫자. 실제와 다를 수 있어 결과는 ‘설계가 타당한가’로만 해석.',
+  '시험 규칙': '학습 없이 사람이 정한 단순한 규칙(아무것도 안 함, 매일 리워드 등). 가상 환경 점검과 비교 기준으로 씀.',
+  '환경 타당성 검증': 'AI를 가르치기 전에 가상 환경이 상식대로 움직이는지 시험 규칙으로 확인하는 단계.',
+  '보상 해킹': 'AI가 점수 규칙의 허점을 찾아, 우리가 원하지 않는 방식으로 점수를 올리는 것. 여기서는 ‘막판 몰아주기’.',
+  '신경망': '숫자를 넣으면 숫자를 내놓는 계산 덩어리. 학습으로 안의 숫자가 조정됨. 여기서는 상태 11개 → 행동 3개의 확률.',
+};
+$('#glossList').innerHTML = Object.entries(GLOSSARY).map(([k, v]) => `<div><b>${esc(k)}</b>${esc(v)}</div>`).join('');
+const gloss = $('#gloss');
+$('#glossBtn').onclick = () => { gloss.inert = false; gloss.classList.add('open'); $('#glossClose').focus(); };
+$('#glossClose').onclick = () => { $('#glossBtn').focus(); gloss.classList.remove('open'); gloss.inert = true; };
+document.addEventListener('mouseover', e => {
+  const t = e.target.closest('.term'); if (!t) return;
+  const g = GLOSSARY[t.dataset.t]; if (!g) return;
+  const r = t.getBoundingClientRect(); showTip(`<div class="tt">${esc(t.dataset.t)}</div>${esc(g)}`, r.left, r.bottom);
+});
+document.addEventListener('mouseout', e => { if (e.target.closest('.term')) hideTip(); });
+
+/* ───────── 그래프 ───────── */
+function niceStep(range, n) {
+  const raw = range / n, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p;
+  return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p;
+}
+const DAY_TICKS = [1, 15, 30, 45, 60, 75, 90];
+function lineChart(host, o) {
+  const W = Math.max(260, host.clientWidth | 0), H = o.height || 230;
+  const m = { l: o.ml ?? 58, r: 14, t: 12, b: 26 };
+  const n = Math.max(...o.series.map(s => s.values.length));
+  const xs = o.xs || Array.from({ length: n }, (_, i) => i + 1);
+  const all = o.series.flatMap(s => s.values).filter(v => v != null);
+  let y0 = o.yMin ?? Math.min(0, ...all), y1 = o.yMax ?? Math.max(...all, ...(o.hlines || []).map(h => h.y));
+  const step = o.yStep || niceStep((y1 - y0) || 1, 4);
+  if (o.yMax == null) y1 = Math.ceil(y1 / step) * step;
+  if (o.yMin == null) y0 = Math.floor(y0 / step) * step;
+  const X = v => m.l + (v - xs[0]) / ((xs[xs.length - 1] - xs[0]) || 1) * (W - m.l - m.r);
+  const Y = v => H - m.b - (v - y0) / ((y1 - y0) || 1) * (H - m.t - m.b);
+  const yFmt = o.yFmt || (v => num(v));
+  let g = '';
+  (o.bands || []).forEach(b => g += `<rect x="${X(b.from)}" y="${m.t}" width="${Math.max(0, X(b.to) - X(b.from))}" height="${H - m.t - m.b}" fill="${b.color}"/>`);
+  for (let v = y0; v <= y1 + 1e-9; v += step) g += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}" class="grid"/><text x="${m.l - 6}" y="${Y(v) + 4}" text-anchor="end">${yFmt(v)}</text>`;
+  (o.xTicks || DAY_TICKS.filter(t => t <= n)).forEach(v => g += `<text x="${X(v)}" y="${H - 7}" text-anchor="middle">${(o.xFmt || (x => x + '일'))(v)}</text>`);
+  (o.hlines || []).forEach(h => {
+    g += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(h.y)}" y2="${Y(h.y)}" stroke="${h.color}" stroke-dasharray="5 4" stroke-width="1.3"/>`;
+    if (h.at === 'left') g += `<text x="${m.l + 6}" y="${Y(h.y) - 5}" text-anchor="start" style="fill:${h.color};font-weight:700">${esc(h.label)}</text>`;
+  });
+  o.series.forEach(s => {
+    let d = '', pen = false;
+    s.values.forEach((v, i) => { if (v == null) { pen = false; return; } d += (pen ? 'L' : 'M') + X(xs[i]).toFixed(1) + ',' + Y(v).toFixed(1); pen = true; });
+    g += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="${s.width || 2.2}" ${s.dash ? `stroke-dasharray="${s.dash}"` : ''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  });
+  if (o.cursor != null) {
+    const cx = X(xs[o.cursor]);
+    g += `<line x1="${cx}" x2="${cx}" y1="${m.t}" y2="${H - m.b}" class="cursor"/>`;
+    o.series.forEach(s => { const v = s.values[o.cursor]; if (v != null) g += `<circle cx="${cx}" cy="${Y(v)}" r="4.5" fill="${s.color}" stroke="#fff" stroke-width="2"/>`; });
+  }
+  (o.notes || []).forEach(nt => g += `<circle cx="${X(nt.x)}" cy="${Y(nt.y)}" r="4" fill="${nt.color}"/><text x="${X(nt.x) + (nt.dx || 0)}" y="${Y(nt.y) + (nt.dy || -10)}" text-anchor="${nt.anchor || 'middle'}" style="fill:${nt.color};font-weight:700;font-size:12px">${esc(nt.text)}</text>`);
+  g += `<line class="hover" x1="0" x2="0" y1="${m.t}" y2="${H - m.b}" style="display:none"/>`;
+  g += `<rect class="hit" x="${m.l}" y="${m.t}" width="${W - m.l - m.r}" height="${H - m.t - m.b}" fill="transparent" style="cursor:${o.onClick ? 'pointer' : 'crosshair'}"/>`;
+  const legend = o.legend === false ? '' : `<div class="legend">${o.series.map(s => `<span><i class="line" style="background:${s.color}"></i>${esc(s.name)}</span>`).join('')}${(o.hlines || []).map(h => `<span><i class="line" style="background:${h.color}"></i>${esc(h.label)}</span>`).join('')}</div>`;
+  host.innerHTML = legend + `<svg class="chart" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${g}</svg>`;
+  const svg = host.querySelector('svg'), hit = svg.querySelector('.hit'), hl = svg.querySelector('.hover');
+  const nearest = e => { const px = e.clientX - svg.getBoundingClientRect().left; let b = 0, bd = Infinity; xs.forEach((x, i) => { const d = Math.abs(X(x) - px); if (d < bd) { bd = d; b = i; } }); return b; };
+  hit.addEventListener('mousemove', e => {
+    const i = nearest(e);
+    hl.setAttribute('x1', X(xs[i])); hl.setAttribute('x2', X(xs[i])); hl.style.display = '';
+    const rows = o.series.map(s => s.values[i] == null ? '' : `<div><i class="sw" style="background:${s.color}"></i>${esc(s.name)} <b>${(o.tipFmt || yFmt)(s.values[i])}</b></div>`).join('');
+    showTip(`<div class="tt">${(o.tipX || (x => x + '일째'))(xs[i], i)}</div>${rows}`, e.clientX, e.clientY);
+  });
+  hit.addEventListener('mouseleave', () => { hl.style.display = 'none'; hideTip(); });
+  if (o.onClick) hit.addEventListener('click', e => o.onClick(nearest(e)));
+}
+function stackChart(host, o) {
+  const W = Math.max(260, host.clientWidth | 0), H = o.height || 170, m = { l: 58, r: 14, t: 8, b: 24 };
+  const n = o.data.length, bw = (W - m.l - m.r) / n, ph = H - m.t - m.b;
+  let g = '';
+  [0, 0.5, 1].forEach(v => g += `<line x1="${m.l}" x2="${W - m.r}" y1="${m.t + ph * (1 - v)}" y2="${m.t + ph * (1 - v)}" class="grid"/><text x="${m.l - 6}" y="${m.t + ph * (1 - v) + 4}" text-anchor="end">${v * 100}%</text>`);
+  o.data.forEach((sh, i) => {
+    if (!sh) return;
+    let y = m.t + ph;
+    sh.forEach((v, k) => { const h = v * ph; y -= h; if (h > 0.2) g += `<rect x="${(m.l + i * bw + 0.5).toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(0.5, bw - 1).toFixed(1)}" height="${h.toFixed(1)}" fill="${o.colors[k]}"/>`; });
+  });
+  DAY_TICKS.filter(t => t <= n).forEach(t => g += `<text x="${m.l + (t - 0.5) * bw}" y="${H - 6}" text-anchor="middle">${t}일</text>`);
+  g += `<rect class="hit" x="${m.l}" y="${m.t}" width="${W - m.l - m.r}" height="${ph}" fill="transparent"/>`;
+  host.innerHTML = (o.legend ? `<div class="legend">${o.legend.map((l, k) => `<span><i style="background:${o.colors[k]}"></i>${esc(l)}</span>`).join('')}</div>` : '') + `<svg class="chart" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${g}</svg>`;
+  const svg = host.querySelector('svg');
+  svg.querySelector('.hit').addEventListener('mousemove', e => {
+    const i = clamp(Math.floor((e.clientX - svg.getBoundingClientRect().left - m.l) / bw), 0, n - 1), sh = o.data[i];
+    if (!sh) return hideTip();
+    showTip(`<div class="tt">${i + 1}일째</div>` + sh.map((v, k) => `<div><i class="sw" style="background:${o.colors[k]}"></i>${esc(o.legend[k])} <b>${pct(v)}</b></div>`).join(''), e.clientX, e.clientY);
+  });
+  svg.querySelector('.hit').addEventListener('mouseleave', hideTip);
+}
+
+/* ───────── 단계 이동 ───────── */
+const STEPS = $$('.step');
+const nav = $('#nav');
+let cur = -1;
+const seen = new Set();
+nav.innerHTML = STEPS.map((s, i) => `<button class="navbtn" data-go="${i}"><span class="n">${i}</span><span><span class="t">${esc(s.dataset.title)}</span><span class="s">${esc(s.dataset.sub)}</span></span></button>`).join('');
+STEPS.forEach((s, i) => {
+  const prev = STEPS[i - 1], next = STEPS[i + 1];
+  s.insertAdjacentHTML('beforeend', `<div class="foot">${prev ? `<button class="btn" data-go="${i - 1}">← ${esc(prev.dataset.title)}</button>` : '<span></span>'}${next ? `<button class="btn primary" data-go="${i + 1}">다음: ${esc(next.dataset.title)} →</button>` : '<button class="btn" data-go="0">처음으로 ↺</button>'}</div>`);
+});
+const INIT = [], DRAW = [];
+const inited = new Set();
+function go(i) {
+  i = clamp(i | 0, 0, STEPS.length - 1);
+  if (i === cur) return;
+  stopAll();
+  cur = i; seen.add(i);
+  STEPS.forEach((s, j) => s.classList.toggle('active', j === i));
+  $$('.navbtn').forEach((b, j) => { b.classList.toggle('active', j === i); b.classList.toggle('seen', seen.has(j)); });
+  if (!inited.has(i)) { inited.add(i); INIT[i] && INIT[i](); }
+  DRAW[i] && DRAW[i]();
+  if (i === 0) startLoop();
+  window.scrollTo({ top: 0 });
+  try { history.replaceState(null, '', '#' + i); } catch (e) { /* 파일로 열 때 막히면 무시 */ }
+}
+document.addEventListener('click', e => { const g = e.target.closest('[data-go]'); if (g) go(+g.dataset.go); });
+window.addEventListener('hashchange', () => go(+location.hash.slice(1) || 0));
+let resizeT;
+window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => DRAW[cur] && DRAW[cur](), 150); });
+function stopAll() { stopLoop(); simStop(); rpPause(); scStop(); hideTip(); }
+function seg(host, items, on, onPick) {
+  host.innerHTML = items.map(([v, label]) => `<button data-v="${esc(v)}" class="${v === on ? 'on' : ''}">${label}</button>`).join('');
+  host.onclick = e => { const b = e.target.closest('button'); if (!b) return; $$('button', host).forEach(x => x.classList.toggle('on', x === b)); onPick(b.dataset.v); };
+}
+$('#verChip').textContent = `보상 ${P.reward_version} · 2회차 결과`;
+
+/* ───────── 0. 한눈에 보기 ───────── */
+const LOOP = [
+  { k: '① 상태 보기', who: 'ai', v: '고객 성향 · 피로도 · 오늘 날씨 …', d: 'AI가 결정 전에 보는 숫자 11개입니다. 이 고객이 제보를 잘하는 사람인지, 지금 얼마나 지쳤는지, 오늘 비가 오는지, 판이 며칠 남았는지 등.' },
+  { k: '② 행동 고르기', who: 'ai', v: '안 보냄 · 일반 · 리워드', d: '셋 중 하나를 고릅니다. 처음엔 거의 무작위로 고르다가, 연습할수록 점수가 잘 나온 쪽을 더 자주 고릅니다.' },
+  { k: '③ 가상 유저의 반응', who: 'env', v: '제보했나? 피로도 +15', d: '가상 고객이 반응 규칙대로 반응합니다. 제보할지는 확률로 정해지고, 알림을 받으면 피로도가 쌓이고, 너무 지치면 알림을 꺼 버립니다.' },
+  { k: '④ 점수(보상) 받기', who: 'env', v: `그날 순이익 ÷ ${num(P.reward_scale)}`, d: `그날 번 돈을 점수로 돌려줍니다. 제보 1건 = ${num(MONEY.value_per_report / P.reward_scale, 1)}점, 리워드로 받은 제보 = ${num((MONEY.value_per_report - MONEY.reward_cost) / P.reward_scale, 1)}점, 제보 없음 = 0점. AI는 90일 동안의 점수 합이 커지도록 ②를 고쳐 갑니다.` },
+];
+let loopIdx = 0, loopAuto = true, loopTimer = null;
+function setLoop(i) { loopIdx = i; $$('#loop .lnode').forEach((b, j) => b.classList.toggle('on', j === i)); $('#loopText').innerHTML = `<b>${LOOP[i].k}</b> — ${LOOP[i].d}`; }
+function startLoop() { stopLoop(); loopTimer = setInterval(() => { if (loopAuto) setLoop((loopIdx + 1) % LOOP.length); }, UI.loopMs); }
+function stopLoop() { clearInterval(loopTimer); loopTimer = null; }
+INIT[0] = () => {
+  $('#loop').innerHTML = LOOP.map((n, i) => `${i ? '<div class="larrow">→</div>' : ''}<button class="lnode" data-i="${i}"><span class="lwho ${n.who}">${n.who === 'ai' ? '🤖 AI가 하는 일' : '👥 가상 유저가 하는 일'}</span><span class="lk">${n.k}</span><span class="lv">${esc(n.v)}</span></button>`).join('');
+  $('#loop').onclick = e => { const b = e.target.closest('.lnode'); if (!b) return; loopAuto = false; setLoop(+b.dataset.i); };
+  setLoop(0);
+  const L = P.state_labels;
+  const kv = [
+    ['프로젝트', `${P.store}`, '코인세탁방 기기 현황 공유 앱'],
+    ['결정', `매일 ${P.push_hour}:00, 유저마다 보낼 알림 1개`],
+    ['목적', `${P.episode_days}일 순이익 최대`, `수신거부 ${MONEY.max_opt_outs}명 이하`],
+    ['에이전트(Agent)', 'CRM 매니저 AI'],
+    ['상태(State)', `${L.slice(0, 5).join(' · ')} 외 ${L.length - 5}개`],
+    ['행동(Action)', '안 보냄 · 일반 알림 · 300P 리워드'],
+    ['보상(Reward)', `${P.reward_version} : 그날 순이익 ÷ ${num(P.reward_scale)}`],
+    ['한 걸음 · 한 판', `하루 · 고객 한 명의 ${P.episode_days}일`],
+  ];
+  $('#introCard').innerHTML = kv.map(([k, v, s]) => `<dt>${esc(k)}</dt><dd>${esc(v)}${s ? ` <small>· ${esc(s)}</small>` : ''}</dd>`).join('');
+  const ppo = PPO_KEY && D.replays[PPO_KEY].summary, cv = CURVE_KEY && D.curves[CURVE_KEY];
+  const passed = D.sanity.filter(c => c.passed).length;
+  const stat = {
+    1: '행동 3개 · 성공 기준 2개', 2: `${N_PEOPLE}명 · 성향 3가지`, 3: '규칙 6줄 · 직접 보내 보기',
+    4: D.sanity.length ? `시험 규칙 4개 · 기준 ${passed}/${D.sanity.length} 통과` : '시험 규칙 4개',
+    5: cv ? `${num(cv.timesteps / 10000)}만 번 결정 · ${num(cv.first_return, 1)}→${num(cv.last_return, 1)}점` : '학습 전',
+    6: ppo ? `AI ${man(ppo.profit)} · 알림 끔 ${num(ppo.opt_outs)}명` : '시험 규칙 재생',
+    7: '‘막판 몰아주기’ 발견 → 3회차', 8: '폴더 안 파일이 하는 일', 9: '움직이는 장면 · 전략·계절·상황 고르기',
+  };
+  $('#tour').innerHTML = STEPS.slice(1).map((s, j) => `<button class="tcard" data-go="${j + 1}"><span class="tn">${j + 1}단계</span><b>${esc(s.dataset.title)}</b><span>${esc(s.dataset.sub)}</span><em>${esc(stat[j + 1] || '')}</em></button>`).join('');
+};
+
+/* ───────── 1. 무엇을 정하나 ───────── */
+const DAY_TYPES = [
+  ['normal', '평범한 평일', { up: false, cold: false, monthEnd: false }],
+  ['best', '비 오는 주말 + 월말', { up: true, cold: false, monthEnd: true, rain: true, weekend: true }],
+  ['cold', '한파 평일', { up: false, cold: true, monthEnd: false }],
+];
+INIT[1] = () => {
+  const gp = TG('report_propensity') * RU.GENERAL_PUSH_MULTIPLIER, rp = RU.REWARD_PROB_BASE + RU.REWARD_PROB_SLOPE * TG('reward_sensitivity');
+  const depAdd = RU.DEPENDENCY_PER_REWARD * (0.5 + TG('reward_sensitivity'));
+  const cards = [
+    { a: 0, t: '안 보냄', sub: '행동 0', noti: '', facts: [['제보 확률 (평균)', pct(TG('report_propensity'))], ['비용', '0원'], ['피로도', `−${RU.FATIGUE_RECOVERY} (회복)`], ['의존도', `−${RU.DEPENDENCY_RECOVERY} (회복)`]] },
+    { a: 1, t: '일반 알림', sub: '행동 1', noti: '근처 세탁방에 빈 기기 있나요? 지금 현황을 공유해 주세요 🧺', facts: [['제보 확률 (평균)', `${pct(TG('report_propensity'))} → ${pct(gp)}`], ['비용', '0원'], ['피로도', `+${RU.FATIGUE_PER_PUSH}`], ['의존도', `−${RU.DEPENDENCY_RECOVERY} (회복)`]] },
+    { a: 2, t: '300P 리워드 알림', sub: '행동 2', noti: '🎁 지금 기기 현황을 제보하면 300P 적립!', facts: [['제보 확률 (평균)', pct(rp)], ['비용', `제보하면 ${won(MONEY.reward_cost)}`], ['피로도', `+${RU.FATIGUE_PER_PUSH}`], ['의존도', `+${num(depAdd)}`]] },
+  ];
+  $('#actionCards').innerHTML = cards.map(c => `<div class="act-card a${c.a}"><h3>${c.t}<small>${c.sub}</small></h3>
+    <div class="phone">${c.noti ? `<div class="noti"><div class="app"><b>론팟</b><span>오후 6:00</span></div>${esc(c.noti)}</div>` : '<div class="noti empty">(오늘은 알림 없음)</div>'}</div>
+    <ul class="facts">${c.facts.map(([k, v]) => `<li><span class="muted">${k}</span><b>${v}</b></li>`).join('')}</ul></div>`).join('');
+  $('#gains').innerHTML = `<div><span class="ic">📍</span><span><b>제보 1건 = ${won(MONEY.value_per_report)}의 가치</b> <span class="muted">(가정)</span><br><span class="muted small">유저가 “○○세탁방 건조기 2대 비어 있음”을 알려 주면, 다른 유저의 헛걸음을 막아 앱 이용으로 이어짐</span></span></div>`;
+  $('#losses').innerHTML = `<div><span class="ic">🎁</span><span><b>리워드 비용 ${won(MONEY.reward_cost)}</b> <span class="muted">(제보 가치의 20%, 가정)</span><br><span class="muted small">리워드 알림으로 제보하면 지급 → 그 제보는 ${won(MONEY.value_per_report - MONEY.reward_cost)}만 남음</span></span></div>
+    <div><span class="ic">🔕</span><span><b>알림 피로 → 수신거부</b><br><span class="muted small">알림을 자주 받으면 지쳐서 알림을 끔. 그 유저에게서는 더 이상 제보를 받을 수 없음</span></span></div>`;
+  const evDraw = key => {
+    const f = DAY_TYPES.find(d => d[0] === key)[2];
+    const ev = [0, 1, 2].map(a => Math.min(1, reportProb(a, AVG_TRAITS, f, 0)) * (MONEY.value_per_report - (a === 2 ? MONEY.reward_cost : 0)));
+    const mx = Math.max(...ev);
+    $('#evBars').innerHTML = ev.map((v, a) => `<div class="ev-row"><span>${ACT[a]}</span><div class="ev-track"><div class="ev-bar" style="width:${v / mx * 100}%;background:${COLORS.action[a]}"></div></div><span class="ev-val">${won(v)}</span></div>`).join('');
+    const mxr = D.replays.max_reward?.summary, nor = D.replays.none?.summary;
+    $('#evNote').innerHTML = `오늘만 보면 <b>리워드 알림이 늘 가장 이득</b>입니다. 그럼 매일 모두에게 리워드를 보내면? ` +
+      (mxr && nor ? `4단계 점검 결과 <b>90일 순이익 ${man(mxr.profit)}</b>, 100명 중 <b>${num(mxr.opt_outs)}명이 알림을 껐습니다</b>. 아무것도 안 보낸 경우(${man(nor.profit)})보다도 못합니다.` : '피로가 쌓여 모두 알림을 끕니다.') +
+      ` <a href="#3" data-go="3">3단계에서 직접 해 보기 →</a>`;
+  };
+  seg($('#dayType'), DAY_TYPES.map(d => [d[0], d[1]]), 'normal', evDraw);
+  evDraw('normal');
+  $('#goal').innerHTML = `<div><span class="muted small">조건 ① 최대로</span><b>${P.episode_days}일 누적 순이익</b><span class="small muted">고객 ${N_PEOPLE}명 합</span></div>
+    <div><span class="muted small">조건 ② 지키기</span><b>수신거부 ${MONEY.max_opt_outs}명 이하</b><span class="small muted">알림을 끈 유저 수</span></div>`;
+  $('#formula').innerHTML = `<b>순이익</b> = 제보 수 × ${won(MONEY.value_per_report)} − 리워드 알림으로 생긴 제보 수 × ${won(MONEY.reward_cost)}<br><span class="muted small">넣지 않은 것: 서버·인건비(어떤 알림을 보내든 같음), 푸시 발송비(거의 0원)</span>`;
+};
+
+/* ───────── 2. 가상 고객 ───────── */
+const TRAIT_INFO = {
+  report_propensity: { name: '기본 제보 성향', fmt: v => pct(v), desc: '알림이 없어도 스스로 기기 현황을 제보할 확률', rule: `규칙 1 — 일반 알림을 받으면 ×${RU.GENERAL_PUSH_MULTIPLIER}`,
+    scale: [[0.03, '세탁방을 거의 안 가거나 앱을 잘 안 엶'], [0.08, '보통 (주 1~2회 코인세탁방)'], [0.14, '운동·현장일로 빨래가 많고 정보 공유를 좋아함'], [0.20, '매일 들르는 열성 유저']] },
+  reward_sensitivity: { name: '리워드 민감도', fmt: v => v.toFixed(2), desc: '포인트(리워드)에 얼마나 끌리는지 (0~1)', rule: `규칙 2 — 리워드 알림 제보 확률 ${pct(RU.REWARD_PROB_BASE)}~${pct(RU.REWARD_PROB_BASE + RU.REWARD_PROB_SLOPE)} · 규칙 4 — 의존도가 쌓이는 속도`,
+    scale: [[0.1, '포인트에 무관심, 시간·편의 우선'], [0.5, '보통'], [0.9, '앱테크·절약형, 포인트를 꼼꼼히 모음']] },
+  fatigue_sensitivity: { name: '알림 피로 민감도', fmt: v => '×' + v.toFixed(2), desc: '알림 한 번에 얼마나 귀찮아하는지 (배수)', rule: `규칙 3 — 알림 1번에 피로도 +${RU.FATIGUE_PER_PUSH} × 이 값`,
+    scale: [[0.5, '알림에 무덤덤, 앱을 많이 씀'], [1.0, '보통'], [1.5, '광고 알림을 싫어하고 바쁨']] },
+};
+const PV = { trait: 'report_propensity', sort: 'id', sel: PEOPLE[0].id };
+function tealScale(t) { const a = [236, 246, 243], b = [15, 94, 87]; return `rgb(${a.map((x, i) => Math.round(x + (b[i] - x) * t)).join(',')})`; }
+function traitT(k, v) { const r = P.traits[k]; return clamp((v - r.min) / (r.max - r.min), 0, 1); }
+function nearestScale(k, v) { return TRAIT_INFO[k].scale.reduce((b, s) => Math.abs(s[0] - v) < Math.abs(b[0] - v) ? s : b); }
+INIT[2] = () => {
+  const alone = PEOPLE.filter(p => p.family_type === '혼자 거주').length;
+  $('#funnel').innerHTML = [
+    ['가상 인물 데이터', 'NVIDIA Nemotron-Personas-Korea · 실제 사람 아님'],
+    ['조건으로 거르기', '서울 마포구 · 20~49세 · 자취 가구 · 직장인 또는 20대 무직(자취생으로 봄, 가정)'],
+    [`후보 ${num(UI.candidates)}명`, '조건에 맞는 사람 전부'],
+    [`무작위 ${N_PEOPLE}명`, `시드 ${UI.personaSeed} · 평균 ${num(mean(PEOPLE.map(p => p.age)), 1)}세 · 혼자 거주 ${alone}명`],
+    ['성향 3칸 추정', '소개글·식생활·운동·취미 글로 AI가 추정 → 근거·확신도 기록 → check.py 통과'],
+  ].map(([b, s], i) => `${i ? '<div class="farrow">→</div>' : ''}<div class="fstep"><b>${esc(b)}</b>${esc(s)}</div>`).join('');
+  seg($('#traitSeg'), Object.keys(TRAIT_INFO).map(k => [k, TRAIT_INFO[k].name]), PV.trait, v => { PV.trait = v; drawPeople(); });
+  seg($('#sortSeg'), [['id', '번호순'], ['val', '값 큰 순']], PV.sort, v => { PV.sort = v; drawPeople(); });
+  $('#people').addEventListener('click', e => { const b = e.target.closest('.pdot'); if (b) { PV.sel = +b.dataset.id; drawPeople(); } });
+  $('#people').addEventListener('mouseover', e => {
+    const b = e.target.closest('.pdot'); if (!b) return;
+    const p = PEOPLE.find(x => x.id === +b.dataset.id), r = b.getBoundingClientRect();
+    showTip(`<div class="tt">${esc(nameOf(p))} · ${p.age}세</div>${esc(p.occupation)}<br>${esc(TRAIT_INFO[PV.trait].name)} <b>${TRAIT_INFO[PV.trait].fmt(p[PV.trait])}</b>`, r.right, r.top);
+  });
+  $('#people').addEventListener('mouseleave', hideTip);
+};
+function drawPeople() {
+  const k = PV.trait, info = TRAIT_INFO[k];
+  $('#traitDesc').innerHTML = `<b>${info.name}</b> — ${esc(info.desc)}<br><span class="muted small">쓰이는 곳: ${esc(info.rule)}</span>`;
+  const list = [...PEOPLE].sort((a, b) => PV.sort === 'id' ? a.id - b.id : b[k] - a[k] || a.id - b.id);
+  $('#people').innerHTML = list.map(p => { const t = traitT(k, p[k]); return `<button class="pdot ${p.id === PV.sel ? 'sel' : ''}" data-id="${p.id}" style="background:${tealScale(t)};color:${t > 0.5 ? '#fff' : '#1c2526'}" aria-label="${esc(nameOf(p))}">${p.id}</button>`; }).join('');
+  const r = P.traits[k];
+  $('#traitLegend').innerHTML = `연함 ${info.fmt(r.min)} ↔ 진함 ${info.fmt(r.max)}`;
+  // 분포
+  const host = $('#hist'), W = Math.max(260, host.clientWidth | 0), H = 120, m = { l: 8, r: 8, t: 16, b: 22 }, bins = 10;
+  const cnt = new Array(bins).fill(0);
+  PEOPLE.forEach(p => cnt[Math.min(bins - 1, Math.floor(traitT(k, p[k]) * bins))]++);
+  const mx = Math.max(...cnt), bw = (W - m.l - m.r) / bins, X = t => m.l + t * (W - m.l - m.r), ph = H - m.t - m.b;
+  const avg = mean(PEOPLE.map(p => p[k]));
+  let g = cnt.map((c, i) => `<rect x="${m.l + i * bw + 1}" y="${m.t + ph - c / mx * ph}" width="${bw - 2}" height="${c / mx * ph}" rx="3" fill="${tealScale((i + 0.5) / bins)}"><title>${info.fmt(r.min + (r.max - r.min) * i / bins)}~${info.fmt(r.min + (r.max - r.min) * (i + 1) / bins)}: ${c}명</title></rect><text x="${m.l + (i + 0.5) * bw}" y="${m.t + ph - c / mx * ph - 3}" text-anchor="middle">${c || ''}</text>`).join('');
+  g += `<line x1="${X(traitT(k, r.target))}" x2="${X(traitT(k, r.target))}" y1="${m.t - 6}" y2="${H - m.b}" stroke="${COLORS.wood}" stroke-width="2" stroke-dasharray="4 3"/>`;
+  g += `<text x="${m.l}" y="${H - 6}">${info.fmt(r.min)}</text><text x="${W - m.r}" y="${H - 6}" text-anchor="end">${info.fmt(r.max)}</text><text x="${X(traitT(k, r.target))}" y="${H - 6}" text-anchor="middle" style="fill:${COLORS.wood};font-weight:700">목표 평균 ${info.fmt(r.target)}</text>`;
+  host.innerHTML = `<div class="small muted">100명의 분포 (막대 = 사람 수)</div><svg class="chart" width="${W}" height="${H}">${g}</svg>`;
+  $('#meanCheck').innerHTML = Object.keys(TRAIT_INFO).map(t => {
+    const a = mean(PEOPLE.map(p => p[t])), tg = P.traits[t].target, ok = Math.abs(a - tg) <= tg * P.trait_tolerance;
+    return `<div>${ok ? '✅' : '⚠️'} ${TRAIT_INFO[t].name} 평균 <b>${t === 'report_propensity' ? pct(a, 1) : a.toFixed(2)}</b> <span class="muted">(목표 ${TRAIT_INFO[t].fmt(tg)} ±${pct(P.trait_tolerance)} 안이면 통과)</span></div>`;
+  }).join('');
+  // 한 사람
+  const p = PEOPLE.find(x => x.id === PV.sel);
+  const ev = String(p.evidence || '').split(' · ').filter(Boolean);
+  const conf = { '높음': 'good', '보통': 'teal', '낮음': 'bad' }[p.confidence] || 'teal';
+  $('#person').innerHTML = `<div class="row-between"><h3>${esc(nameOf(p))} <span class="muted small">#${p.id}</span></h3><span class="badge ${conf}">확신도 ${esc(p.confidence)}</span></div>
+    <div class="meta">${p.age}세 · ${esc(p.sex)} · ${esc(p.occupation)}<br>${esc(p.family_type)} · ${esc(p.housing_type)}</div>
+    <p class="sum">${esc(p.summary)}</p>
+    ${Object.keys(TRAIT_INFO).map(t => { const v = p[t], r = P.traits[t]; return `<div class="tb"><div class="tb-top"><span>${TRAIT_INFO[t].name}</span><b>${TRAIT_INFO[t].fmt(v)}</b></div>
+      <div class="tb-track"><i class="tb-tgt" style="left:${traitT(t, r.target) * 100}%" title="목표 평균"></i><i class="tb-val" style="left:${traitT(t, v) * 100}%"></i></div>
+      <div class="tb-cap">가까운 기준: ${esc(nearestScale(t, v)[1])}</div></div>`; }).join('')}
+    <div class="small"><b>근거</b> <span class="muted">(소개글에서 인용)</span></div><ul class="ev-list">${ev.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+    <p class="small muted" style="margin:8px 0 0">갈색 세로선 = 목표 평균. 이 사람은 3단계 ‘직접 해 보기’에서 골라 볼 수 있습니다.</p>`;
+}
+DRAW[2] = drawPeople;
+
+/* ───────── 3. 반응 규칙 · 직접 해 보기 ───────── */
+const RULE_CARDS = () => [
+  { n: 1, g: '즉시 효과', c: '#3b82f6', t: '일반 알림', cause: '일반 알림을 보냄', eff: '오늘 제보 확률 ↑', no: `평균 ${pct(TG('report_propensity'))} → ${pct(TG('report_propensity') * RU.GENERAL_PUSH_MULTIPLIER)} (×${RU.GENERAL_PUSH_MULTIPLIER})` },
+  { n: 2, g: '즉시 효과', c: '#3b82f6', t: '리워드 알림', cause: '300P 리워드 알림을 보냄', eff: `제보 확률 ↑, 제보하면 ${won(MONEY.reward_cost)} 비용`, no: `평균 ${pct(RU.REWARD_PROB_BASE + RU.REWARD_PROB_SLOPE * TG('reward_sensitivity'))} (민감도에 따라 ${pct(RU.REWARD_PROB_BASE)}~${pct(RU.REWARD_PROB_BASE + RU.REWARD_PROB_SLOPE)})` },
+  { n: 3, g: '누적 효과', c: '#dc2626', t: '알림 피로도 (0~100)', cause: '알림을 1번 보냄 (종류 무관)', eff: `피로가 쌓이고, ${RU.FATIGUE_DANGER} 이상이면 알림을 끌 위험`, no: `+${RU.FATIGUE_PER_PUSH} × 피로 민감도, 쉬는 날 −${RU.FATIGUE_RECOVERY}, ${RU.FATIGUE_DANGER}↑이면 매일 ${pct(RU.OPT_OUT_PROB)} 확률로 수신거부` },
+  { n: 4, g: '누적 효과', c: '#dc2626', t: '보상 의존도 (0~100)', cause: '리워드 알림을 1번 보냄', eff: '“포인트 없으면 안 함” 습관', no: `+${RU.DEPENDENCY_PER_REWARD} × (0.5 + 리워드 민감도), 없는 날 −${RU.DEPENDENCY_RECOVERY}, ${RU.DEPENDENCY_DANGER}↑이면 리워드 없는 날 제보 ×${RU.DEPENDENCY_PENALTY}` },
+  { n: 5, g: '확률 요인', c: '#8b5cf6', t: '날씨 · 달력', cause: `비(${RU.RAIN_MM}mm↑)·공휴일·주말 / 한파(최저 ${RU.COLD_TEMP_MIN}℃↓) / 월말(${P.month_end_start_day}일~)`, eff: '빨래 수요↑ / 외출 기피 / 포인트가 더 아쉬움', no: `제보 ×${RU.DEMAND_UP} (겹쳐도 1번) / ×${RU.COLD_MULTIPLIER} / 리워드 제보만 ×${RU.MONTH_END_REWARD_MULTIPLIER}` },
+  { n: 6, g: '확률 요인', c: '#8b5cf6', t: '우연', cause: '같은 사람도 날마다 사정이 다름', eff: '그날 제보 확률이 조금씩 흔들림', no: `매일 유저마다 ×${RU.CHANCE_LOW}~${RU.CHANCE_HIGH} 무작위` },
+];
+const STRATS = [
+  ['daily_reward', '매일 리워드', (i, d) => 2],
+  ['every4', '4일에 1번 리워드', (i, d) => i % 4 === 0 ? 2 : 0],
+  ['current', '현재 운영 방식 (토요일 일반 + 25일 리워드)', (i, d) => +d.date.slice(8, 10) === P.current_rule.reward_day ? 2 : d.weekday === P.current_rule.general_weekday ? 1 : 0],
+  ['daily_general', '매일 일반 알림', () => 1],
+  ['none', '아무것도 안 보냄', () => 0],
+];
+const SIM = { cust: 'avg', ep: 0, seed: 7, day: 0, fat: 0, dep: 0, out: false, hist: [], focus: 2, timer: null, rnd: null };
+function mulberry32(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function simTraits() { return SIM.cust === 'avg' ? AVG_TRAITS : PEOPLE.find(p => p.id === +SIM.cust); }
+function simDays() { return CAL[SIM.ep]; }
+function simReset(newSeed) {
+  simStop();
+  if (newSeed) SIM.seed = (Math.random() * 1e9) | 0;
+  const r = mulberry32(SIM.seed);
+  SIM.rnd = Array.from({ length: N_DAYS }, () => [r(), r(), r()]);
+  Object.assign(SIM, { day: 0, fat: 0, dep: 0, out: false, hist: [] });
+  drawSim();
+}
+function simStep(a) {
+  const days = simDays();
+  if (SIM.out || SIM.day >= days.length) return false;
+  const day = days[SIM.day], f = flags(day), t = simTraits(), [u0, u1, u2] = SIM.rnd[SIM.day];
+  const base = reportProb(a, t, f, SIM.dep), chance = RU.CHANCE_LOW + (RU.CHANCE_HIGH - RU.CHANCE_LOW) * u0;
+  const p = clamp(base * chance, 0, 1), rep = u1 < p;
+  const profit = rep ? MONEY.value_per_report - (a === 2 ? MONEY.reward_cost : 0) : 0;
+  const f0 = SIM.fat, d0 = SIM.dep;
+  SIM.fat = clamp(SIM.fat + (a > 0 ? RU.FATIGUE_PER_PUSH * t.fatigue_sensitivity : -RU.FATIGUE_RECOVERY), 0, RU.LEVEL_MAX);
+  SIM.dep = clamp(SIM.dep + (a === 2 ? RU.DEPENDENCY_PER_REWARD * (0.5 + t.reward_sensitivity) : -RU.DEPENDENCY_RECOVERY), 0, RU.LEVEL_MAX);
+  const out = SIM.fat >= RU.FATIGUE_DANGER && u2 < RU.OPT_OUT_PROB;
+  SIM.hist.push({ a, base, chance, p, rep, profit, f0, d0, f1: SIM.fat, d1: SIM.dep, out, day });
+  SIM.day++; if (out) SIM.out = true;
+  return true;
+}
+function simStop() { clearInterval(SIM.timer); SIM.timer = null; const b = $('#simRun'); if (b) b.textContent = '▶ 끝까지 자동'; }
+INIT[3] = () => {
+  $('#rules').innerHTML = RULE_CARDS().map(r => `<div class="rule"><div class="rh"><span class="rn" style="background:${r.c}">${r.n}</span><span><span class="rg" style="color:${r.c}">${r.g}</span><br><span class="rt">${esc(r.t)}</span></span></div>
+    <div class="rf"><div><span>원인</span>${esc(r.cause)}</div><div><span>결과</span>${esc(r.eff)}</div><div><span>숫자</span><b>${esc(r.no)}</b></div></div></div>`).join('');
+  $('#simCust').innerHTML = `<option value="avg">평균 고객 (목표 평균값)</option>` + PEOPLE.map(p => `<option value="${p.id}">#${p.id} ${esc(nameOf(p))} · ${p.age}세 · ${esc(p.occupation)}</option>`).join('');
+  $('#simEp').innerHTML = P.eval_starts.map((s, i) => `<option value="${i}">${s} (${epLabel(s)})</option>`).join('');
+  $('#simAuto').innerHTML = STRATS.map(([k, l]) => `<option value="${k}">자동 전략: ${esc(l)}</option>`).join('');
+  $('#simCust').onchange = e => { SIM.cust = e.target.value; simReset(false); };
+  $('#simEp').onchange = e => { SIM.ep = +e.target.value; simReset(false); };
+  $('#simReset').onclick = () => simReset(false);
+  $('#simReseed').onclick = () => simReset(true);
+  $('#simRun').onclick = () => {
+    if (SIM.timer) return simStop();
+    const fn = STRATS.find(s => s[0] === $('#simAuto').value)[2];
+    if (SIM.out || SIM.day >= simDays().length) simReset(false);
+    $('#simRun').textContent = '⏸ 멈춤';
+    SIM.timer = setInterval(() => { const d = simDays()[SIM.day]; if (!d || !simStep(fn(SIM.day, d))) return simStop(); drawSim(); if (SIM.out || SIM.day >= simDays().length) simStop(); }, UI.simStepMs);
+  };
+  $('#simBtns').addEventListener('click', e => { const b = e.target.closest('.abtn'); if (!b || b.disabled) return; simStop(); simStep(+b.dataset.a); drawSim(); });
+  $('#simBtns').addEventListener('mouseover', e => { const b = e.target.closest('.abtn'); if (b && +b.dataset.a !== SIM.focus) { SIM.focus = +b.dataset.a; drawExplain(); } });
+  $('#simLegend').innerHTML = ACT.map((a, i) => `<span><i style="background:${COLORS.action[i]}"></i>${a}</span>`).join('') + `<span><i style="background:${COLORS.good};border-radius:50%"></i>제보함</span><span><i class="line" style="background:${COLORS.fatigue}"></i>피로도</span><span><i class="line" style="background:${COLORS.dep}"></i>의존도</span>`;
+  simReset(false);
+};
+function drawExplain() {
+  const days = simDays(), done = SIM.out || SIM.day >= days.length;
+  if (done) { $('#simExplain').innerHTML = SIM.out ? '이 유저는 알림을 껐습니다. 더 이상 보낼 수 없습니다.' : '90일이 끝났습니다.'; return; }
+  $('#simExplain').innerHTML = probExplain(SIM.focus, simTraits(), flags(days[SIM.day]), SIM.dep);
+}
+function drawSim() {
+  const days = simDays(), t = simTraits(), done = SIM.out || SIM.day >= days.length;
+  const day = days[Math.min(SIM.day, days.length - 1)], f = flags(day);
+  $('#simToday').innerHTML = done
+    ? `<div class="d">${SIM.out ? `🔕 ${SIM.day}일째에 알림을 껐습니다` : `✅ ${days.length}일 완료`}</div><div class="small muted">‘같은 운으로 처음부터’를 눌러 다른 전략과 비교해 보세요.</div>`
+    : `<div class="d">${dateLabel(day)} · ${SIM.day + 1}일째 / ${days.length}</div><div class="chips">${dayChips(day)}</div><div class="small muted">${esc(dayEffect(day))}</div>`;
+  $('#simBtns').innerHTML = [0, 1, 2].map(a => {
+    const p = Math.min(1, reportProb(a, t, f, SIM.dep));
+    const sub = a === 0 ? `피로 −${RU.FATIGUE_RECOVERY}` : a === 1 ? `피로 +${num(RU.FATIGUE_PER_PUSH * t.fatigue_sensitivity, 1)}` : `피로 +${num(RU.FATIGUE_PER_PUSH * t.fatigue_sensitivity, 1)} · 의존 +${num(RU.DEPENDENCY_PER_REWARD * (0.5 + t.reward_sensitivity), 1)} · 제보 시 −${num(MONEY.reward_cost)}원`;
+    return `<button class="abtn" data-a="${a}" ${done ? 'disabled' : ''}><span class="dot" style="background:${COLORS.action[a]}"></span><span><span class="an">${ACT[a]} 보내기</span><span class="ad">${sub}</span></span><span class="ap">${done ? '–' : pct(p)}<small>제보 확률</small></span></button>`;
+  }).join('');
+  drawExplain();
+  const gauge = (label, v, danger, color, cap) => `<div class="gauge"><div class="g-top"><span>${label}</span><b style="color:${v >= danger ? color : 'inherit'}">${num(v)}</b></div>
+    <div class="g-track"><div class="g-zone" style="left:${danger}%;background:${color}"></div><div class="g-fill" style="width:${v}%;background:${color}"></div></div><div class="g-cap">${cap}</div></div>`;
+  $('#simGauges').innerHTML = gauge('알림 피로도', SIM.fat, RU.FATIGUE_DANGER, COLORS.fatigue, `${RU.FATIGUE_DANGER} 이상이면 매일 ${pct(RU.OPT_OUT_PROB)} 확률로 알림을 끔`)
+    + gauge('보상 의존도', SIM.dep, RU.DEPENDENCY_DANGER, COLORS.dep, `${RU.DEPENDENCY_DANGER} 이상이면 리워드 없는 날 제보 확률 ×${RU.DEPENDENCY_PENALTY}`);
+  const H = SIM.hist, reps = H.filter(h => h.rep).length, prof = H.reduce((s, h) => s + h.profit, 0), cost = H.filter(h => h.rep && h.a === 2).length * MONEY.reward_cost;
+  $('#simTotal').innerHTML = [['지난 날', `${H.length}일`], ['제보', `${reps}건`], ['리워드 지급', won(cost)], ['순이익', won(prof)]].map(([k, v]) => `<div class="stile"><span>${k}</span><b>${v}</b></div>`).join('');
+  const last = H[H.length - 1], el = $('#simLast');
+  el.classList.toggle('out', !!(last && last.out));
+  el.innerHTML = !last ? '아직 아무것도 보내지 않았습니다. 왼쪽 버튼을 눌러 첫날을 시작하세요.'
+    : `<b>${dateLabel(last.day)}</b> — ${ACT[last.a]} → ${last.rep ? `<b style="color:${COLORS.good}">제보함 ✓</b> +${won(last.profit)}` : '제보 안 함'}
+       <span class="muted">(확률 ${pct(Math.min(1, last.base), 1)} × 우연 ${last.chance.toFixed(2)} = ${pct(last.p, 1)})</span> · 피로도 ${num(last.f0)} → <b>${num(last.f1)}</b> · 의존도 ${num(last.d0)} → <b>${num(last.d1)}</b>
+       ${last.out ? `<br><b style="color:${COLORS.bad}">🔕 피로도 ${num(last.f1)} — 알림을 꺼 버렸습니다. 남은 ${days.length - SIM.day}일 동안 이 유저에게서는 아무것도 얻을 수 없습니다.</b>` : ''}`;
+  drawSimHist();
+}
+function drawSimHist() {
+  const host = $('#simHist'), days = simDays(), n = days.length;
+  const W = Math.max(260, host.clientWidth | 0), H = 200, m = { l: 30, r: 10, t: 4, b: 22 };
+  const bw = (W - m.l - m.r) / n, top = m.t + 34, ph = H - top - m.b;
+  const Y = v => top + ph - v / 100 * ph, X = i => m.l + (i + 0.5) * bw;
+  let g = '';
+  for (let i = 0; i < n; i++) {
+    const h = SIM.hist[i], x = m.l + i * bw + 0.5, w = Math.max(1, bw - 1);
+    g += h ? `<rect x="${x}" y="${m.t}" width="${w}" height="14" rx="2" fill="${COLORS.action[h.a]}"/>` : `<rect x="${x}" y="${m.t}" width="${w}" height="14" rx="2" fill="${SIM.out && i >= SIM.day ? '#3f3f46' : '#f1ece2'}"/>`;
+    if (h && h.rep) g += `<circle cx="${X(i)}" cy="${m.t + 23}" r="${Math.min(3.5, bw / 2.4)}" fill="${COLORS.good}"/>`;
+    if (h && h.out) g += `<text x="${X(i)}" y="${m.t + 27}" text-anchor="middle" style="fill:${COLORS.bad};font-size:12px;font-weight:700">🔕</text>`;
+  }
+  [0, 50, 100].forEach(v => g += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}" class="grid"/><text x="${m.l - 5}" y="${Y(v) + 4}" text-anchor="end">${v}</text>`);
+  g += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(RU.FATIGUE_DANGER)}" y2="${Y(RU.FATIGUE_DANGER)}" stroke="${COLORS.fatigue}" stroke-dasharray="5 4"/><line x1="${m.l}" x2="${W - m.r}" y1="${Y(RU.DEPENDENCY_DANGER)}" y2="${Y(RU.DEPENDENCY_DANGER)}" stroke="${COLORS.dep}" stroke-dasharray="5 4"/>`;
+  const path = key => SIM.hist.map((h, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(h[key]).toFixed(1)).join('');
+  if (SIM.hist.length) g += `<path d="${path('d1')}" fill="none" stroke="${COLORS.dep}" stroke-width="2"/><path d="${path('f1')}" fill="none" stroke="${COLORS.fatigue}" stroke-width="2.2"/>`;
+  [1, 30, 60, 90].filter(d => d <= n).forEach(d => g += `<text x="${X(d - 1)}" y="${H - 6}" text-anchor="middle">${d}일</text>`);
+  g += `<rect class="hit" x="${m.l}" y="0" width="${W - m.l - m.r}" height="${H - m.b}" fill="transparent"/>`;
+  host.innerHTML = `<svg class="chart" width="${W}" height="${H}">${g}</svg>`;
+  const svg = host.querySelector('svg');
+  svg.querySelector('.hit').addEventListener('mousemove', e => {
+    const i = clamp(Math.floor((e.clientX - svg.getBoundingClientRect().left - m.l) / bw), 0, n - 1), h = SIM.hist[i];
+    showTip(h ? `<div class="tt">${dateLabel(h.day)} · ${i + 1}일째</div>${ACT[h.a]} → ${h.rep ? '제보함 ✓' : '제보 안 함'} (확률 ${pct(h.p, 1)})<br>피로도 ${num(h.f1)} · 의존도 ${num(h.d1)}${h.out ? '<br>🔕 알림을 끔' : ''}` : `<div class="tt">${dateLabel(days[i])}</div>아직 오지 않은 날`, e.clientX, e.clientY);
+  });
+  svg.querySelector('.hit').addEventListener('mouseleave', hideTip);
+}
+DRAW[3] = () => drawSimHist();
+
+/* ───────── 4. 학습 전 점검 ───────── */
+const TEST_DESC = {
+  none: '알림을 하나도 안 보냄 — 비교의 바닥선',
+  max_reward: '매일 100명 모두에게 리워드 — “가장 센 행동을 매일”이 최선인지 확인',
+  random: '매일 셋 중 무작위 — AI가 꼭 넘어야 할 최소선',
+  current: `매주 토요일 전원 일반 + 매월 ${P.current_rule.reward_day}일 전원 리워드 — 지금 운영이라고 가정한 기준선`,
+};
+INIT[4] = () => {
+  $('#testRules').innerHTML = TEST_KEYS.map(k => { const s = D.replays[k].summary; return `<div class="rc" style="border-left-color:${recColor(k)}"><b class="nm">${esc(recName(k))}</b><div class="ds">${esc(TEST_DESC[k] || '')}</div>
+    <div class="big">${man(s.profit)}</div><div class="sm">90일 순이익</div>
+    <div style="margin-top:6px"><b style="color:${s.opt_outs > MONEY.max_opt_outs ? COLORS.bad : COLORS.good}">알림 끔 ${num(s.opt_outs)}명</b> · <span class="sm">하루 제보 ${num(s.reports_per_day, 1)}건</span></div>
+    <div style="margin-top:6px"><span class="badge ${s.success ? 'good' : 'bad'}">성공 척도 ${s.success ? '달성' : '미달'}</span></div></div>`; }).join('');
+  $('#checks').innerHTML = D.sanity.length ? D.sanity.map(c => `<div class="check"><span class="ok" style="background:${c.passed ? COLORS.good : COLORS.bad}">${c.passed ? '✓' : '✕'}</span><div><b>${esc(c.name)}</b><div class="why">${esc(c.why)}</div></div></div>`).join('')
+    : '<p class="muted">results/sanity_check.md가 없어 통과 기준을 보여 줄 수 없습니다. run.bat → 1번을 실행하세요.</p>';
+  const rnd = D.replays.random?.summary;
+  $('#memo').innerHTML = `📝 <b>짚어 둔 점</b> — ‘무작위’(3일 중 2일꼴로 알림)${rnd ? `도 ${num(rnd.opt_outs)}명이 알림을 껐습니다` : '도 많은 유저가 알림을 껐습니다'}. 피로도 규칙(${RU.FATIGUE_DANGER} 이상이면 매일 ${pct(RU.OPT_OUT_PROB)})이 꽤 엄격하다는 뜻이라 메모해 두었고, 점검은 통과해서 그대로 두었습니다. 보상을 고칠 때 다시 봅니다.`;
+};
+DRAW[4] = () => {
+  lineChart($('#chProfit'), { series: TEST_KEYS.map(k => ({ name: recName(k), color: recColor(k), values: avgStats(k).cum })), yFmt: v => man(v).replace(' 원', ''), tipFmt: won, ml: 62 });
+  lineChart($('#chActive'), { series: TEST_KEYS.map(k => ({ name: recName(k), color: recColor(k), values: avgStats(k).active })), yMin: 0, yMax: N_PEOPLE, yStep: 25, yFmt: v => v + '명', tipFmt: v => num(v, 1) + '명', hlines: [{ y: N_PEOPLE - MONEY.max_opt_outs, label: `한도 (알림 끔 ${MONEY.max_opt_outs}명)`, color: COLORS.bad }], legend: true });
+};
+
+/* ───────── 5. AI 학습 ───────── */
+INIT[5] = () => {
+  const L = P.state_labels, groups = [['고객 성향 (사람마다 고정)', [0, 1, 2]], ['쌓이는 값 (날마다 바뀜)', [3, 4]], ['오늘 상황', [5, 6, 7, 8, 9]], ['진행', [10]]];
+  $('#obsList').innerHTML = groups.map(([t, ix]) => `<div class="obs-g"><div class="gt">${t}</div><div class="row">${ix.map(i => `<span class="chip">${esc(L[i])}</span>`).join('')}</div></div>`).join('');
+  $('#actList').innerHTML = ACT.map((a, i) => `<div><span class="dot" style="background:${COLORS.action[i]}"></span><b>${i}</b> ${a}</div>`).join('');
+  const sc = P.reward_scale;
+  $('#rewVer').textContent = `보상 ${P.reward_version}`;
+  $('#rewTable').innerHTML = [['제보 없음', '0점'], ['안 보냄·일반 알림으로 제보', `+${num(MONEY.value_per_report / sc, 1)}점`], ['리워드 알림으로 제보', `+${num((MONEY.value_per_report - MONEY.reward_cost) / sc, 1)}점`]].map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('')
+    + `<p class="small muted" style="margin:4px 0 0">→ 90일 점수 합 = 그 고객의 90일 순이익 ÷ ${num(sc)}</p>`;
+  $('#rewNote').innerHTML = `⚠️ 알림을 끄면? 그날로 판이 끝나 이후 점수를 못 받을 뿐, <b>따로 깎이는 점수는 없습니다.</b> 이 점이 7단계의 문제로 이어집니다.`;
+  const cv = CURVE_KEY && D.curves[CURVE_KEY];
+  $('#trainFacts').innerHTML = [
+    [cv ? `${num(cv.timesteps / 10000)}만 번` : '–', '결정 연습 횟수 (하루 1번 = 1번)'],
+    [cv ? `${num(cv.episodes)}판` : '–', '고객 1명 × 90일 판을 반복한 수'],
+    ['가상 환경 8개', '동시에 돌려 경험을 빨리 모음'],
+    ['약 6분 · CPU', '2016~2024년 달력, 시작일·고객 무작위'],
+  ].map(([b, s]) => `<div class="ftile"><b>${b}</b><span>${s}</span></div>`).join('');
+};
+DRAW[5] = () => {
+  const cv = CURVE_KEY && D.curves[CURVE_KEY];
+  if (!cv) { $('#chCurve').innerHTML = '<p class="muted">학습 곡선이 없습니다. run.bat → 3번(본 학습) 뒤 4번(평가)을 실행하세요.</p>'; return; }
+  const xs = cv.points.map(p => p[0]), ys = cv.points.map(p => p[1]);
+  const step = niceStep(xs[xs.length - 1], 4);
+  const ticks = []; for (let v = 0; v <= xs[xs.length - 1] + 1; v += step) ticks.push(v);
+  lineChart($('#chCurve'), {
+    series: [{ name: `한 판 평균 점수 (보상 ${CURVE_KEY})`, color: COLORS.ppo, values: ys, width: 2.5 }], xs, xTicks: ticks, xFmt: v => v ? num(v / 10000) + '만' : '0',
+    tipX: x => `${num(x / 10000, 1)}만 번째 결정까지`, tipFmt: v => num(v, 1) + '점', yMin: 0, height: 260,
+    notes: [{ x: xs[xs.length - 1], y: ys[ys.length - 1], text: `끝 무렵 ${num(ys[ys.length - 1], 1)}점`, color: COLORS.ppo, anchor: 'end', dy: -12 }],
+  });
+  $('#curveNote').innerHTML = `처음 10% 판의 평균 <b>${num(cv.first_return, 1)}점</b> → 마지막 10% 판의 평균 <b>${num(cv.last_return, 1)}점</b>. 점수가 빠르게 오르다 평평해졌습니다 = 이 보상으로 배울 수 있는 만큼 배웠다는 뜻입니다. 1점이 ${num(P.reward_scale)}원이니, 고객 한 명에게서 90일 동안 약 ${won(cv.last_return * P.reward_scale)}을 버는 법을 익힌 셈입니다. <span class="muted">(그래프 선은 최근 여러 판의 평균이라 출렁임이 줄어 보입니다)</span><br><b>그런데 점수가 높다고 목표를 이룬 걸까요?</b> → <a href="#6" data-go="6">6단계 결과 재생</a>`;
+};
+
+/* ───────── 6. 결과 재생 ───────── */
+const RP = { rec: PPO_KEY || MY_RULE, ep: 0, day: 0, speed: UI.playSpeeds[1][0], timer: null };
+let cells = [];
+INIT[6] = () => {
+  seg($('#rpRec'), REC_KEYS.map(k => [k, `<span class="dot" style="background:${recColor(k)}"></span>${esc(recName(k))}`]), RP.rec, v => { RP.rec = v; rpFull(); });
+  seg($('#rpEp'), P.eval_starts.map((s, i) => [String(i), epLabel(s)]), '0', v => { RP.ep = +v; RP.day = Math.min(RP.day, N_DAYS - 1); rpFull(); });
+  seg($('#rpSpeed'), UI.playSpeeds.map(([v, l]) => [String(v), l]), String(RP.speed), v => { RP.speed = +v; if (RP.timer) { rpPause(); rpPlay(); } });
+  $('#rpGrid').innerHTML = PEOPLE.map((p, i) => `<div class="cell" data-i="${i}"><span class="cn">${p.id}</span><span class="mk"></span><span class="fb"><i></i></span></div>`).join('');
+  cells = $$('#rpGrid .cell');
+  $('#rpGrid').addEventListener('mouseover', e => { const c = e.target.closest('.cell'); if (c) { const r = c.getBoundingClientRect(); showTip(cellTip(+c.dataset.i), r.right, r.top); } });
+  $('#rpGrid').addEventListener('mouseleave', hideTip);
+  $('#rpLegend').innerHTML = ACT.map((a, i) => `<span><i style="background:${COLORS.action[i]}"></i>${a}</span>`).join('') + `<span><i style="background:${COLORS.good};border-radius:50%"></i>✓ 제보함</span><span><i style="background:#3f3f46"></i>알림 끔</span><span><i style="background:transparent;box-shadow:0 0 0 2px ${COLORS.bad}"></i>오늘 끔</span><span><i class="line" style="background:#57534e"></i>칸 아래 막대 = 피로도 (빨강 ${RU.FATIGUE_DANGER}↑)</span>`;
+  $('#tlLegend').innerHTML = [['#93c5fd', '비'], ['#ddd6fe', '주말·공휴일'], ['#a5f3fc', '한파'], ['#e7e0d2', '평일']].map(([c, l]) => `<span><i style="background:${c}"></i>${l}</span>`).join('') + `<span><i style="background:#d97706;border-radius:50%;width:6px;height:6px"></i>월말</span><span class="faint">칸을 누르면 그날로 이동</span>`;
+  $('#rpTimeline').addEventListener('click', e => { const b = e.target.closest('.tl'); if (b) { rpPause(); RP.day = +b.dataset.d; rpUpdate(); } });
+  $('#rpTimeline').addEventListener('mouseover', e => { const b = e.target.closest('.tl'); if (b) { const d = CAL[RP.ep][+b.dataset.d]; showTip(`<div class="tt">${dateLabel(d)} · ${+b.dataset.d + 1}일째</div>${esc(dayEffect(d))}`, e.clientX, e.clientY); } });
+  $('#rpTimeline').addEventListener('mouseleave', hideTip);
+  $('#rpFirst').onclick = () => { rpPause(); RP.day = 0; rpUpdate(); };
+  $('#rpPrev').onclick = () => { rpPause(); RP.day = Math.max(0, RP.day - 1); rpUpdate(); };
+  $('#rpNext').onclick = () => { rpPause(); RP.day = Math.min(N_DAYS - 1, RP.day + 1); rpUpdate(); };
+  $('#rpPlay').onclick = () => RP.timer ? rpPause() : rpPlay();
+};
+function rpPlay() {
+  if (RP.day >= N_DAYS - 1) RP.day = 0;
+  $('#rpPlay').textContent = '⏸ 일시정지';
+  RP.timer = setInterval(() => { if (RP.day >= N_DAYS - 1) return rpPause(); RP.day++; rpUpdate(); }, 1000 / RP.speed);
+  rpUpdate();
+}
+function rpPause() { clearInterval(RP.timer); RP.timer = null; const b = $('#rpPlay'); if (b) b.textContent = '▶ 재생'; }
+function cellTip(i) {
+  const p = PEOPLE[i], d = D.replays[RP.rec].episodes[RP.ep].days[RP.day], st = epStats(RP.rec, RP.ep), a = d.action[i];
+  const head = `<div class="tt">#${p.id} ${esc(nameOf(p))} · ${p.age}세</div><span style="opacity:.8">${esc(p.occupation)}</span><br>`;
+  if (a < 0) return head + `🔕 ${st.outDay[i] + 1}일째에 알림을 껐습니다`;
+  return head + `오늘: <b>${ACT[a]}</b> → ${d.reported[i] ? '제보함 ✓' : '제보 안 함'}${d.opted_out[i] ? '<br>🔕 오늘 알림을 껐습니다' : ''}<br>피로도 ${d.fatigue[i]} · 의존도 ${d.dependency[i]}`;
+}
+function rpFull() {
+  $('#rpTimeline').innerHTML = CAL[RP.ep].map((d, i) => `<button class="tl ${flags(d).monthEnd ? 'me' : ''}" data-d="${i}" style="background:${dayColor(d)}" aria-label="${d.date}"></button>`).join('');
+  rpUpdate();
+}
+function rpUpdate() {
+  const k = RP.rec, rp = D.replays[k], day = rp.episodes[RP.ep].days[RP.day], st = epStats(k, RP.ep), cmp = epStats(MY_RULE, RP.ep), di = RP.day;
+  $('#rpDay').innerHTML = `<div><div class="d">${dateLabel(day)}</div><div class="chips">${dayChips(day)}</div><div class="small muted">${weatherLine(day)} · ${esc(dayEffect(day))}</div></div><div class="dn"><b>${di + 1}</b> / ${N_DAYS}일째<br>${epLabel(rp.episodes[RP.ep].start)} 판</div>`;
+  cells.forEach((c, i) => {
+    const a = day.action[i], f = day.fatigue[i];
+    c.className = 'cell ' + (a < 0 ? 'out' : 'a' + a) + (day.reported[i] ? ' rep' : '') + (day.opted_out[i] ? ' outnow' : '');
+    const bar = c.querySelector('.fb i');
+    bar.style.width = (f < 0 ? 0 : f) + '%';
+    bar.classList.toggle('hi', f >= RU.FATIGUE_DANGER);
+  });
+  $$('#rpTimeline .tl').forEach((b, i) => { b.classList.toggle('cur', i === di); b.classList.toggle('future', i > di); });
+  const diff = st.cum[di] - cmp.cum[di], outs = st.outs[di], s = rp.summary, my = D.replays[MY_RULE].summary;
+  const c = st.counts[di];
+  const verdict = k === MY_RULE ? `<span class="muted">이 기록이 비교 기준(내가 정한 규칙)입니다.</span>`
+    : (() => { const better = s.profit > my.profit && s.success; return `<span style="color:${better ? COLORS.good : COLORS.bad};font-weight:700">${better ? '✓ 현재 운영보다 낫다' : '✕ 현재 운영보다 낫지 않다'}</span><br><span class="small muted">순이익 ${man(s.profit)} vs ${man(my.profit)} · 알림 끔 ${num(s.opt_outs, 1)}명 vs ${num(my.opt_outs, 1)}명</span>`; })();
+  $('#rpSide').innerHTML = `
+    <div class="card"><div class="kl">이번 판 누적 순이익 (오늘까지)</div><div class="kbig" style="color:${recColor(k)}">${won(st.cum[di])}</div>
+      <div class="ksub">${k === MY_RULE ? '<span class="muted">비교 기준 기록</span>' : `현재 운영보다 <b style="color:${diff >= 0 ? COLORS.good : COLORS.bad}">${diff >= 0 ? '+' : '−'}${won(Math.abs(diff))}</b> <span class="muted">(같은 날 기준)</span>`}</div>
+      <div class="ksub muted">누적 보상 ${num(st.cumRew[di], 1)}점 (1점 = ${num(P.reward_scale)}원)</div></div>
+    <div class="card"><div class="kl">알림을 끈 사람 (누적)</div><div class="kmid" style="color:${outs > MONEY.max_opt_outs ? COLORS.bad : COLORS.good}">${outs}명 <span class="small muted">/ ${N_PEOPLE}명</span></div>
+      <div class="meter"><i style="width:${outs / N_PEOPLE * 100}%;background:${outs > MONEY.max_opt_outs ? COLORS.bad : COLORS.good}"></i><b style="left:${MONEY.max_opt_outs / N_PEOPLE * 100}%"></b></div>
+      <div class="ksub muted">검은 선 = 한도 ${MONEY.max_opt_outs}명 ${outs > MONEY.max_opt_outs ? '· <b style="color:' + COLORS.bad + '">한도 초과</b>' : ''}</div></div>
+    <div class="card"><div class="kl">오늘 하루</div><div class="today-list">
+      <div><span>보낸 알림</span><b>일반 ${c[1]} · 리워드 ${c[2]}</b></div><div><span>안 보냄</span><b>${c[0]}명</b></div>
+      <div><span>제보</span><b>${st.reports[di]}건</b></div><div><span>오늘 순이익</span><b>${won(day.profit)}</b></div>
+      <div><span>오늘 알림 끔</span><b style="color:${st.outToday[di] ? COLORS.bad : 'inherit'}">${st.outToday[di]}명</b></div></div></div>
+    <div class="card"><div class="kl">네 분기 평균 최종 결과</div><div class="kmid">${man(s.profit)}</div>
+      <div class="ksub">알림 끔 <b>${num(s.opt_outs, 1)}명</b> · <span class="badge ${s.success ? 'good' : 'bad'}">성공 척도 ${s.success ? '달성' : '미달'}</span></div>
+      <div class="ksub" style="margin-top:6px">${verdict}</div></div>`;
+  $('#rpChartTitle').textContent = `누적 순이익 — ${recName(k)}${k === MY_RULE ? '' : ' vs ' + recName(MY_RULE)}`;
+  const series = [{ name: recName(k), color: recColor(k), values: st.cum, width: 2.6 }];
+  if (k !== MY_RULE) series.push({ name: recName(MY_RULE) + ' (기준)', color: recColor(MY_RULE), values: cmp.cum, dash: '6 4' });
+  lineChart($('#rpChart'), { series, cursor: di, yFmt: v => man(v).replace(' 원', ''), tipFmt: won, ml: 62, height: 210, onClick: i => { rpPause(); RP.day = i; rpUpdate(); } });
+}
+DRAW[6] = rpFull;
+
+/* ───────── 7. 진단 ───────── */
+const DG = { rec: PPO_KEY || MY_RULE };
+INIT[7] = () => {
+  const my = D.replays[MY_RULE].summary;
+  $('#score').innerHTML = `<tr><th>규칙</th><th class="r">90일 순이익</th><th class="r">알림 끈 사람</th><th>성공 척도</th><th class="r">하루 제보</th><th class="r">리워드 비용</th></tr>` +
+    REC_KEYS.map(k => { const s = D.replays[k].summary; return `<tr class="${k === PPO_KEY ? 'hl' : ''}"><td><span class="dot" style="background:${recColor(k)};margin-right:6px"></span>${esc(recName(k))}${k === MY_RULE ? ' <span class="badge teal">기준</span>' : ''}</td>
+      <td class="r"><b>${won(s.profit)}</b></td><td class="r" style="color:${s.opt_outs > MONEY.max_opt_outs ? COLORS.bad : 'inherit'}">${num(s.opt_outs, 1)}명</td>
+      <td><span class="badge ${s.success ? 'good' : 'bad'}">${s.success ? '달성' : '미달'}</span></td><td class="r">${num(s.reports_per_day, 1)}건</td><td class="r">${won(s.reward_cost)}</td></tr>`; }).join('');
+  if (PPO_KEY) {
+    const s = D.replays[PPO_KEY].summary, better = s.profit > my.profit && s.success;
+    $('#verdict').innerHTML = `<b>한 줄 판별: ${recName(PPO_KEY)}은 ‘현재 운영’보다 ${better ? '낫다' : '낫지 않다'}.</b> 순이익은 ${num(s.profit / my.profit, 2)}배(${man(s.profit)} vs ${man(my.profit)})지만, 알림 끈 사람이 ${num(s.opt_outs, 1)}명으로 한도 ${MONEY.max_opt_outs}명을 크게 넘었습니다.`;
+  } else $('#verdict').textContent = '아직 학습된 AI 기록이 없습니다 (run.bat → 3번, 4번).';
+  seg($('#dgRec'), REC_KEYS.map(k => [k, `<span class="dot" style="background:${recColor(k)}"></span>${esc(recName(k))}`]), DG.rec, v => { DG.rec = v; DRAW[7](); });
+  const perUser = D.replays[MY_RULE].summary.profit / N_PEOPLE;
+  $('#nextPlans').innerHTML = `<div class="card" style="box-shadow:none;background:var(--soft)"><span class="badge teal">v2</span> <b>수신거부 벌점</b><p class="small" style="margin:6px 0 0">알림을 끈 날, 그 유저에게서 앞으로 잃게 될 이익만큼 점수를 뺍니다. 예: 현재 운영 기준 유저 1명의 90일 이익 ≈ ${man(perUser)} → 약 −${num(perUser / P.reward_scale)}점 (가정). 성공 척도의 두 번째 조건을 점수에 직접 넣는 방법.</p></div>
+    <div class="card" style="box-shadow:none;background:var(--soft)"><span class="badge teal">v3</span> <b>피로도 위험 구간 벌점</b><p class="small" style="margin:6px 0 0">피로도가 ${RU.FATIGUE_DANGER} 이상인 날마다 작은 벌점. 알림을 끄기 전에, 위험선에 다가가는 것 자체를 피하게 합니다.</p></div>`;
+};
+DRAW[7] = () => {
+  const k = DG.rec, s = avgStats(k);
+  stackChart($('#chShare'), { data: s.share, colors: COLORS.action, legend: ACT, height: 160 });
+  lineChart($('#chFat'), {
+    series: [{ name: '평균 피로도 (결정할 때, 알림 켠 유저)', color: COLORS.fatigue, values: s.fat }, { name: '누적 알림 끈 사람 (명)', color: '#3f3f46', values: s.outs }],
+    yMin: 0, yMax: 100, yStep: 25, height: 190, hlines: [{ y: RU.FATIGUE_DANGER, label: `피로 위험선 ${RU.FATIGUE_DANGER}`, color: COLORS.fatigue, at: 'left' }],
+    bands: [{ from: UI.phases[2][0], to: N_DAYS, color: 'rgba(185,28,28,.06)' }], tipFmt: v => num(v, 1),
+  });
+  $('#phase').innerHTML = UI.phases.map(([a, b], j) => {
+    // 구간 안의 모든 결정(유저 × 날)을 한데 모아 평균 — 남은 사람이 적은 날이 과하게 반영되지 않게
+    const t = [0, 0, 0]; let fs = 0;
+    s.eps.forEach(e => { for (let d = a - 1; d < b; d++) { e.counts[d].forEach((c, x) => t[x] += c); fs += e.fatSum[d]; } });
+    const sum = t[0] + t[1] + t[2], rshare = sum ? t[2] / sum : 0;
+    const fat = sum ? fs / sum : 0;
+    const outs = s.outs[b - 1] - (a > 1 ? s.outs[a - 2] : 0);
+    return `<div class="ph ${j === UI.phases.length - 1 && rshare > 0.5 ? 'hot' : ''}"><div class="pt">${a}~${b}일</div>
+      <div class="pv"><span>리워드 비율</span><b>${pct(rshare)}</b></div><div class="pv"><span>평균 피로도 (결정할 때)</span><b>${num(fat)}</b></div><div class="pv"><span>알림 끔</span><b>${num(outs, 1)}명</b></div></div>`;
+  }).join('');
+  const od = s.outDays;
+  $('#timing').innerHTML = od.length ? `알림을 끈 시점 (네 분기 합 ${od.length}명): 가장 빠른 날 <b>${od[0]}일째</b>, 절반이 <b>${od[Math.floor(od.length / 2)]}일째</b> 이후. 붉은 구간 = ${UI.phases[2][0]}일~끝.` : '이 기록에서는 아무도 알림을 끄지 않았습니다.';
+};
+
+/* ───────── 8. 파일 지도 ───────── */
+const FILES = [
+  ['📘 기준 문서', [
+    ['project_spec.md', '설계의 기준. 1 문제 정의(양식 이름 ‘매장 정의’) · 2 반응 규칙 · 3 고객 성향 · 4 설계 카드 · 5 보상 · 6 변경 기록', 1],
+    ['CLAUDE.md', '코딩 AI가 지키는 작업 규칙 14가지 (쉬운 말, 가정 표시, 변경 기록 등)', null],
+    ['presentation_notes.md', '발표용 정리 — 숫자마다 그렇게 정한 이유, 예상 질문과 답', 7],
+    ['screen_design.md', '강의에서 받은 재생 화면 디자인 기준 (그대로 둠, 9단계 그림에 참고)', 9],
+    ['README.md', '설치·실행 방법, 폴더 구성, 데이터 출처', null],
+  ]],
+  ['🧑‍🤝‍🧑 입력 데이터', [
+    ['make_personas.py', '가상 인물 데이터에서 마포구 자취 가구 100명을 뽑음', 2],
+    ['data/personas.csv', '가상 고객 100명 (나이·성별·직업·소개글)', 2],
+    ['data/customer_traits.csv', '고객별 성향 3칸 + 근거 인용 + 확신도', 2],
+    ['check.py', '성향 표 검사 (100명 · 범위 · 근거 · 평균 ±10%)', 2],
+    ['make_external_factors.py', '2016~2025년 실제 날씨·공휴일 내려받기', 3],
+    ['data/external_factors.csv', '날짜별 기온·강수·공휴일·주말·월말 (3,653일)', 3],
+  ]],
+  ['👥 가상 환경', [
+    ['config.py', '1절 문제 정의 숫자 (유저 수, 가격, 기간, 시드)', 1],
+    ['env.py', '가상 환경 본체 — 가상 유저 100명이 알림에 반응. 맨 위에 2절 반응 규칙 가정값', 3],
+    ['reward.py', '보상(점수) — 3회차에 버전별로 고칠 파일', 5],
+  ]],
+  ['▶ 실행', [
+    ['run.bat · run.py', '번호 메뉴 (1 점검 · 2 시험 학습 · 3 본 학습 · 4 평가), 실행마다 기록', 8],
+    ['simulate.py', '시험 규칙·학습된 AI를 2025년 평가 조건으로 돌림, 재생 데이터 생성', 4],
+    ['train.py', 'PPO 학습, 학습 곡선 그림', 5],
+  ]],
+  ['📊 결과', [
+    ['results/sanity_check.md', '학습 전 점검 결과 (통과 기준 4가지)', 4],
+    ['results/summary_v1.md', '학습된 AI v1 평가 결과', 7],
+    ['results/learning_curve_v1.png', '학습 곡선 그림', 5],
+    ['results/models/v1/model.zip', '학습된 AI(정책)', 5],
+    ['results/logs/', '규칙별 날짜·고객 단위 상세 기록 (사람이 읽는 표)', 6],
+    ['results/run_history.csv · runs/', '실행할 때마다 한 줄 기록 + 그때 파일 사본', null],
+  ]],
+  ['🖥 화면', [
+    ['public/index.html', '지금 보고 있는 이 화면', 0],
+    ['public/data/', '재생 데이터(JSON)와 이 화면용 묶음(viewer_data.js)', 6],
+  ]],
+];
+INIT[8] = () => {
+  $('#fileGroups').innerHTML = `<div class="grid2">${FILES.map(([g, list]) => `<div class="card fgroup"><h3>${g}</h3><div class="flist">${list.map(([f, d, s]) => `<div class="fitem"><span class="file">${esc(f)}</span><span>${esc(d)}</span>${s != null ? `<button class="go" data-go="${s}">${s}단계로 →</button>` : '<span></span>'}</div>`).join('')}</div></div>`).join('')}</div>`;
+};
+
+/* ───────── 9. 그림으로 보기 — 저녁 6시 마포구 장면 ─────────
+   그림 파일 없이 Canvas 2D로 그림. 좌표(x, y, 높이)를 화면 위치로 바꾸는 함수(iso) 하나와,
+   윗면·앞면·옆면을 밝기만 달리해 칠하는 상자 함수(box) 하나로 건물·차를 쌓아 만든다.
+   창문 1칸 = 유저 1명. 누가 무엇을 받았고 제보·수신거부했는지는 평가 기록(replay) 그대로. */
+const hrand = n => { const x = Math.sin(n * 12.9898 + 78.233) * 43758.5453; return x - Math.floor(x); };
+const pick = (arr, i) => arr[i % arr.length];
+// 장면 배치 — 격자 단위(가로 x 0~20, 세로 y 0~14), 그림용 위치라 학습과 무관
+const WALK_N = 6.38, WALK_S = 8.62;   // 걸어 다니는 인도 (도로 북쪽 · 남쪽)
+const HOMES = [
+  { x: 1.0, y: 3.6, w: 2.2, d: 2.0, f: 5, side: 'N', color: '#eadcc6', name: '원룸 A' },
+  { x: 5.2, y: 3.6, w: 2.2, d: 2.0, f: 5, side: 'N', color: '#dccab2', name: '원룸 B' },
+  { x: 12.6, y: 3.6, w: 2.2, d: 2.0, f: 5, side: 'N', color: '#e5d5bf', name: '원룸 C' },
+  { x: 1.0, y: 9.5, w: 2.2, d: 2.0, f: 5, side: 'S', color: '#d9c7af', name: '원룸 D' },
+  { x: 4.6, y: 9.5, w: 2.2, d: 2.0, f: 5, side: 'S', color: '#e8d9c5', name: '원룸 E' },
+];
+const LAUNDRY = [
+  { x: 15.6, y: 4.5, w: 2.6, d: 1.5, h: 1.15, face: 'y', door: [16.9, 6.15] },
+  { x: 7.5, y: 9.3, w: 1.7, d: 2.3, h: 1.15, face: 'x', door: [9.35, 10.45] },
+];
+const CENTER = { x: 13.2, y: 9.8, w: 3.0, d: 2.4, h: 2 };
+const OFFICE = { x: 12.4, y: 0.5, w: 2.8, d: 2.2, h: 7 };
+const UNIV = { x: 0.6, y: 0.5, w: 6.4, d: 2.0, h: 3 };
+const TREES = [[8.4, 1.3], [8.5, 3.7], [4.2, 5.95], [11.95, 1.4], [19.2, 1.2], [17.8, 2.6], [19.3, 3.6], [17.7, 9.4], [19.1, 10.2], [17.5, 11.7], [19.2, 12.4], [18.2, 13.4], [12.4, 13.5], [1.6, 12.9], [4.0, 13.1], [6.6, 12.9], [8.5, 12.7]];
+const LAMPS = [[3.4, 6.22], [7.9, 6.22], [13.9, 6.22], [18.8, 6.22], [3.4, 8.78], [7.0, 8.78], [14.2, 8.78], [18.8, 8.78], [9.25, 2.6], [11.75, 2.6], [9.25, 12.4], [11.75, 12.4]];
+const BENCHES = [[18.2, 11.0], [18.0, 12.6]];
+const PUDDLES = [[4, 6.42, 0.5], [7.2, 8.6, 0.45], [10.2, 7.1, 0.6], [14.6, 8.62, 0.5], [18, 6.4, 0.4], [9.4, 11.8, 0.4], [13.5, 7.8, 0.5]];
+const CARS = [{ dir: 'E', off: 0, sp: 1.5, col: '#f1f5f9' }, { dir: 'E', off: 12, sp: 1.3, col: '#ef4444' }, { dir: 'W', off: 5, sp: 1.4, col: '#1e40af' },
+  { dir: 'W', off: 17, sp: 1.6, col: '#f59e0b' }, { dir: 'S', off: 3, sp: 1.2, col: '#10b981' }, { dir: 'N', off: 9, sp: 1.35, col: '#e5e7eb' }];
+const SKYLINE = [];
+for (let k = 0; k < 16; k++) SKYLINE.push({ x: k * 1.42 - 0.4, y: -2.1, w: 1.05, d: 0.8, h: 1.6 + hrand(k * 3.1) * 4.6 });
+for (let k = 0; k < 12; k++) SKYLINE.push({ x: -2.1, y: k * 1.36 - 0.3, w: 0.8, d: 1.0, h: 1.6 + hrand(k * 5.7 + 2) * 4.6 });
+SKYLINE.sort((a, b) => (a.x + a.y) - (b.x + b.y));
+const STARS = Array.from({ length: 80 }, (_, k) => [hrand(k * 1.7), hrand(k * 2.3 + 1) * 0.42, hrand(k * 3.1 + 2)]);
+const OFFICE_JOB = /사무|관리|전문|연구|개발|기획|회계|금융|공무|교사|디자인|엔지니어|컨설턴트|마케팅|영업/;
+const LOOKS = PEOPLE.map((p, i) => {   // 페르소나(성별·나이·직업)로 옷차림을 정함
+  const h = k => hrand(i * 13.7 + k), office = OFFICE_JOB.test(p.occupation);
+  const shirts = office ? ['#f1f5f9', '#bfd7f2', '#cbd5e1', '#dbeafe'] : ['#ef4444', '#22c55e', '#a855f7', '#f97316', '#06b6d4', '#eab308', '#ec4899'];
+  return { long: p.sex === '여자' && h(1) < 0.75, hair: pick(['#1f1a17', '#3b2a20', '#5a3d2b', '#2b2b2b'], Math.floor(h(2) * 4)),
+    shirt: shirts[Math.floor(h(3) * shirts.length)], pants: pick(['#1e293b', '#334155', '#3f3f46', '#1e3a8a', '#57534e'], Math.floor(h(4) * 5)),
+    skin: pick(['#f3d2b3', '#e8c09a', '#f6dcc4'], Math.floor(h(5) * 3)), umb: pick(['#ef4444', '#0ea5e9', '#22c55e', '#a855f7', '#f59e0b', '#111827'], Math.floor(h(6) * 6)),
+    coat: pick(['#1e3a8a', '#14532d', '#7c2d12', '#334155', '#4c1d95'], Math.floor(h(8) * 5)), bag: h(7) < 0.5 ? '#f8fafc' : '#bae6fd' };
+});
+const BUB = {
+  out: ['알림 너무 자주 와… 끌래', '또 알림? 이제 그만', '알림 꺼야겠다'],
+  rain: ['비 와서 건조기 꽉 찼네', '빗길이지만 제보 완료'],
+  cold: ['추워도 제보 완료!', '손 시려… 그래도 제보'],
+  r2: ['300P 받으러 가요', '제보하고 포인트 적립!'],
+  r1: ['알림 보고 들렀어요', '건조기 2대 비었네요'],
+  r0: ['빨래하는 김에 제보', '세탁기 3번 사용 중'],
+};
+const SC_NOTES = {
+  none: '알림을 하나도 보내지 않습니다. 스스로 제보하는 유저만 걸어 나옵니다 — 조용하지만 아무도 떠나지 않습니다.',
+  max_reward: '매일 모든 창문이 금색(리워드)입니다. 첫날은 많이 걸어 나오지만, 며칠 뒤 창문이 하나둘 꺼집니다(알림 끔). ‘연속 재생’으로 확인해 보세요.',
+  random: '매일 셋 중 무작위 — 3일 중 2일은 알림을 받으니 피로가 쌓여 결국 모두 알림을 끕니다.',
+  current: '토요일엔 파랑(일반 알림), 매월 25일엔 금색(리워드). 나머지 날은 조용합니다 — 아무도 떠나지 않지만 기회도 놓칩니다.',
+  ppo: '처음 60일은 4일에 1번꼴로 리워드를 아껴 보냅니다. ‘⏳ 막판 85일째’를 눌러 보세요 — 창문 대부분이 꺼져 있습니다. 점수(보상)에 ‘알림 끄기’가 없어서 생긴 일입니다(7단계).',
+};
+const SCN = { rec: PPO_KEY || MY_RULE, ep: 0, day: 0, t: 0, playing: false, speed: 1, raf: null, last: 0, ev: null, hover: null, hits: [], objs: [], lmTop: [], ant: null, antBase: null, sig: '', W: 0, H: 0, cv: null, ctx: null };
+let TW = 40, TH = 20, ZH = 12, OX = 0, OY = 0, NIGHT = 0;
+const LIGHT = { k: 1, tint: [255, 180, 110], ta: 0.08 };
+
+/* 그리기 도구 */
+const iso = (x, y, z = 0) => [OX + (x - y) * TW / 2, OY + (x + y) * TH / 2 - z * ZH];
+const _rgbc = {};
+const hexRgb = h => _rgbc[h] || (_rgbc[h] = [1, 3, 5].map(k => parseInt(h.slice(k, k + 2), 16)));
+const mixRgb = (a, b, t) => a.map((v, i) => v + (b[i] - v) * t);
+const rgbStr = (c, al = 1) => `rgba(${c.map(v => Math.round(clamp(v, 0, 255))).join(',')},${al})`;
+const Lrgb = (h, mul = 1) => { const k = LIGHT.k * mul; return hexRgb(h).map((v, i) => v * k * (1 - LIGHT.ta) + LIGHT.tint[i] * LIGHT.ta); };
+const L = (h, mul = 1, al = 1) => rgbStr(Lrgb(h, mul), al);   // 시각·날씨 빛을 입힌 색
+function poly(ctx, pts, fill, stroke, lw) {
+  ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.closePath();
+  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw || 1; ctx.stroke(); }
+}
+function line(ctx, a, b) { ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); }
+function circle(ctx, x, y, r) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); }
+function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+const quadXY = (x0, y0, x1, y1, z = 0) => [iso(x0, y0, z), iso(x1, y0, z), iso(x1, y1, z), iso(x0, y1, z)];
+const faceY = (x0, x1, y, z0, z1) => [iso(x0, y, z0), iso(x1, y, z0), iso(x1, y, z1), iso(x0, y, z1)];   // 앞(왼쪽 아래)면
+const faceX = (x, y0, y1, z0, z1) => [iso(x, y0, z0), iso(x, y1, z0), iso(x, y1, z1), iso(x, y0, z1)];   // 옆(오른쪽 아래)면
+function box(ctx, x, y, z, w, d, h, col) {
+  poly(ctx, faceY(x, x + w, y + d, z, z + h), L(col, 0.84));
+  poly(ctx, faceX(x + w, y, y + d, z, z + h), L(col, 0.7));
+  poly(ctx, quadXY(x, y, x + w, y + d, z + h), L(col, 1.02));
+}
+function pill(ctx, x, y, text, bg = 'rgba(255,255,255,.93)', fg = '#1c2526') {
+  ctx.font = `700 ${Math.max(10, Math.round(TH * 0.42))}px "Malgun Gothic","Apple SD Gothic Neo",sans-serif`;
+  const w = ctx.measureText(text).width + 14, h = Math.max(17, TH * 0.68);
+  ctx.fillStyle = bg; roundRect(ctx, x - w / 2, y - h / 2, w, h, h / 2); ctx.fill();
+  ctx.fillStyle = fg; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, x, y + 0.5);
+}
+function objHit(b, h, html) {
+  const pts = [iso(b.x, b.y, h), iso(b.x + b.w, b.y, h), iso(b.x + b.w, b.y + b.d, 0), iso(b.x, b.y + b.d, 0), iso(b.x + b.w, b.y, 0), iso(b.x, b.y + b.d, h)];
+  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+  SCN.objs.push({ x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys), html });
+}
+
+/* 하늘 — 17:30 노을 → 밤, 비 오는 날은 회색 */
+const SKY = [
+  { h: 17.5, top: '#7fa6d8', bot: '#ffcf9a', k: 1.0, tint: [255, 180, 110], ta: 0.08 },
+  { h: 18.4, top: '#5c6fb0', bot: '#f7a07a', k: 0.88, tint: [245, 140, 125], ta: 0.13 },
+  { h: 19.4, top: '#283163', bot: '#94698f', k: 0.7, tint: [80, 66, 140], ta: 0.2 },
+  { h: 20.6, top: '#0d1431', bot: '#28356a', k: 0.56, tint: [25, 36, 90], ta: 0.26 },
+];
+function skyAt(hour, f) {
+  const hh = clamp(hour, SKY[0].h, SKY[SKY.length - 1].h);
+  let k = 0; while (k < SKY.length - 2 && hh > SKY[k + 1].h) k++;
+  const a = SKY[k], b = SKY[k + 1], u = clamp((hh - a.h) / (b.h - a.h), 0, 1);
+  let top = mixRgb(hexRgb(a.top), hexRgb(b.top), u), bot = mixRgb(hexRgb(a.bot), hexRgb(b.bot), u);
+  let kk = a.k + (b.k - a.k) * u, tint = mixRgb(a.tint, b.tint, u), ta = a.ta + (b.ta - a.ta) * u;
+  if (f.rain) { top = mixRgb(top, hexRgb('#4b5361'), 0.6); bot = mixRgb(bot, hexRgb('#7c8592'), 0.6); kk *= 0.86; tint = mixRgb(tint, [70, 82, 104], 0.6); ta += 0.05; }
+  else if (f.cold) { tint = mixRgb(tint, [130, 160, 230], 0.45); top = mixRgb(top, hexRgb('#3c5ea8'), 0.15); }
+  return { top, bot, k: kk, tint, ta };
+}
+function drawSkyBodies(ctx, hour, f, now, sky) {
+  const W = SCN.W, H = SCN.H;
+  if (!f.rain) {
+    const sa = clamp((hour - 19.2) / 1.2, 0, 1);
+    if (sa > 0) STARS.forEach(([x, y, s], k) => { ctx.fillStyle = `rgba(255,255,255,${sa * (0.6 + 0.4 * Math.sin(now / 600 + k)) * (0.35 + s * 0.65)})`; ctx.fillRect(x * W, y * H, 1.2 + s, 1.2 + s); });
+    if (hour < 19.1) {   // 해 — 건물 뒤로 진다
+      const u = (hour - 17.5) / 1.6, sx = W * 0.14, sy = OY - TH * 3 + u * TH * 5.5, r = TH * 0.95, al = clamp((19.1 - hour) / 0.4, 0, 1);
+      const g = ctx.createRadialGradient(sx, sy, r * 0.5, sx, sy, r * 5); g.addColorStop(0, `rgba(255,190,120,${0.5 * al})`); g.addColorStop(1, 'rgba(255,190,120,0)');
+      ctx.fillStyle = g; circle(ctx, sx, sy, r * 5);
+      ctx.fillStyle = rgbStr(mixRgb([255, 214, 120], [255, 130, 90], clamp(u, 0, 1)), al); circle(ctx, sx, sy, r);
+    }
+    if (hour > 19) {   // 달
+      const al = clamp((hour - 19) / 0.8, 0, 1), mx = W * 0.62, my = Math.max(TH * 1.6, OY - TH * 4.5), r = TH * 0.75;
+      const g = ctx.createRadialGradient(mx, my, r, mx, my, r * 4); g.addColorStop(0, `rgba(230,235,255,${0.25 * al})`); g.addColorStop(1, 'rgba(230,235,255,0)');
+      ctx.fillStyle = g; circle(ctx, mx, my, r * 4);
+      // 초승달: 작은 캔버스에 둥근 달을 그리고 겹친 원만큼 지워서 붙임 (하늘색과 상관없이 깔끔하게)
+      const s = Math.ceil(r * 2 + 4), mc = drawSkyBodies.moon && drawSkyBodies.moon.width === s ? drawSkyBodies.moon : document.createElement('canvas');
+      if (mc !== drawSkyBodies.moon) {
+        mc.width = mc.height = s; const m = mc.getContext('2d');
+        m.fillStyle = '#f8f3de'; circle(m, s / 2, s / 2, r);
+        m.globalCompositeOperation = 'destination-out'; circle(m, s / 2 + r * 0.45, s / 2 - r * 0.25, r * 0.85);
+        drawSkyBodies.moon = mc;
+      }
+      ctx.globalAlpha = al; ctx.drawImage(mc, mx - s / 2, my - s / 2); ctx.globalAlpha = 1;
+    }
+  }
+  const nC = f.rain ? 10 : 4;   // 구름
+  for (let k = 0; k < nC; k++) {
+    const sp = 0.004 + hrand(k * 9.1) * 0.006, x = ((hrand(k * 4.3) * (W + 320) + now * sp) % (W + 320)) - 160, y = H * (0.03 + hrand(k * 7.7) * 0.17), s = TH * (1.1 + hrand(k * 2.2) * 1.3);
+    ctx.fillStyle = f.rain ? 'rgba(66,74,88,.85)' : `rgba(255,255,255,${0.32 - NIGHT * 0.22})`;
+    ctx.beginPath(); [[0, 0, 1], [s * 0.9, -s * 0.3, 0.85], [s * 1.8, 0, 0.9], [s * 0.9, s * 0.2, 0.95]].forEach(([dx, dy, r]) => { ctx.moveTo(x + dx + s * r, y + dy); ctx.arc(x + dx, y + dy, s * r, 0, Math.PI * 2); }); ctx.fill();
+  }
+}
+
+/* 땅 · 도로 · 인도 */
+function drawGround(ctx, f, now) {
+  const P = 18, E = -2.7;
+  poly(ctx, [iso(E, E), iso(20 + P, E), iso(20 + P, 14 + P), iso(E, 14 + P)], L(f.cold ? '#b5c7bc' : '#93c182'));
+  [...HOMES, UNIV, OFFICE, CENTER, ...LAUNDRY].forEach(b => poly(ctx, quadXY(b.x - 0.3, b.y - 0.3, b.x + b.w + 0.3, b.y + b.d + 0.3), L('#e2dacb')));
+  poly(ctx, quadXY(12.0, 8.9, 16.9, 13.0), L('#e8e2d6'));   // 알림 센터 앞 광장
+  const SW = '#d3cbbc';
+  poly(ctx, quadXY(E, 6.15, 20 + P, 6.6), L(SW)); poly(ctx, quadXY(E, 8.4, 20 + P, 8.85), L(SW));
+  poly(ctx, quadXY(9.15, E, 9.6, 14 + P), L(SW)); poly(ctx, quadXY(11.4, E, 11.85, 14 + P), L(SW));
+  const RD = f.rain ? '#434951' : '#555b63';
+  poly(ctx, quadXY(E, 6.6, 20 + P, 8.4), L(RD)); poly(ctx, quadXY(9.6, E, 11.4, 14 + P), L(RD));
+  ctx.strokeStyle = L('#f2cf5b'); ctx.lineWidth = Math.max(1, TH * 0.07); ctx.setLineDash([TW * 0.3, TW * 0.25]);
+  line(ctx, iso(E, 7.5), iso(9.45, 7.5)); line(ctx, iso(11.55, 7.5), iso(20 + P, 7.5)); line(ctx, iso(10.5, E), iso(10.5, 6.45)); line(ctx, iso(10.5, 8.55), iso(10.5, 14 + P));
+  ctx.setLineDash([]);
+  const zebra = L('#eef0f2');   // 횡단보도
+  for (let k = 0; k < 6; k++) {
+    const y0 = 6.7 + k * 0.28; [9.1, 16.6].forEach(x0 => poly(ctx, quadXY(x0, y0, x0 + 0.55, y0 + 0.14), zebra)); poly(ctx, quadXY(11.4, y0, 11.9, y0 + 0.14), zebra);
+    const x0 = 9.7 + k * 0.28; [6.15, 8.4].forEach(yy => poly(ctx, quadXY(x0, yy, x0 + 0.14, yy + 0.45), zebra));
+  }
+  if (f.rain) PUDDLES.forEach(([x, y, r], k) => {   // 물웅덩이
+    const [px, py] = iso(x, y), rx = r * TW * 0.5;
+    ctx.fillStyle = 'rgba(150,178,206,.4)'; ctx.beginPath(); ctx.ellipse(px, py, rx, rx * 0.5, 0, 0, Math.PI * 2); ctx.fill();
+    const rr = (now / 900 + k * 0.37) % 1; ctx.strokeStyle = `rgba(225,238,252,${(1 - rr) * 0.6})`; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.ellipse(px, py, rx * rr, rx * rr * 0.5, 0, 0, Math.PI * 2); ctx.stroke();
+  });
+  if (NIGHT > 0.05) LAMPS.forEach(([x, y]) => {   // 가로등 불빛
+    const [px, py] = iso(x, y); ctx.save(); ctx.translate(px, py); ctx.scale(1, 0.5);
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, TW * 1.5); g.addColorStop(0, `rgba(255,214,140,${0.42 * NIGHT})`); g.addColorStop(1, 'rgba(255,214,140,0)');
+    ctx.fillStyle = g; circle(ctx, 0, 0, TW * 1.5); ctx.restore();
+  });
+}
+
+/* 건물 */
+function gridWin(ctx, face, a0, a1, fixed, floors, per, seed, dayCol, litCol) {
+  for (let fl = 0; fl < floors; fl++) for (let k = 0; k < per; k++) {
+    const u0 = a0 + (a1 - a0) * (k + 0.2) / per, u1 = a0 + (a1 - a0) * (k + 0.8) / per, z0 = fl + 0.3, z1 = fl + 0.75;
+    const q = face === 'y' ? faceY(u0, u1, fixed, z0, z1) : faceX(fixed, u0, u1, z0, z1);
+    const on = hrand(seed * 97 + fl * 31 + k * 7) < 0.5;
+    poly(ctx, q, on ? rgbStr(mixRgb(Lrgb(dayCol), hexRgb(litCol), NIGHT)) : L(dayCol, 0.9));
+  }
+}
+function drawFar(ctx, s) { box(ctx, s.x, s.y, 0, s.w, s.d, s.h, '#96a4bf'); }
+function drawUniv(ctx, hour) {
+  const u = UNIV;
+  box(ctx, u.x, u.y, 0, u.w, u.d, u.h, '#dccfb9');
+  gridWin(ctx, 'y', u.x + 0.2, u.x + u.w - 0.2, u.y + u.d, u.h, 12, 11, '#a9bccd', '#ffe1a0');
+  gridWin(ctx, 'x', u.y + 0.2, u.y + u.d - 0.2, u.x + u.w, u.h, 3, 37, '#a9bccd', '#ffe1a0');
+  box(ctx, u.x - 0.05, u.y - 0.05, u.h, u.w + 0.1, u.d + 0.1, 0.12, '#b9a78a');
+  box(ctx, u.x + 2.7, u.y + 0.5, u.h + 0.12, 1.0, 1.0, 1.5, '#d1c2a8');   // 시계탑
+  box(ctx, u.x + 2.6, u.y + 0.4, u.h + 1.62, 1.2, 1.2, 0.14, '#9a3412');
+  const c = iso(u.x + 3.2, u.y + 1.5, u.h + 1.0), r = TH * 0.24;
+  ctx.fillStyle = L('#f8fafc'); circle(ctx, c[0], c[1], r);
+  ctx.strokeStyle = L('#334155'); ctx.lineWidth = 1.2;
+  const ah = (hour % 12) / 12 * Math.PI * 2 - Math.PI / 2, am = (hour % 1) * Math.PI * 2 - Math.PI / 2;
+  line(ctx, c, [c[0] + Math.cos(ah) * r * 0.55, c[1] + Math.sin(ah) * r * 0.55]); line(ctx, c, [c[0] + Math.cos(am) * r * 0.85, c[1] + Math.sin(am) * r * 0.85]);
+}
+function drawOffice(ctx) {
+  const o = OFFICE;
+  box(ctx, o.x, o.y, 0, o.w, o.d, o.h, '#a8b7c9');
+  gridWin(ctx, 'y', o.x + 0.1, o.x + o.w - 0.1, o.y + o.d, o.h, 6, 5, '#cfe3f5', '#fff3c2');
+  gridWin(ctx, 'x', o.y + 0.1, o.y + o.d - 0.1, o.x + o.w, o.h, 5, 13, '#b9d3ea', '#fff3c2');
+  box(ctx, o.x + 0.6, o.y + 0.5, o.h, 1.2, 1.0, 0.5, '#94a3b8');
+}
+function winLook(i) {
+  const ev = SCN.ev, t = SCN.t, a = ev.d.action[i];
+  if (a < 0) return { kind: 'off' };
+  const done = ev.arrAt[i] != null && t >= ev.arrAt[i] + 0.05;
+  if (ev.outAt[i] != null && t >= ev.outAt[i]) return { kind: 'off', done };
+  if (ev.pushAt[i] != null && t >= ev.pushAt[i]) return { kind: a === 2 ? 'reward' : 'general', fresh: t - ev.pushAt[i], done };
+  return { kind: 'home', done };
+}
+function homeWindow(ctx, b, i, r) {
+  if (i >= N_PEOPLE) return;
+  const fl = Math.floor(r / 4), s = r % 4, z0 = fl + 0.26, z1 = fl + 0.74;
+  let q;
+  if (s < 2) { const cx = b.x + b.w * (s ? 0.74 : 0.26); q = faceY(cx - 0.25, cx + 0.25, b.y + b.d, z0, z1); }
+  else { const cy = b.y + b.d * (s === 2 ? 0.27 : 0.73); q = faceX(b.x + b.w, cy - 0.25, cy + 0.25, z0, z1); }
+  const lk = winLook(i), cx = (q[0][0] + q[2][0]) / 2, cy = (q[0][1] + q[2][1]) / 2;
+  SCN.hits[i] = { x: cx, y: cy };
+  if (lk.kind === 'off') {
+    poly(ctx, q, '#22262d');
+    ctx.strokeStyle = 'rgba(239,68,68,.9)'; ctx.lineWidth = 1.4; line(ctx, q[0], q[2]);
+  } else if (lk.kind === 'home') {
+    poly(ctx, q, rgbStr(mixRgb(Lrgb('#93a9bf'), hexRgb('#efe2c2'), 0.15 + 0.7 * NIGHT)));
+  } else {
+    const col = lk.kind === 'reward' ? '#ff9500' : '#4d8dff', glow = Math.max(0, 1 - lk.fresh / 0.14);
+    ctx.save(); ctx.shadowColor = col; ctx.shadowBlur = 3 + 14 * glow; poly(ctx, q, col); ctx.restore();
+  }
+  if (lk.done) { ctx.fillStyle = '#22c55e'; circle(ctx, q[3][0] + (q[2][0] - q[3][0]) * 0.5, q[3][1] + (q[2][1] - q[3][1]) * 0.5 - 1, Math.max(2, TH * 0.11)); }
+  if (SCN.hover === i) poly(ctx, q, null, '#ffffff', 2.2);
+}
+function drawHome(ctx, b, bi) {
+  box(ctx, b.x, b.y, 0, b.w, b.d, b.f, b.color);
+  ctx.strokeStyle = L(b.color, 0.6, 0.5); ctx.lineWidth = 1;
+  for (let fl = 1; fl < b.f; fl++) { ctx.beginPath(); const a = iso(b.x, b.y + b.d, fl), c = iso(b.x + b.w, b.y + b.d, fl), e = iso(b.x + b.w, b.y, fl); ctx.moveTo(a[0], a[1]); ctx.lineTo(c[0], c[1]); ctx.lineTo(e[0], e[1]); ctx.stroke(); }
+  box(ctx, b.x + b.w - 0.8, b.y + 0.25, b.f, 0.5, 0.5, 0.45, '#cfd6dd');   // 물탱크
+  box(ctx, b.x + 0.3, b.y + 0.3, b.f, 0.55, 0.35, 0.22, '#b8c0c8');        // 실외기
+  if (b.side === 'N') poly(ctx, faceY(b.x + b.w / 2 - 0.2, b.x + b.w / 2 + 0.2, b.y + b.d, 0, 0.7), L('#6b4f3a'));
+  for (let r = 0; r < 20; r++) homeWindow(ctx, b, bi * 20 + r, r);
+}
+function washer(ctx, p) { const r = TH * 0.2; ctx.fillStyle = L('#e5e7eb'); ctx.beginPath(); ctx.ellipse(p[0], p[1], r, r * 0.9, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = L('#60a5fa'); ctx.beginPath(); ctx.ellipse(p[0], p[1], r * 0.55, r * 0.5, 0, 0, Math.PI * 2); ctx.fill(); }
+function drawLaundry(ctx, l, k) {
+  box(ctx, l.x, l.y, 0, l.w, l.d, l.h, '#f3f5f7');
+  box(ctx, l.x, l.y, l.h, l.w, l.d, 0.14, '#38bdf8');
+  const glass = rgbStr(mixRgb(Lrgb('#bfe0ee'), hexRgb('#fff2c4'), NIGHT));
+  if (l.face === 'y') { const y = l.y + l.d; poly(ctx, faceY(l.x + 0.15, l.x + l.w - 0.15, y, 0.1, 0.95), glass); for (let m = 0; m < 3; m++) washer(ctx, iso(l.x + 0.55 + m * 0.75, y, 0.45)); }
+  else { const x = l.x + l.w; poly(ctx, faceX(x, l.y + 0.15, l.y + l.d - 0.15, 0.1, 0.95), glass); for (let m = 0; m < 3; m++) washer(ctx, iso(x, l.y + 0.5 + m * 0.65, 0.45)); }
+  SCN.lmTop[k] = iso(l.x + l.w / 2, l.y + l.d / 2, l.h + 0.8);
+  objHit(l, l.h + 0.2, `<div class="tt">🧺 코인세탁방</div>유저가 세탁기·건조기 현황(빈 기기·사용 중)을 앱에 제보하는 곳.<br>제보 1건 = ${won(MONEY.value_per_report)}의 가치 (가정)`);
+}
+function drawCenter(ctx, now) {
+  const c = CENTER, glass = rgbStr(mixRgb(Lrgb('#8fcfc6'), hexRgb('#d7fff7'), NIGHT));
+  box(ctx, c.x, c.y, 0, c.w, c.d, c.h, '#e3efec');
+  poly(ctx, faceY(c.x + 0.15, c.x + c.w - 0.15, c.y + c.d, 0.08, 0.86), glass);
+  poly(ctx, faceX(c.x + c.w, c.y + 0.15, c.y + c.d - 0.15, 0.08, 0.86), glass);
+  poly(ctx, faceY(c.x + 1.45, c.x + c.w - 0.15, c.y + c.d, 1.2, 1.7), glass);
+  poly(ctx, faceX(c.x + c.w, c.y + 0.15, c.y + c.d - 0.15, 1.2, 1.7), glass);
+  box(ctx, c.x - 0.05, c.y - 0.05, c.h, c.w + 0.1, c.d + 0.1, 0.16, '#0f766e');
+  const plate = faceY(c.x + 0.3, c.x + 1.2, c.y + c.d, 1.05, 1.85);
+  poly(ctx, plate, '#0f766e');
+  ctx.fillStyle = '#fff'; ctx.font = `800 ${Math.round(TH * 0.72)}px "Malgun Gothic",sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('L', (plate[0][0] + plate[2][0]) / 2, (plate[0][1] + plate[2][1]) / 2);
+  const ax = c.x + c.w * 0.72, ay = c.y + c.d * 0.35, a0 = iso(ax, ay, c.h + 0.16), a1 = iso(ax, ay, c.h + 2.9);
+  ctx.strokeStyle = L('#64748b'); ctx.lineWidth = Math.max(1.5, TH * 0.09); line(ctx, a0, a1);
+  const dish = iso(ax, ay, c.h + 2.1); ctx.fillStyle = L('#e2e8f0'); ctx.beginPath(); ctx.ellipse(dish[0] - TH * 0.26, dish[1], TH * 0.34, TH * 0.18, -0.5, 0, Math.PI * 2); ctx.fill();
+  const blink = 0.55 + 0.45 * Math.sin(now / 280);
+  ctx.save(); ctx.fillStyle = `rgba(45,212,191,${blink})`; ctx.shadowColor = '#2dd4bf'; ctx.shadowBlur = 12; circle(ctx, a1[0], a1[1], Math.max(2.5, TH * 0.15)); ctx.restore();
+  if (NIGHT > 0.1) {   // 지붕 LED 띠
+    ctx.save(); ctx.strokeStyle = `rgba(45,212,191,${0.9 * NIGHT})`; ctx.shadowColor = '#2dd4bf'; ctx.shadowBlur = 10; ctx.lineWidth = 2;
+    const p1 = iso(c.x, c.y + c.d, c.h + 0.1), p2 = iso(c.x + c.w, c.y + c.d, c.h + 0.1), p3 = iso(c.x + c.w, c.y, c.h + 0.1);
+    ctx.beginPath(); ctx.moveTo(p1[0], p1[1]); ctx.lineTo(p2[0], p2[1]); ctx.lineTo(p3[0], p3[1]); ctx.stroke(); ctx.restore();
+  }
+  SCN.ant = a1; SCN.antBase = iso(ax, ay, c.h + 0.5);
+  objHit(c, c.h + 3, `<div class="tt">📡 론팟 알림 센터</div>매일 18:00, ${SCN.rec.startsWith('ppo') ? 'AI(학습된 정책)' : '정해진 규칙'}이 유저 한 명 한 명에게 오늘 보낼 알림을 정해 보냅니다.`);
+}
+function drawTree(ctx, x, y, f) {
+  const b = iso(x, y, 0), top = iso(x, y, 0.95), r = TH * 0.55;
+  ctx.strokeStyle = L('#7a5a3c'); ctx.lineWidth = Math.max(1.5, TH * 0.13); line(ctx, b, top);
+  ctx.fillStyle = L(f.cold ? '#6d8d7f' : '#4c8c5c');
+  circle(ctx, top[0], top[1] - r * 0.3, r); circle(ctx, top[0] - r * 0.55, top[1] + r * 0.12, r * 0.72); circle(ctx, top[0] + r * 0.55, top[1] + r * 0.12, r * 0.72);
+  ctx.fillStyle = L(f.cold ? '#e3ece8' : '#77b27f', 1, f.cold ? 0.85 : 0.7); circle(ctx, top[0] - r * 0.2, top[1] - r * 0.55, r * 0.45);
+}
+function drawLamp(ctx, x, y) {
+  const b = iso(x, y, 0), t = iso(x, y, 1.7);
+  ctx.strokeStyle = L('#475569'); ctx.lineWidth = Math.max(1.2, TH * 0.07); line(ctx, b, t);
+  if (NIGHT > 0.05) { const g = ctx.createRadialGradient(t[0], t[1], 0, t[0], t[1], TH * 0.9); g.addColorStop(0, `rgba(255,226,160,${0.75 * NIGHT})`); g.addColorStop(1, 'rgba(255,226,160,0)'); ctx.fillStyle = g; circle(ctx, t[0], t[1], TH * 0.9); }
+  ctx.fillStyle = NIGHT > 0.05 ? `rgba(255,236,180,${0.6 + 0.4 * NIGHT})` : L('#cbd5e1'); circle(ctx, t[0], t[1], Math.max(2, TH * 0.14));
+}
+function carPos(c, now) {
+  const s = now / 1000 * c.sp + c.off;
+  if (c.dir === 'E') return { x: (s % 26) - 3, y: 6.72, w: 0.95, d: 0.42 };
+  if (c.dir === 'W') return { x: 23 - (s % 26), y: 7.86, w: 0.95, d: 0.42 };
+  if (c.dir === 'S') return { x: 9.72, y: (s % 19) - 2, w: 0.42, d: 0.95 };
+  return { x: 10.86, y: 17 - (s % 19), w: 0.42, d: 0.95 };
+}
+function drawCar(ctx, c, p) {
+  box(ctx, p.x, p.y, 0.06, p.w, p.d, 0.26, c.col);
+  const cab = p.w > p.d ? [p.x + 0.22, p.y + 0.05, p.w - 0.44, p.d - 0.1] : [p.x + 0.05, p.y + 0.22, p.w - 0.1, p.d - 0.44];
+  box(ctx, cab[0], cab[1], 0.32, cab[2], cab[3], 0.2, '#a5b4c6');
+  if (NIGHT > 0.2) {
+    const fr = c.dir === 'E' ? iso(p.x + p.w + 0.3, p.y + p.d / 2, 0.1) : c.dir === 'W' ? iso(p.x - 0.3, p.y + p.d / 2, 0.1) : c.dir === 'S' ? iso(p.x + p.w / 2, p.y + p.d + 0.3, 0.1) : iso(p.x + p.w / 2, p.y - 0.3, 0.1);
+    const g = ctx.createRadialGradient(fr[0], fr[1], 0, fr[0], fr[1], TW * 0.45); g.addColorStop(0, `rgba(255,240,190,${0.5 * NIGHT})`); g.addColorStop(1, 'rgba(255,240,190,0)');
+    ctx.fillStyle = g; circle(ctx, fr[0], fr[1], TW * 0.45);
+  }
+}
+function drawPerson(ctx, x, y, lk, ph, f, hl) {
+  const [px, py] = iso(x, y, 0), H = ZH * 1.1, sw = Math.sin(ph) * H * 0.13;
+  ctx.save();
+  if (hl) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(px, py, H * 0.34, H * 0.13, 0, 0, Math.PI * 2); ctx.stroke(); }
+  ctx.fillStyle = 'rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(px, py, H * 0.22, H * 0.08, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.lineCap = 'round'; ctx.strokeStyle = L(lk.pants, 1.1); ctx.lineWidth = Math.max(1.4, H * 0.1);
+  ctx.beginPath(); ctx.moveTo(px - H * 0.05, py - H * 0.42); ctx.lineTo(px - H * 0.05 + sw, py - H * 0.02); ctx.moveTo(px + H * 0.05, py - H * 0.42); ctx.lineTo(px + H * 0.05 - sw, py - H * 0.02); ctx.stroke();
+  if (lk.long) { ctx.fillStyle = L(lk.hair, 1.1); ctx.fillRect(px - H * 0.13, py - H * 0.98, H * 0.26, H * 0.27); }
+  const bw = f.cold ? H * 0.44 : H * 0.32;
+  ctx.fillStyle = L(f.cold ? lk.coat : lk.shirt, 1.15); roundRect(ctx, px - bw / 2, py - H * 0.8, bw, H * 0.42, H * 0.1); ctx.fill();
+  if (f.cold) { ctx.fillStyle = L('#dc2626', 1.1); ctx.fillRect(px - bw / 2 + 1, py - H * 0.8, bw - 2, H * 0.07); }
+  ctx.fillStyle = L(lk.bag, 1.15); circle(ctx, px + bw / 2 + H * 0.06, py - H * 0.5, H * 0.13);   // 빨래 가방
+  ctx.fillStyle = L(lk.skin, 1.15); circle(ctx, px, py - H * 0.92, H * 0.12);
+  ctx.fillStyle = L(lk.hair, 1.1); ctx.beginPath(); ctx.arc(px, py - H * 0.95, H * 0.125, Math.PI * 1.02, Math.PI * 1.98); ctx.fill();
+  if (f.rain) {   // 우산
+    ctx.strokeStyle = L('#334155'); ctx.lineWidth = 1; line(ctx, [px + H * 0.02, py - H * 0.7], [px + H * 0.02, py - H * 1.2]);
+    ctx.fillStyle = L(lk.umb, 1.15); ctx.beginPath(); ctx.arc(px + H * 0.02, py - H * 1.16, H * 0.38, Math.PI, 0); ctx.closePath(); ctx.fill();
+  }
+  if (f.cold) for (let k = 0; k < 3; k++) {   // 입김
+    const u = (ph * 0.15 + k / 3) % 1; ctx.fillStyle = `rgba(255,255,255,${0.55 * (1 - u)})`; circle(ctx, px + H * (0.16 + u * 0.3), py - H * (0.9 + u * 0.15), H * (0.04 + u * 0.06));
+  }
+  ctx.restore();
+}
+
+/* 효과 — 알림 발송 · 제보 데이터 · 돈 · 수신거부 · 말풍선 */
+function notiIcon(ctx, x, y, a) {
+  const r = Math.max(4, TH * 0.24);
+  ctx.save(); ctx.shadowColor = a === 2 ? '#fbbf24' : '#60a5fa'; ctx.shadowBlur = 8;
+  if (a === 2) { ctx.fillStyle = '#fbbf24'; circle(ctx, x, y, r); ctx.shadowBlur = 0; ctx.fillStyle = '#92400e'; ctx.font = `800 ${Math.round(r * 1.3)}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('P', x, y + 0.5); }
+  else { ctx.fillStyle = '#3b82f6'; roundRect(ctx, x - r, y - r * 0.8, r * 2, r * 1.6, r * 0.4); ctx.fill(); ctx.shadowBlur = 0; ctx.fillStyle = '#fff'; ctx.fillRect(x - r * 0.55, y - r * 0.3, r * 1.1, r * 0.18); ctx.fillRect(x - r * 0.55, y + r * 0.1, r * 0.75, r * 0.18); }
+  ctx.restore();
+}
+function along(w, u) {
+  let dd = u * w.len; const p = w.path;
+  for (let k = 1; k < p.length; k++) {
+    const l = Math.abs(p[k][0] - p[k - 1][0]) + Math.abs(p[k][1] - p[k - 1][1]);
+    if (dd <= l || k === p.length - 1) { const r = l ? Math.min(1, dd / l) : 1; return [p[k - 1][0] + (p[k][0] - p[k - 1][0]) * r, p[k - 1][1] + (p[k][1] - p[k - 1][1]) * r]; }
+    dd -= l;
+  }
+  return p[p.length - 1];
+}
+function drawEffects(ctx, t) {
+  const ev = SCN.ev, A = SCN.ant, AB = SCN.antBase;
+  if (!A) return;
+  if (t >= 0.075 && t <= 0.27 && ev.push.length) for (let k = 0; k < 3; k++) {   // 18:00 발송 전파
+    const r = ((t - 0.075) / 0.07 + k / 3) % 1, R = TW * 0.4 + r * TW * 6;
+    ctx.strokeStyle = `rgba(45,212,191,${0.7 * (1 - r)})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(A[0], A[1], R, R * 0.45, 0, 0, Math.PI * 2); ctx.stroke();
+  }
+  ev.push.forEach(e => {   // 날아가는 알림
+    if (t < e.t0 || t >= e.t1) return; const B = SCN.hits[e.i]; if (!B) return;
+    const u = (t - e.t0) / (e.t1 - e.t0), cx = (A[0] + B.x) / 2, cy = Math.min(A[1], B.y) - TH * 3;
+    const q = s => [(1 - s) * (1 - s) * A[0] + 2 * (1 - s) * s * cx + s * s * B.x, (1 - s) * (1 - s) * A[1] + 2 * (1 - s) * s * cy + s * s * B.y];
+    const tr = q(Math.max(0, u - 0.14)), p = q(u);
+    ctx.strokeStyle = e.a === 2 ? 'rgba(251,191,36,.5)' : 'rgba(96,165,250,.5)'; ctx.lineWidth = 2; line(ctx, tr, p);
+    notiIcon(ctx, p[0], p[1], e.a);
+  });
+  ev.walk.forEach(w => {   // 제보 데이터: 세탁방 → 알림 센터
+    const u = (t - w.ta) / 0.05, S = SCN.lmTop[w.lm]; if (u < 0 || u >= 1 || !S) return;
+    const x = S[0] + (AB[0] - S[0]) * u, y = S[1] + (AB[1] - S[1]) * u - Math.sin(u * Math.PI) * TH * 2.2;
+    ctx.save(); ctx.fillStyle = '#4ade80'; ctx.shadowColor = '#22c55e'; ctx.shadowBlur = 8; circle(ctx, x, y, Math.max(2.5, TH * 0.13)); ctx.restore();
+  });
+  LAUNDRY.forEach((l, k) => {   // 세탁방 위 제보 표시
+    const S = SCN.lmTop[k], n = ev.walk.filter(w => w.lm === k && t >= w.ta && t < w.ta + 0.06).length; if (!S || !n) return;
+    const r = Math.max(8, TH * 0.42); ctx.save(); ctx.fillStyle = '#16a34a'; ctx.shadowColor = 'rgba(0,0,0,.3)'; ctx.shadowBlur = 6; circle(ctx, S[0], S[1], r); ctx.restore();
+    ctx.fillStyle = '#fff'; ctx.font = `800 ${Math.round(r * 1.1)}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('✓', S[0], S[1] + 1);
+    if (n > 1) { ctx.fillStyle = '#fff'; circle(ctx, S[0] + r, S[1] - r * 0.8, r * 0.62); ctx.fillStyle = '#15803d'; ctx.font = `800 ${Math.round(r * 0.75)}px sans-serif`; ctx.fillText(n, S[0] + r, S[1] - r * 0.8 + 0.5); }
+  });
+  ctx.font = `800 ${Math.max(10, Math.round(TH * 0.46))}px "Malgun Gothic",sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  ev.walk.forEach((w, n) => {   // 들어온 돈
+    const u = (t - w.ta - 0.05) / 0.12; if (u < 0 || u >= 1 || n % 2) return;
+    ctx.fillStyle = w.a === 2 ? `rgba(251,191,36,${1 - u})` : `rgba(74,222,128,${1 - u})`;
+    ctx.fillText('+' + num(w.value) + '원', AB[0] + (hrand(w.i) - 0.5) * TW * 1.8, AB[1] - TH * (1.2 + u * 2.2));
+  });
+  ev.outs.forEach(o => {   // 수신거부
+    const u = (t - o.t) / 0.12, B = SCN.hits[o.i]; if (u < 0 || u >= 1 || !B) return;
+    ctx.strokeStyle = `rgba(239,68,68,${1 - u})`; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(B.x, B.y, 4 + u * TH * 0.9, 0, Math.PI * 2); ctx.stroke();
+  });
+}
+function bubble(ctx, x, y, text, alpha) {
+  ctx.save(); ctx.globalAlpha = clamp(alpha, 0, 1);
+  ctx.font = `600 ${Math.max(10, Math.round(TH * 0.42))}px "Malgun Gothic","Apple SD Gothic Neo",sans-serif`;
+  const w = ctx.measureText(text).width + 14, h = Math.max(19, TH * 0.78), bx = clamp(x - w / 2, 4, SCN.W - w - 4), by = y - h - 8;
+  ctx.fillStyle = '#fff'; ctx.shadowColor = 'rgba(0,0,0,.28)'; ctx.shadowBlur = 6; roundRect(ctx, bx, by, w, h, 8); ctx.fill(); ctx.shadowBlur = 0;
+  ctx.beginPath(); ctx.moveTo(x - 5, by + h); ctx.lineTo(x, by + h + 7); ctx.lineTo(x + 5, by + h); ctx.fill();
+  ctx.fillStyle = '#1c2526'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(text, bx + 7, by + h / 2 + 0.5);
+  ctx.restore();
+}
+function drawBubbles(ctx, t, f) {
+  const ev = SCN.ev, A = SCN.ant, cand = [];
+  if (t < 0.085 && A) cand.push([A[0], A[1] - TH * 0.5, SCN.rec.startsWith('ppo') ? '🤖 100명 각자에게 무엇을 보낼까?' : `📋 규칙대로 발송 준비 — ${recName(SCN.rec)}`, 1]);
+  ev.outs.forEach(o => { const B = SCN.hits[o.i]; if (B && t >= o.t && t < o.t + 0.16) cand.push([B.x, B.y - 6, pick(BUB.out, o.i), 1]); });
+  ev.walk.forEach(w => {
+    if (!w.talk || !w.pos) return; const u = (t - w.ts) / (w.ta - w.ts); if (u < 0.25 || u > 0.8) return;
+    const [px, py] = iso(w.pos[0], w.pos[1], 0), key = f.rain ? 'rain' : f.cold ? 'cold' : 'r' + w.a;
+    cand.push([px, py - ZH * (f.rain ? 1.65 : 1.25), pick(BUB[key], w.i), Math.min(1, (u - 0.25) / 0.08, (0.8 - u) / 0.08)]);
+  });
+  const placed = [];   // 겹치면 생략, 한 번에 7개까지
+  for (const c of cand) {
+    if (placed.length >= 7) break;
+    if (placed.some(p => Math.abs(p[0] - c[0]) < 120 && Math.abs(p[1] - c[1]) < 32)) continue;
+    placed.push(c); bubble(ctx, c[0], c[1], c[2], c[3]);
+  }
+}
+function drawLabels(ctx) {
+  const big = TH >= 14;
+  if (big) {
+    HOMES.forEach(b => { const p = iso(b.x + b.w / 2, b.y + b.d / 2, b.f + 1.3); pill(ctx, p[0], p[1], `${b.name} · 20명`); });
+    let p = iso(UNIV.x + UNIV.w * 0.2, UNIV.y + UNIV.d / 2, UNIV.h + 1.0); pill(ctx, p[0], p[1], '대학교');
+    p = iso(OFFICE.x + OFFICE.w / 2, OFFICE.y + OFFICE.d / 2, OFFICE.h + 1.0); pill(ctx, p[0], p[1], '오피스');
+  }
+  LAUNDRY.forEach(l => { const p = iso(l.x + l.w / 2, l.y + l.d / 2, l.h + 1.7); pill(ctx, p[0], p[1], '🧺 코인세탁방'); });
+  const p = iso(CENTER.x + CENTER.w / 2, CENTER.y + CENTER.d + 1.0, 0); pill(ctx, p[0], p[1], '📡 론팟 알림 센터', 'rgba(15,118,110,.95)', '#fff');
+}
+function drawRain(ctx, now) {
+  const W = SCN.W, H = SCN.H; ctx.strokeStyle = 'rgba(205,220,240,.42)'; ctx.lineWidth = 1; ctx.beginPath();
+  for (let k = 0; k < 170; k++) {
+    const sp = 0.55 + hrand(k * 2.1) * 0.35, x0 = hrand(k * 1.3) * (W + 80) - 40, y = ((now * sp + hrand(k * 3.7) * (H + 40)) % (H + 40)) - 20;
+    ctx.moveTo(x0 - y * 0.12, y); ctx.lineTo(x0 - y * 0.12 - 3, y + 12);
+  }
+  ctx.stroke();
+}
+
+/* 하루 장면 만들기 · 그리기 */
+function walkPath(i, j1, j2, j3) {
+  const b = HOMES[Math.floor(i / 20)], cx = b.x + b.w / 2 + (j1 - 0.5) * 0.7;
+  const door = b.side === 'N' ? [cx, b.y + b.d + 0.1] : [cx, b.y - 0.1];
+  const side = (b.side === 'N' ? WALK_N : WALK_S) + (j2 - 0.5) * 0.14;
+  const dist = l => Math.hypot(l.door[0] - door[0], l.door[1] - door[1]);
+  let lm = dist(LAUNDRY[0]) < dist(LAUNDRY[1]) ? 0 : 1;
+  if (j3 < 0.3) lm = 1 - lm;
+  const tg = LAUNDRY[lm].door, p = [door, [cx, side], [tg[0], side], tg];
+  p.lm = lm; return p;
+}
+function scBuild() {
+  const days = D.replays[SCN.rec].episodes[SCN.ep].days, d = days[SCN.day], f = flags(d), st = epStats(SCN.rec, SCN.ep), n = d.action.length;
+  const ev = { d, f, st, push: [], walk: [], outs: [], pushAt: new Array(n).fill(null), arrAt: new Array(n).fill(null), outAt: new Array(n).fill(null) };
+  const seed = SCN.day * 977 + SCN.ep * 7919;
+  for (let i = 0; i < n; i++) {
+    const a = d.action[i]; if (a < 0) continue;
+    const h = k => hrand(seed + i * 31.7 + k * 3.3);
+    if (a > 0) { const t0 = 0.085 + 0.11 * h(1), t1 = t0 + 0.05 + 0.03 * h(2); ev.push.push({ i, a, t0, t1 }); ev.pushAt[i] = t1; }
+    if (d.reported[i]) {
+      const path = walkPath(i, h(3), h(4), h(5)); let len = 0;
+      for (let k = 1; k < path.length; k++) len += Math.abs(path[k][0] - path[k - 1][0]) + Math.abs(path[k][1] - path[k - 1][1]);
+      const ts = 0.21 + 0.17 * h(6), ta = ts + 0.1 + len * 0.014;
+      ev.walk.push({ i, a, path, len, ts, ta, lm: path.lm, value: MONEY.value_per_report - (a === 2 ? MONEY.reward_cost : 0), talk: h(7) < 0.3, pos: null });
+      ev.arrAt[i] = ta;
+    }
+    if (d.opted_out[i]) { const to = 0.3 + 0.14 * h(8); ev.outs.push({ i, t: to }); ev.outAt[i] = to; }
+  }
+  SCN.ev = ev; SCN.sig = '';
+  scMarkUi();
+}
+function scDraw(now) {
+  const ctx = SCN.ctx, W = SCN.W, H = SCN.H, ev = SCN.ev, f = ev.f, t = SCN.t, hour = 17.5 + 6 * t;
+  NIGHT = clamp((hour - 18.2) / 1.6, 0, 1);
+  const sky = skyAt(hour, f); LIGHT.k = sky.k; LIGHT.tint = sky.tint; LIGHT.ta = sky.ta;
+  SCN.hits = new Array(N_PEOPLE).fill(null); SCN.objs = []; SCN.lmTop = [];
+  ctx.save();
+  const g = ctx.createLinearGradient(0, 0, 0, OY + 4 * TH); g.addColorStop(0, rgbStr(sky.top)); g.addColorStop(1, rgbStr(sky.bot));
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  drawSkyBodies(ctx, hour, f, now, sky);
+  ctx.globalAlpha = 0.78; SKYLINE.forEach(s => drawFar(ctx, s)); ctx.globalAlpha = 1;
+  drawGround(ctx, f, now);
+  const items = [], add = (k, fn) => items.push([k, fn]), ck = b => b.x + b.w / 2 + b.y + b.d / 2;
+  add(ck(UNIV), () => drawUniv(ctx, hour)); add(ck(OFFICE), () => drawOffice(ctx));
+  HOMES.forEach((b, bi) => add(ck(b), () => drawHome(ctx, b, bi)));
+  LAUNDRY.forEach((l, k) => add(ck(l), () => drawLaundry(ctx, l, k)));
+  add(ck(CENTER), () => drawCenter(ctx, now));
+  TREES.forEach(([x, y]) => add(x + y, () => drawTree(ctx, x, y, f)));
+  LAMPS.forEach(([x, y]) => add(x + y, () => drawLamp(ctx, x, y)));
+  BENCHES.forEach(([x, y]) => add(x + y + 0.3, () => box(ctx, x, y, 0.18, 0.7, 0.24, 0.08, '#8b5e34')));
+  CARS.forEach(c => { const p = carPos(c, now); add(p.x + p.w / 2 + p.y + p.d / 2, () => drawCar(ctx, c, p)); });
+  ev.walk.forEach(w => {
+    if (t < w.ts || t > w.ta) { w.pos = null; return; }
+    const pos = along(w, (t - w.ts) / (w.ta - w.ts)); w.pos = pos;
+    add(pos[0] + pos[1] + 0.05, () => drawPerson(ctx, pos[0], pos[1], LOOKS[w.i], now / 110 + w.i, f, SCN.hover === w.i));
+  });
+  items.sort((a, b) => a[0] - b[0]).forEach(it => it[1]());
+  drawEffects(ctx, t);
+  if (f.rain) drawRain(ctx, now);
+  if (f.cold) { ctx.fillStyle = 'rgba(180,205,255,.07)'; ctx.fillRect(0, 0, W, H); }
+  const vg = ctx.createRadialGradient(W / 2, H * 0.55, Math.min(W, H) * 0.35, W / 2, H * 0.55, Math.max(W, H) * 0.78);
+  vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.22)'); ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+  drawLabels(ctx);
+  drawBubbles(ctx, t, f);
+  ctx.restore();
+}
+function scOverlay() {
+  const ev = SCN.ev, t = SCN.t, st = ev.st, di = SCN.day, d = ev.d, hour = 17.5 + 6 * t, hh = Math.floor(hour), mm = Math.floor((hour - hh) * 60);
+  const reps = ev.walk.filter(w => t >= w.ta).length, prof = ev.walk.reduce((s, w) => s + (t >= w.ta + 0.05 ? w.value : 0), 0);
+  const outs = (di ? st.outs[di - 1] : 0) + ev.outs.filter(o => t >= o.t).length, cum = (di ? st.cum[di - 1] : 0) + prof, sent = t >= 0.085 ? st.counts[di] : null;
+  const phase = t < 0.085 ? '⏳ 곧 18:00 — 유저마다 보낼 알림을 정하는 중' : t < 0.21 ? '📲 18:00 알림 발송!' : t < 0.8 ? '🚶 알림을 본 유저가 코인세탁방에서 제보 중' : '🌙 하루 마감 — 내일 18:00에 다시';
+  const sig = [di, hh, mm, reps, prof, outs, SCN.rec, SCN.ep, phase].join('|');
+  if (sig === SCN.sig) return;
+  SCN.sig = sig;
+  const icon = ev.f.rain ? '🌧' : hour >= 19 ? '🌙' : '🌇', clock = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+  $('#scDay').innerHTML = `<div class="kl">${dateLabel(d)} · ${di + 1}일째 / ${N_DAYS}</div><div class="clock">${icon} ${clock}</div><div class="chips">${dayChips(d)}</div><div class="small muted">${weatherLine(d)}<br>${esc(dayEffect(d))}</div><div class="small ov-phase">${phase}</div>`;
+  const tile = (k, l) => `<div style="border-top-color:${COLORS.action[k]}"><b>${sent ? sent[k] : '–'}</b>${l}</div>`;
+  $('#scKpi').innerHTML = `<div class="kl">오늘 18:00 보낸 알림 <span style="color:${recColor(SCN.rec)}">· ${esc(recName(SCN.rec))}</span></div>
+    <div class="tiles">${tile(2, '리워드')}${tile(1, '일반')}${tile(0, '안 보냄')}</div>
+    <div class="kv2"><span>오늘 제보</span><b>${reps}건</b></div><div class="kv2"><span>오늘 순이익</span><b>${won(prof)}</b></div>
+    <div class="kv2"><span>누적 순이익</span><b>${won(cum)}</b></div><hr>
+    <div class="kv2"><span>알림 끈 사람</span><b style="color:${outs > MONEY.max_opt_outs ? COLORS.bad : COLORS.good}">${outs}명 <span class="faint" style="font-weight:400">/ 한도 ${MONEY.max_opt_outs}명</span></b></div>
+    <div class="meter" style="margin:6px 0 2px"><i style="width:${outs / N_PEOPLE * 100}%;background:${outs > MONEY.max_opt_outs ? COLORS.bad : COLORS.good}"></i><b style="left:${MONEY.max_opt_outs / N_PEOPLE * 100}%"></b></div>`;
+}
+function scPresets() {
+  const days = CAL[SCN.ep], find = fn => { const k = days.findIndex((d, i) => i > 0 && fn(flags(d))); return k < 0 ? null : k; };
+  return [['첫날', 0], ['🌧 비 오는 날', find(f => f.rain)], ['🗓 주말·공휴일', find(f => (f.weekend || f.holiday) && !f.rain)], ['🥶 한파', find(f => f.cold)], ['💰 월말', find(f => f.monthEnd)], ['⏳ 막판 85일째', Math.min(84, N_DAYS - 1)]];
+}
+function scMarkUi() {
+  $('#scPlay').textContent = SCN.playing ? '⏸ 멈춤' : '▶ 연속 재생';
+  $$('#scTimeline .tl').forEach((b, i) => { b.classList.toggle('cur', i === SCN.day); b.classList.toggle('future', i > SCN.day); });
+  $('#scPreset').innerHTML = scPresets().map(([l, d]) => `<button data-d="${d ?? ''}" ${d == null ? 'disabled title="이 계절에는 이런 날이 없습니다"' : ''} class="${d === SCN.day ? 'on' : ''}">${l}</button>`).join('');
+}
+function scTimeline() { $('#scTimeline').innerHTML = CAL[SCN.ep].map((d, i) => `<button class="tl ${flags(d).monthEnd ? 'me' : ''}" data-d="${i}" style="background:${dayColor(d)}" aria-label="${d.date}"></button>`).join(''); }
+function scNoteDraw() {
+  const k = SCN.rec, s = D.replays[k].summary;
+  $('#scNote').innerHTML = `<b style="color:${recColor(k)}">${esc(recName(k))}</b> — ${k.startsWith('ppo') ? SC_NOTES.ppo : SC_NOTES[k] || ''}<br><span class="small">2025년 네 분기 평균: 90일 순이익 <b>${man(s.profit)}</b> · 알림 끈 사람 <b>${num(s.opt_outs, 1)}명</b> · <span class="badge ${s.success ? 'good' : 'bad'}">성공 척도 ${s.success ? '달성' : '미달'}</span></span>`;
+}
+function scTip(i) {
+  const p = PEOPLE[i], ev = SCN.ev, d = ev.d, a = d.action[i];
+  const head = `<div class="tt">#${p.id} ${esc(nameOf(p))} · ${p.age}세</div>${esc(p.occupation)} · ${HOMES[Math.floor(i / 20)].name}<br>`;
+  if (a < 0) return head + `🔕 ${ev.st.outDay[i] + 1}일째에 알림을 껐습니다 (더 이상 보낼 수 없음)`;
+  return head + `오늘 18:00 → <b>${ACT[a]}</b><br>${d.reported[i] ? `🧺 코인세탁방에서 제보 (+${won(MONEY.value_per_report - (a === 2 ? MONEY.reward_cost : 0))})` : '제보 안 함'}`
+    + (d.opted_out[i] ? '<br>🔕 오늘 알림을 껐습니다' : '') + `<br><span style="opacity:.8">피로도 ${d.fatigue[i]} · 보상 의존도 ${d.dependency[i]}</span>`;
+}
+function scHover(e) {
+  const r = SCN.cv.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
+  let best = null, bd = Math.max(8, TW * 0.22);
+  SCN.hits.forEach((h, i) => { if (!h) return; const dd = Math.hypot(h.x - mx, h.y - my); if (dd < bd) { bd = dd; best = i; } });
+  SCN.hover = best;
+  if (best != null) return showTip(scTip(best), e.clientX, e.clientY);
+  const o = SCN.objs.find(o => mx >= o.x0 && mx <= o.x1 && my >= o.y0 && my <= o.y1);
+  if (o) showTip(o.html, e.clientX, e.clientY); else hideTip();
+}
+function scResize() {
+  const w = $('#scWrap').clientWidth, h = Math.round(clamp(w * 0.7, 220, 720)), dpr = Math.min(2, window.devicePixelRatio || 1);
+  SCN.cv.style.height = h + 'px'; SCN.cv.width = Math.round(w * dpr); SCN.cv.height = Math.round(h * dpr);
+  SCN.ctx.setTransform(dpr, 0, 0, dpr, 0, 0); SCN.W = w; SCN.H = h;
+  TH = Math.min(w / 35, h / 26); TW = TH * 2; ZH = TH * 0.6; OX = w / 2 - 3 * TH; OY = h - 17.7 * TH;
+}
+function scFrame(now) {
+  const dt = SCN.last ? Math.min(80, now - SCN.last) : 16; SCN.last = now;
+  if (SCN.t < 1) SCN.t = Math.min(1, SCN.t + dt / UI.sceneDayMs[SCN.speed]);
+  else if (SCN.playing) { if (SCN.day < N_DAYS - 1) { SCN.day++; SCN.t = 0; scBuild(); } else { SCN.playing = false; scMarkUi(); } }
+  scDraw(now); scOverlay();
+  SCN.raf = requestAnimationFrame(scFrame);
+}
+function scStart() { scStop(); SCN.last = 0; SCN.raf = requestAnimationFrame(scFrame); }
+function scStop() { if (SCN.raf) cancelAnimationFrame(SCN.raf); SCN.raf = null; }
+const scJump = d => { SCN.day = clamp(d, 0, N_DAYS - 1); SCN.t = 0; scBuild(); };
+INIT[9] = () => {
+  SCN.cv = $('#scene'); SCN.ctx = SCN.cv.getContext('2d');
+  seg($('#scRec'), REC_KEYS.map(k => [k, `<span class="dot" style="background:${recColor(k)}"></span>${esc(recName(k))}`]), SCN.rec, v => { SCN.rec = v; scJump(SCN.day); scNoteDraw(); });
+  seg($('#scEp'), P.eval_starts.map((s, i) => [String(i), epLabel(s)]), '0', v => { SCN.ep = +v; scTimeline(); scJump(SCN.day); });
+  seg($('#scSpeed'), ['느리게', '보통', '빠르게'].map((l, k) => [String(k), l]), String(SCN.speed), v => { SCN.speed = +v; });
+  $('#scPreset').onclick = e => { const b = e.target.closest('button'); if (b && !b.disabled) scJump(+b.dataset.d); };
+  $('#scTimeline').onclick = e => { const b = e.target.closest('.tl'); if (b) scJump(+b.dataset.d); };
+  $('#scTimeline').onmouseover = e => { const b = e.target.closest('.tl'); if (b) { const d = CAL[SCN.ep][+b.dataset.d]; showTip(`<div class="tt">${dateLabel(d)} · ${+b.dataset.d + 1}일째</div>${esc(dayEffect(d))}`, e.clientX, e.clientY); } };
+  $('#scTimeline').onmouseleave = hideTip;
+  $('#scFirst').onclick = () => scJump(0);
+  $('#scPrev').onclick = () => scJump(SCN.day - 1);
+  $('#scNext').onclick = () => scJump(SCN.day + 1);
+  $('#scPlay').onclick = () => { SCN.playing = !SCN.playing; if (SCN.playing && SCN.day >= N_DAYS - 1 && SCN.t >= 1) scJump(0); scMarkUi(); };
+  SCN.cv.addEventListener('mousemove', scHover);
+  SCN.cv.addEventListener('mouseleave', () => { SCN.hover = null; hideTip(); });
+  $('#scLegend').innerHTML = `<span><b>창문 1칸 = 유저 1명</b> (원룸 5동 × 20명)</span>`
+    + [['#ff9500', '300P 리워드 알림 받음'], ['#4d8dff', '일반 알림 받음'], ['#efe2c2', '안 보냄 (집 불빛)'], ['#22262d', '알림 끔 (빨간 줄)'], ['#22c55e', '오늘 제보함 (초록 점)']].map(([c, l]) => `<span><i style="background:${c}"></i>${l}</span>`).join('')
+    + `<span>🚶 코인세탁방으로 제보하러 가는 유저</span><span>📡→🪟 날아가는 알림 · 🧺→📡 초록 점 = 제보 데이터</span>`;
+  scTimeline(); scBuild(); scNoteDraw();
+};
+DRAW[9] = () => { scResize(); scStart(); };
+
+/* ───────── 시작 ───────── */
+go(+location.hash.slice(1) || 0);
+</script>
+</body>
+</html>

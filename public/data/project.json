@@ -1,0 +1,109 @@
+{
+ "store": "론팟(LaunPot) 마포 상권",
+ "business": "위치 기반 코인세탁방 실시간 기기 현황 공유 플랫폼(앱 서비스)",
+ "location": {
+  "lat": 37.5663,
+  "lon": 126.9019
+ },
+ "business_hours": [
+  0,
+  24
+ ],
+ "push_hour": 18,
+ "agent": "CRM 매니저 — 매일 18:00 유저마다 오늘 보낼 푸시를 정함",
+ "state": [
+  "report_propensity",
+  "reward_sensitivity",
+  "fatigue_sensitivity",
+  "fatigue",
+  "dependency",
+  "is_rain",
+  "is_holiday_or_weekend",
+  "is_cold",
+  "is_month_end",
+  "day_of_week",
+  "days_left"
+ ],
+ "state_labels": [
+  "기본 제보 성향",
+  "리워드 민감도",
+  "알림 피로 민감도",
+  "알림 피로도",
+  "보상 의존도",
+  "비",
+  "공휴일·주말",
+  "한파",
+  "월말",
+  "요일",
+  "남은 날 수"
+ ],
+ "actions": {
+  "0": "아무것도 보내지 않음",
+  "1": "일반 기기 현황 공유 요청 알림",
+  "2": "300P 리워드 미션 알림"
+ },
+ "weather_rules": {
+  "rain_mm": 1.0,
+  "cold_temp_min": -5.0
+ },
+ "reward": "v1: 그날 순이익(제보 1,500원 − 리워드 300원) ÷ 1,000",
+ "reward_version": "v1",
+ "reward_scale": 1000.0,
+ "success_metric": "90일 누적 플랫폼 순이익(제보 데이터 전환 가치 - 포인트 지급 비용) 극대화, 수신거부 5명 이하",
+ "episode_days": 90,
+ "eval_starts": [
+  "2025-01-01",
+  "2025-04-01",
+  "2025-07-01",
+  "2025-10-01"
+ ],
+ "rules": {
+  "GENERAL_PUSH_MULTIPLIER": 2.5,
+  "REWARD_PROB_BASE": 0.25,
+  "REWARD_PROB_SLOPE": 0.4,
+  "FATIGUE_PER_PUSH": 15.0,
+  "FATIGUE_RECOVERY": 5.0,
+  "FATIGUE_DANGER": 75.0,
+  "OPT_OUT_PROB": 0.2,
+  "DEPENDENCY_PER_REWARD": 20.0,
+  "DEPENDENCY_RECOVERY": 5.0,
+  "DEPENDENCY_DANGER": 60.0,
+  "DEPENDENCY_PENALTY": 0.5,
+  "RAIN_MM": 1.0,
+  "DEMAND_UP": 1.4,
+  "COLD_TEMP_MIN": -5.0,
+  "COLD_MULTIPLIER": 0.7,
+  "MONTH_END_REWARD_MULTIPLIER": 1.2,
+  "CHANCE_LOW": 0.85,
+  "CHANCE_HIGH": 1.15,
+  "LEVEL_MAX": 100.0
+ },
+ "money": {
+  "value_per_report": 1500,
+  "reward_cost": 300,
+  "max_opt_outs": 5
+ },
+ "month_end_start_day": 25,
+ "current_rule": {
+  "general_weekday": 5,
+  "reward_day": 25
+ },
+ "traits": {
+  "report_propensity": {
+   "min": 0.02,
+   "max": 0.2,
+   "target": 0.08
+  },
+  "reward_sensitivity": {
+   "min": 0.0,
+   "max": 1.0,
+   "target": 0.5
+  },
+  "fatigue_sensitivity": {
+   "min": 0.5,
+   "max": 1.5,
+   "target": 1.0
+  }
+ },
+ "trait_tolerance": 0.1
+}

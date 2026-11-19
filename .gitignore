@@ -1,0 +1,19 @@
+# 설치된 라이브러리 (다른 PC에서는 uv sync 로 다시 설치)
+.venv/
+
+# 파이썬 임시 폴더
+__pycache__/
+*.pyc
+
+# 실행 기록 사본 (내 PC에만 쌓음)
+results/runs/
+results/train_*.monitor.csv
+
+# 실제 매장 데이터 원본 · API 키 · 비밀번호
+data/raw/
+.env
+*.key
+secrets*
+
+# 올리는 것: results/logs/ 와 public/data/ 의 가상 데이터 (아래는 확인용 주석)
+# results/logs/*.csv, public/data/*.json → 올림
