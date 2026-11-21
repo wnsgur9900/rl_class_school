@@ -381,7 +381,36 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
 
 .row select{min-width:0;flex:1 1 160px}
 
-/* 10단계 */
+/* 10단계 — 변경 흐름 */
+.chipbtn{cursor:pointer;font-family:inherit}
+.chipbtn:hover{border-color:var(--teal);color:var(--teal-ink)}
+.clflow{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:18px}
+.clcard{position:relative}
+.clcard .vf{min-height:0}
+.clcard:not(:last-child)::after{content:"→";position:absolute;right:-15px;top:44%;color:var(--faint);font-weight:700}
+.clctl{display:flex;gap:8px;flex-wrap:wrap}
+.clday{margin-top:14px}
+.clday:first-child{margin-top:0}
+.cld{font-weight:700;font-size:13.5px;color:var(--muted);margin-bottom:6px}
+.clitem{border:1px solid var(--line);border-radius:10px;background:var(--soft);margin-bottom:6px}
+.clitem summary{display:flex;align-items:center;gap:6px;flex-wrap:wrap;cursor:pointer;padding:8px 12px;font-size:14px}
+.clitem summary::after{content:"▾";margin-left:auto;color:var(--faint)}
+.clitem[open] summary::after{content:"▴"}
+.clitem summary b{flex:1 1 220px;min-width:0;font-weight:600;overflow-wrap:anywhere}
+.clbody{display:grid;grid-template-columns:64px minmax(0,1fr);gap:4px 10px;margin:0;padding:2px 12px 10px;font-size:13.5px}
+.clbody dt{font-weight:700;color:var(--muted)}
+.clbody dd{margin:0;overflow-wrap:anywhere}
+.clbody code{font-size:12px;background:#efe9db;padding:0 4px;border-radius:4px}
+.cltag{color:#fff;flex:none}
+.clnew{background:var(--warn-soft);color:var(--warn);flex:none}
+.clstage{font-size:12px;color:var(--muted);flex:none}
+.clrecent{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin-bottom:6px;cursor:pointer;font:inherit;font-size:13.5px;color:inherit}
+.clrecent:hover{border-color:var(--teal)}
+.clrecent:last-child{margin-bottom:0}
+.clrecent .d{flex:none;color:var(--muted);font-size:12.5px}
+.clrecent b{flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* 11단계 */
 .scene-wrap{position:relative;border-radius:14px;overflow:hidden;background:#1b2340}
 #scene{display:block;width:100%;cursor:crosshair}
 .ov{position:absolute;top:12px;background:rgba(255,255,255,.9);backdrop-filter:blur(6px);border-radius:12px;padding:10px 13px;box-shadow:0 6px 22px rgba(0,0,0,.22);font-size:13px;line-height:1.5;pointer-events:none}
@@ -422,6 +451,8 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
   .brand small{display:none}
   .top .chip{display:none}
   .fitem{grid-template-columns:1fr}
+  .clflow{grid-template-columns:minmax(0,1fr)}
+  .clcard:not(:last-child)::after{content:"↓";right:auto;left:50%;top:auto;bottom:-21px}
   .plr{grid-template-columns:28px minmax(0,1fr)}
   .plr .plbars{grid-column:1 / -1}
   .plbar{grid-template-columns:30px 1fr 118px}
@@ -432,6 +463,7 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
 <header class="top">
   <div class="brand"><span class="logo">L</span><div>론팟 마포 · 푸시 알림 강화학습<small>서울미디어대학원대학교 「심층강화학습기술의 이해와 응용」 프로젝트1</small></div></div>
   <div class="spacer"></div>
+  <button class="chip chipbtn" id="clChip" data-go="10" title="변경 흐름 보기"></button>
   <span class="chip" id="verChip"></span>
   <button class="btn" id="glossBtn">📖 용어 풀이</button>
 </header>
@@ -477,10 +509,15 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
         <ol class="progress">
           <li class="done"><span class="pd">✓</span><div><b>1회차</b> — 문제 정의(강의 양식의 ‘매장 정의’), 반응 규칙 6줄<br><span class="muted small">무엇을 결정하고, 고객이 어떻게 반응하는지 글로 정함</span></div></li>
           <li class="done"><span class="pd">✓</span><div><b>2회차</b> — 가상 유저 · 가상 환경 · 점검 · 첫 학습(v1)<br><span class="muted small">이익은 늘었지만 알림 끈 사람이 너무 많아 허용 기준을 넘음</span></div></li>
-          <li class="now"><span class="pd">✓</span><div><b>3회차 (지금)</b> — 결과 진단 → 보상 v2(되돌림) → <b>v3 채택</b> · 화면 반영 · 웹 배포<br><span class="muted small">‘알림 끄기’에 벌점을 넣자 수신거부 0명, 순이익은 v1보다도 높아짐</span></div></li>
+          <li class="now"><span class="pd">✓</span><div><b>3회차 (지금)</b> — 결과 진단 → 보상 v2(되돌림) → <b>v3 채택</b> · 화면 반영 · 웹 배포<span id="seedProgress"></span><br><span class="muted small">‘알림 끄기’에 벌점을 넣자 수신거부가 거의 사라지고, 순이익은 v1 수준을 유지</span></div></li>
           <li class="next"><span class="pd">4</span><div><b>4회차</b> — 최종 발표 (12월 3일)<br><span class="muted small">초기 보상 vs 수정 보상 비교 · 웹 화면 시연</span></div></li>
         </ol>
       </div>
+    </div>
+
+    <div class="card">
+      <div class="row-between"><h2>최근 바뀐 것</h2><button class="btn" data-go="10">전체 변경 흐름 →</button></div>
+      <div id="clRecent" style="margin-top:8px"></div>
     </div>
 
     <div class="card">
@@ -782,6 +819,16 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
       <p class="hint">v2에 항목 하나만 더했습니다. −20점 ≈ 유저 1명이 90일 동안 낼 순이익(가정). 이제 유저를 내보내면 벌점이 끝나는 게 아니라 크게 깎입니다.</p>
       <div class="facts-row" id="v3Facts"></div>
     </div>
+    <div class="card" id="seedCard" style="display:none">
+      <h2>우연이 아닐까? — 학습 시드만 바꿔 다시 학습 <span class="badge" id="seedBadge"></span></h2>
+      <p class="hint" id="seedHint"></p>
+      <div class="grid2" style="margin-bottom:0">
+        <div style="overflow-x:auto"><table class="t" id="seedTable"></table></div>
+        <div><b class="small">학습 곡선 겹쳐 보기 (보상 점수)</b><div id="chSeed"></div></div>
+      </div>
+      <div id="seedChecks" style="margin-top:12px"></div>
+      <div class="callout" id="seedNote"></div>
+    </div>
     <details class="why"><summary>전체 성적표 (시험 규칙 포함) <span>2025년 네 분기 평균</span></summary><div class="body">
       <div style="overflow-x:auto"><table class="t" id="score"></table></div>
     </div></details>
@@ -832,22 +879,47 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
     <div id="fileGroups"></div>
     <div class="card">
       <h2>실행 방법</h2>
-      <p class="hint"><span class="file">run.bat</span>을 더블클릭하면 번호 메뉴가 뜹니다. 실행할 때마다 <span class="file">results/runs/</span>에 기록이 쌓이고, 1번·4번이 끝나면 이 화면의 데이터(<span class="file">public/data/viewer_data.js</span>)도 새로 바뀝니다 (새로고침하면 반영).</p>
+      <p class="hint"><span class="file">run.bat</span>을 더블클릭하면 번호 메뉴가 뜹니다. 실행할 때마다 <span class="file">results/runs/</span>에 기록이 쌓이고, 1·4·5번이 끝나면 이 화면의 데이터(<span class="file">public/data/viewer_data.js</span>)가, 어떤 번호든 끝나면 변경 흐름(<span class="file">public/data/timeline.js</span>)이 새로 바뀝니다 (새로고침하면 반영).</p>
       <table class="t">
         <tr><th>번호</th><th>하는 일</th><th>결과</th></tr>
         <tr><td>1</td><td>가상 환경 점검 (시험 규칙 4개)</td><td>docs/reports/sanity_check.md · 이 화면 4·6단계</td></tr>
         <tr><td>2</td><td>시험 학습 (1분 안쪽, 오류 확인)</td><td>화면에 걸린 시간</td></tr>
         <tr><td>3</td><td>본 학습 (400만 번, 약 8~10분)</td><td>results/models/v*/ · 학습 곡선</td></tr>
         <tr><td>4</td><td>학습된 AI 평가와 진단</td><td>docs/reports/summary_v*.md · diagnosis_v*.md · 이 화면 5~8단계</td></tr>
+        <tr><td>5</td><td>채택 버전 다시 확인 (시드만 바꿔 약 8~10분)</td><td>docs/reports/seed_check_v*.md · 이 화면 7·10단계</td></tr>
       </table>
       <p class="small muted" style="margin:8px 0 0">보상을 고칠 때: <span class="file">src/reward.py</span>를 <span class="file">src/reward_history/reward_v3.py</span>처럼 복사해 보관 → <span class="file">src/reward.py</span>의 VERSION과 식을 바꿈 → 3번 → 4번. 새 버전이 이 화면에 자동으로 추가됩니다.</p>
     </div>
     <p class="where">📁 데이터 출처 — 가상 고객: NVIDIA Nemotron-Personas-Korea (CC BY 4.0, 실제 인물 아님) · 날씨: Open-Meteo (CC BY 4.0, 마포구청 좌표) · 공휴일: python-holidays</p>
   </section>
 
-  <!-- 9 ─────────────────────────────────────────── -->
+  <!-- 10 ─────────────────────────────────────────── -->
+  <section class="step" data-title="변경 흐름" data-sub="언제 무엇을 왜 바꿨나">
+    <div class="kicker">10단계 · 변경 흐름</div>
+    <h1>지금까지 무엇을, 왜 바꿨나</h1>
+    <p class="lead">명세의 변경 기록과 실행 기록을 그대로 읽어 보여 줍니다. 앞으로 바뀌는 내용도 이 페이지에 자동으로 쌓입니다.</p>
+    <div class="card">
+      <h2>성적이 어떻게 변해 왔나 <span class="muted">평가할 때마다 한 칸씩 늘어남</span></h2>
+      <p class="hint">모두 같은 평가 조건(2025년 네 분기 평균)입니다. 같은 결과를 다시 평가한 것은 한 칸으로 합쳤습니다.</p>
+      <div class="clflow" id="clFlow"></div>
+    </div>
+    <div class="card">
+      <div class="row-between">
+        <div><h2>바뀐 내용 <span class="muted" id="clCount"></span></h2><p class="hint">줄을 누르면 바꾼 것 · 이유 · 결과가 펼쳐집니다</p></div>
+        <div class="clctl"><div class="seg sm" id="clTags"></div><div class="seg sm" id="clOrder"></div></div>
+      </div>
+      <div id="clList"></div>
+    </div>
+    <details class="why"><summary>실행 기록 전체 <span id="clRunCount"></span></summary><div class="body">
+      <div style="overflow-x:auto"><table class="t" id="clRuns" style="min-width:680px"></table></div>
+    </div></details>
+    <div class="callout plain small">🔄 <b>어떻게 자동으로 쌓이나</b> — 바꾼 내용을 <span class="file">docs/project_spec.md</span> 6절에 적으면, 실행 메뉴가 끝날 때와 GitHub에 올려 웹에 배포될 때 <span class="file">src/export_timeline.py</span>가 이 페이지의 데이터를 새로 만듭니다.</div>
+    <p class="where">📁 관련 파일 <span class="file">docs/project_spec.md 6절</span><span class="file">results/run_history.csv</span><span class="file">src/export_timeline.py</span><span class="file">public/data/timeline.js</span></p>
+  </section>
+
+  <!-- 11 ─────────────────────────────────────────── -->
   <section class="step" data-title="그림으로 보기" data-sub="저녁 6시, 마포구에 알림이 퍼진다">
-    <div class="kicker">10단계 · 한 장면으로 보기</div>
+    <div class="kicker">11단계 · 한 장면으로 보기</div>
     <h1>저녁 6시, 마포구 유저 100명에게 알림이 도착하면</h1>
     <p class="lead">우리가 만든 것은 가게가 아니라 <b>앱 유저에게 보내는 마케팅 연락(푸시 알림)을 가장 효율적으로 보내는 방법</b>을 찾는 AI입니다. 2025년 평가 기록을 그대로 그림으로 옮겼습니다. 아래에서 <b>전략 · 계절 · 상황</b>을 골라 보고, 창문에 마우스를 올려 보세요.</p>
     <div class="card">
@@ -886,6 +958,7 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
 <div class="tip" id="tip"></div>
 
 <script src="data/viewer_data.js"></script>
+<script src="data/timeline.js"></script>
 <script>
 'use strict';
 /* ───────── 화면 설정 — 보기 좋게 하려고 정한 숫자 (가정) ───────── */
@@ -896,7 +969,7 @@ const UI = {
   phases: [[1, 60], [61, 75], [76, 90]],          // 7단계 구간 (docs/presentation_notes.md와 같게)
   candidates: 781,                                // 2단계: 조건에 맞는 후보 수 (make_personas.py 실행 결과)
   personaSeed: 42,                                // 2단계: 100명을 뽑은 시드 (config.py PERSONA_SEED)
-  sceneDayMs: [10000, 6000, 3000],                // 10단계:하루(17:30~23:30) 장면 길이 ms — 느리게·보통·빠르게
+  sceneDayMs: [10000, 6000, 3000],                // 11단계:하루(17:30~23:30) 장면 길이 ms — 느리게·보통·빠르게
 };
 const COLORS = {
   action: ['#d6d3d1', '#3b82f6', '#f59e0b'],
@@ -936,6 +1009,7 @@ const WD = ['월', '화', '수', '목', '금', '토', '일'];
 const ACT = ['안 보냄', '일반 알림', '리워드 알림'];
 const CAL = D.replays[REC_KEYS[0]].episodes.map(e => e.days);   // 판별 날짜·날씨 (모든 기록이 같음)
 const TG = k => P.traits[k].target;
+const CL = window.TIMELINE_DATA || { changes: [], flow: [], runs: [] };   // 변경 기록 · 성적 흐름 · 실행 기록 (src/export_timeline.py)
 const AVG_TRAITS = { report_propensity: TG('report_propensity'), reward_sensitivity: TG('reward_sensitivity'), fatigue_sensitivity: TG('fatigue_sensitivity') };
 
 /* ───────── 작은 도구 ───────── */
@@ -1205,6 +1279,7 @@ function seg(host, items, on, onPick) {
   host.onclick = e => { const b = e.target.closest('button'); if (!b) return; $$('button', host).forEach(x => x.classList.toggle('on', x === b)); onPick(b.dataset.v); };
 }
 $$('.v-maxout').forEach(e => e.textContent = MONEY.max_opt_outs);
+if (CL.changes.length) { const d = CL.changes[CL.changes.length - 1].date; $('#clChip').textContent = `🕘 최근 변경 ${+d.slice(5, 7)}.${+d.slice(8, 10)}`; } else $('#clChip').style.display = 'none';
 $('#verChip').textContent = ADOPTED && ADOPTED !== 'ppo_v1' ? `3회차 · 채택 보상 ${verOf(ADOPTED)}` : `보상 ${P.reward_version}`;
 
 /* ───────── 0. 한눈에 보기 ───────── */
@@ -1242,9 +1317,11 @@ INIT[0] = () => {
     5: cv ? `${num(cv.timesteps / 10000)}만 번 결정 · ${num(cv.first_return, 1)}→${num(cv.last_return, 1)}점` : '학습 전',
     6: ppo ? `AI ${verOf(ADOPTED)} ${man(ppo.profit)} · 알림 끔 ${num(ppo.opt_outs)}명` : '시험 규칙 재생',
     7: PPO_KEYS.length > 1 ? `다섯 질문 진단 · ${PPO_KEYS.map(verOf).join(' → ')} · ${verOf(ADOPTED)} 채택` : '다섯 질문 진단',
-    8: '규칙 다섯 줄 · 상황 × 피로도 지도', 9: '폴더 안 파일이 하는 일', 10: '움직이는 장면 · 전략·계절·상황 고르기',
+    8: '규칙 다섯 줄 · 상황 × 피로도 지도', 9: '폴더 안 파일이 하는 일', 10: `변경 ${CL.changes.length}건 · 성적 흐름 ${CL.flow.length}칸`, 11: '움직이는 장면 · 전략·계절·상황 고르기',
   };
   $('#tour').innerHTML = STEPS.slice(1).map((s, j) => `<button class="tcard" data-go="${j + 1}"><span class="tn">${j + 1}단계</span><b>${esc(s.dataset.title)}</b><span>${esc(s.dataset.sub)}</span><em>${esc(stat[j + 1] || '')}</em></button>`).join('');
+  $('#clRecent').innerHTML = CL.changes.length ? CL.changes.slice(-3).reverse().map(c => `<button class="clrecent" data-go="10"><span class="d">${clDate(c.date)}</span>${clTag(c.tag)}<b>${esc(c.title)}</b></button>`).join('') : '<p class="muted small">변경 기록이 없습니다.</p>';
+  if (SEED) $('#seedProgress').textContent = ` · 시드 다시 확인 ${SEED.passed ? '통과' : '실패'}`;
 };
 
 /* ───────── 1. 무엇을 정하나 ───────── */
@@ -1637,6 +1714,33 @@ const DIAG = D.diagnosis || {};                                          // diag
 const DIAG_KEYS = Object.keys(DIAG).sort((a, b) => +a.slice(1) - +b.slice(1));
 let DQ_SEL = DIAG_KEYS.includes('v1') ? 'v1' : DIAG_KEYS[0];
 const verSeg = v => `<span class="dot" style="background:${recColor('ppo_' + v)}"></span>보상 ${v}`;
+const SEED = ADOPTED ? (D.seed_checks || {})[verOf(ADOPTED)] : null;   // 채택 버전 다시 확인 (src/seed_check.py)
+function fillSeed() {
+  if (!SEED) return;
+  $('#seedCard').style.display = '';
+  const a = SEED.base, b = SEED.recheck, gap = SEED.profit_gap, sign = gap >= 0 ? '+' : '';
+  $('#seedBadge').className = `badge ${SEED.passed ? 'good' : 'bad'}`;
+  $('#seedBadge').textContent = SEED.passed ? '결론 유지' : '결론 달라짐';
+  $('#seedHint').innerHTML = `채택한 ${esc(SEED.version)}가 운 좋게 나온 결과인지 보려고, 보상과 평가 조건은 그대로 두고 학습의 무작위 출발 번호(<span class="term" data-t="시드">시드</span>)만 ${SEED.base_seed} → ${SEED.seed}로 바꿔 ${num(SEED.steps / 10000)}만 번 다시 학습했습니다. 채택 모델은 덮어쓰지 않았습니다.`;
+  const flag = x => `<span class="badge ${x.success ? 'good' : 'bad'}">${x.success ? '지킴' : '넘음'}</span>`;
+  const rows = [['90일 순이익', won(a.profit), won(b.profit)], ['알림 끈 사람', `${num(a.opt_outs, 1)}명`, `${num(b.opt_outs, 1)}명`], ['허용 기준', flag(a), flag(b)],
+    ['리워드 비용', won(a.reward_cost), won(b.reward_cost)], ['안 보냄 · 일반 · 리워드', a.share.map(x => pct(x)).join(' · '), b.share.map(x => pct(x)).join(' · ')],
+    ...SEED.quarters.map(q => [`${epLabel(q.start)} 순이익 · 끈 사람`, `${man(q.base_profit)} · ${q.base_opt_outs}명`, `${man(q.profit)} · ${q.opt_outs}명`])];
+  $('#seedTable').innerHTML = `<tr><th></th><th class="r">채택 (시드 ${SEED.base_seed})</th><th class="r">다시 학습 (시드 ${SEED.seed})</th></tr>` + rows.map(([k, x, y]) => `<tr><td>${k}</td><td class="r">${x}</td><td class="r"><b>${y}</b></td></tr>`).join('');
+  $('#seedChecks').innerHTML = SEED.checks.map(c => `<div class="check"><span class="ok" style="background:${c.passed ? COLORS.good : COLORS.bad}">${c.passed ? '✓' : '✕'}</span><div><b>${esc(c.name)}</b><div class="why">${esc(c.why)}</div></div></div>`).join('');
+  const over = b.profit - SEED.v1_profit, noise = Math.abs(b.profit - a.profit), v1Out = D.replays.ppo_v1?.summary.opt_outs;   // v1과의 차이 vs 시드만 바꿔도 생기는 차이
+  $('#seedNote').innerHTML = (SEED.passed ? `<b>시드를 바꿔도 ${esc(SEED.version)} 채택 결론이 유지됩니다.</b> 채택 모델과 순이익 차이는 ${sign}${pct(gap, 1)}입니다.` : `<b>시드에 따라 결론이 달라졌습니다.</b> 채택 모델과 순이익 차이는 ${sign}${pct(gap, 1)}이라 채택을 다시 검토해야 합니다.`)
+    + (Math.abs(over) < noise
+      ? `<br>다시 학습한 AI와 초기 보상 v1(${man(SEED.v1_profit)})의 순이익 차이(${over >= 0 ? '+' : ''}${man(over)})는 시드만 바꿔도 생기는 차이(${man(noise)})보다 작습니다. 그래서 ‘v1보다 돈을 더 번다’고 단정하지 않고, <b>비슷한 돈을 벌면서 알림 끈 사람을 ${num(v1Out, 1)}명 → ${num(b.opt_outs, 1)}명(네 판 평균)으로 줄였다</b>고 말하는 것이 정확합니다.`
+      : over > 0 ? ` 다시 학습한 AI도 초기 보상 v1(${man(SEED.v1_profit)})보다 순이익이 높습니다.` : ` 다만 다시 학습한 AI의 순이익은 초기 보상 v1(${man(SEED.v1_profit)})보다 낮습니다. v1은 허용 기준을 넘어 채택 대상이 아닙니다.`);
+}
+function drawSeedCurve() {
+  if (!SEED) return;
+  const c = SEED.curve, end = c.t[c.t.length - 1], step = niceStep(end, 4), ticks = [];
+  for (let x = step; x <= end + 1; x += step) ticks.push(x);
+  lineChart($('#chSeed'), { series: [{ name: `채택 (시드 ${SEED.base_seed})`, color: recColor(ADOPTED), values: c.base, width: 2.5 }, { name: `다시 학습 (시드 ${SEED.seed})`, color: '#0891b2', values: c.recheck, dash: '6 4' }],
+    xs: c.t, xTicks: ticks, xFmt: v => num(v / 10000) + '만', tipX: x => `${num(x / 10000, 1)}만 번째 결정까지`, tipFmt: v => num(v, 1) + '점', height: 230, ml: 44 });
+}
 function drawDQ() {
   const dq = DIAG[DQ_SEL];
   if (!dq) { $('#dqTable').innerHTML = ''; $('#dqWhere').textContent = '진단 결과가 없습니다 (run.bat → 4번 평가와 진단).'; return; }
@@ -1677,6 +1781,7 @@ INIT[7] = () => {
     ].map(([b, s]) => `<div class="ftile"><b>${b}</b><span>${s}</span></div>`).join('');
   }
   $('#v3Adopt').style.display = ADOPTED === 'ppo_v3' ? '' : 'none';
+  fillSeed();
   $('#score').innerHTML = `<tr><th>규칙</th><th class="r">90일 순이익</th><th class="r">알림 끈 사람</th><th>허용 기준</th><th class="r">하루 제보</th><th class="r">리워드 비용</th></tr>` +
     REC_KEYS.map(k => { const s = D.replays[k].summary; return `<tr class="${k === ADOPTED ? 'hl' : ''}"><td><span class="dot" style="background:${recColor(k)};margin-right:6px"></span>${esc(recName(k))}${k === MY_RULE ? ' <span class="badge teal">내 규칙</span>' : ''}${k === ADOPTED ? ' <span class="badge good">채택</span>' : ''}</td>
       <td class="r"><b>${won(s.profit)}</b></td><td class="r" style="color:${s.opt_outs > MONEY.max_opt_outs ? COLORS.bad : 'inherit'}">${num(s.opt_outs, 1)}명</td>
@@ -1692,6 +1797,7 @@ INIT[7] = () => {
   seg($('#dgRec'), REC_KEYS.map(k => [k, `<span class="dot" style="background:${recColor(k)}"></span>${esc(recName(k))}`]), DG.rec, v => { DG.rec = v; DRAW[7](); });
 };
 DRAW[7] = () => {
+  drawSeedCurve();
   const segVers = DIAG_KEYS.filter(v => v !== 'v1');   // 수신거부 비율은 v2부터 기록
   segChart($('#chSegOpt'), 'opt', segVers, { scale: 100, chart: { yMin: 0, yMax: 100, yStep: 25, yFmt: v => v + '%', tipFmt: v => num(v, 1) + '%' } });
   segChart($('#chSegRew'), 'reward', DIAG.v2 ? ['v2'] : [], { chart: { yFmt: v => num(v), tipFmt: v => num(v, 1) + '점' } });
@@ -1782,7 +1888,7 @@ const FILES = [
     ['docs/project_spec.md', '설계의 기준. 1 문제 정의(양식 이름 ‘매장 정의’) · 2 반응 규칙 · 3 고객 성향 · 4 설계 카드 · 5 보상 · 6 변경 기록', 1],
     ['CLAUDE.md', '코딩 AI가 지키는 작업 규칙 14가지 (쉬운 말, 가정 표시, 변경 기록 등)', null],
     ['docs/presentation_notes.md', '발표용 정리 — 숫자마다 그렇게 정한 이유, 예상 질문과 답', 7],
-    ['docs/screen_design.md', '강의에서 받은 재생 화면 디자인 기준 (그대로 둠, 10단계 그림에 참고)', 10],
+    ['docs/screen_design.md', '강의에서 받은 재생 화면 디자인 기준 (그대로 둠, 11단계 그림에 참고)', 11],
     ['README.md', '설치·실행 방법, 폴더 구성, 데이터 출처', null],
   ]],
   ['🧑‍🤝‍🧑 입력 데이터', [
@@ -1801,10 +1907,12 @@ const FILES = [
     ['src/reward_history/', '앞 보상 버전 보관 (v1 초기 · v2 되돌림) — 화면의 보상 식 목록도 여기서 읽음', 7],
   ]],
   ['▶ 실행', [
-    ['run.bat · src/run.py', '번호 메뉴 (1 점검 · 2 시험 학습 · 3 본 학습 · 4 평가와 진단), 실행마다 기록', 9],
+    ['run.bat · src/run.py', '번호 메뉴 (1 점검 · 2 시험 학습 · 3 본 학습 · 4 평가와 진단 · 5 다시 확인), 실행마다 기록', 9],
     ['src/simulate.py', '시험 규칙·학습된 AI를 2025년 평가 조건으로 돌림, 재생 데이터 생성', 4],
     ['src/train.py', 'PPO 학습(400만 번), 학습 곡선 그림 — 보상 항목별 점수와 수신거부 비율도 기록', 5],
     ['src/diagnose.py', '결과 진단 — 다섯 질문 · 진단 그림 · 정책 해석 숫자 (4번 평가 뒤 자동)', 7],
+    ['src/seed_check.py', '채택 버전 다시 확인 — 학습 시드만 바꿔 재학습 · 비교 (5번)', 7],
+    ['src/export_timeline.py', '변경 기록 · 실행 기록을 이 화면의 변경 흐름으로 묶음', 10],
   ]],
   ['📊 결과', [
     ['docs/reports/sanity_check.md', '학습 전 점검 결과 (통과 기준 4가지)', 4],
@@ -1812,6 +1920,8 @@ const FILES = [
     ['docs/reports/diagnosis_v*.md', '다섯 질문 진단표 · 문제 위치', 7],
     ['results/diagnosis/', '진단 그림과 화면용 진단 숫자', 7],
     ['docs/reports/policy_rules.md', '채택 버전이 배운 규칙 다섯 줄 · 상식과 다른 규칙', 8],
+    ['docs/reports/seed_check_v*.md', '채택 버전 다시 확인 결과', 7],
+    ['results/seed_check/', '다시 학습한 모델과 화면용 숫자 (채택 모델과 분리)', 7],
     ['results/curves/learning_curve_v*.png', '버전별 학습 곡선 그림', 5],
     ['results/models/v*/model.zip', '학습된 AI(정책), 보상 버전마다 하나', 5],
     ['results/logs/', '규칙별 날짜·고객 단위 상세 기록 (사람이 읽는 표)', 6],
@@ -1820,13 +1930,46 @@ const FILES = [
   ['🖥 화면', [
     ['public/index.html', '지금 보고 있는 이 화면', 0],
     ['public/data/', '재생 데이터(JSON)와 이 화면용 묶음(viewer_data.js)', 6],
+    ['public/data/timeline.js', '변경 흐름 데이터 (자동으로 만들어짐)', 10],
   ]],
 ];
 INIT[9] = () => {
   $('#fileGroups').innerHTML = `<div class="grid2">${FILES.map(([g, list]) => `<div class="card fgroup"><h3>${g}</h3><div class="flist">${list.map(([f, d, s]) => `<div class="fitem"><span class="file">${esc(f)}</span><span>${esc(d)}</span>${s != null ? `<button class="go" data-go="${s}">${s}단계로 →</button>` : '<span></span>'}</div>`).join('')}</div></div>`).join('')}</div>`;
 };
 
-/* ───────── 10. 그림으로 보기 — 저녁 6시 마포구 장면 ─────────
+/* ───────── 10. 변경 흐름 ───────── */
+const CL_TAGS = ['설계·환경', '보상·학습', '화면', '정리·배포'];
+const CL_COL = { '설계·환경': '#8b5e34', '보상·학습': '#7c3aed', '화면': '#2563eb', '정리·배포': '#0f766e' };
+const CLV = { tag: 'all', order: 'new' };
+function clTag(t) { return `<span class="badge cltag" style="background:${CL_COL[t] || '#64748b'}">${esc(t)}</span>`; }
+function clDate(d) { return `${+d.slice(5, 7)}월 ${+d.slice(8, 10)}일`; }
+const mdLite = t => esc(t).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+function drawClList() {
+  const lastDate = CL.changes.length ? CL.changes[CL.changes.length - 1].date : '';
+  const lastIdx = CL.changes.length - 1;
+  const list = CL.changes.map((c, i) => ({ ...c, i })).filter(c => CLV.tag === 'all' || c.tag === CLV.tag);
+  if (CLV.order === 'new') list.reverse();
+  $('#clCount').textContent = `${list.length}건`;
+  const days = [];
+  list.forEach(c => { if (!days.length || days[days.length - 1].date !== c.date) days.push({ date: c.date, items: [] }); days[days.length - 1].items.push(c); });
+  $('#clList').innerHTML = days.map(d => `<div class="clday"><div class="cld">${clDate(d.date)} · ${d.items.length}건</div>${d.items.map(c => `<details class="clitem"${c.i === lastIdx ? ' open' : ''}><summary>${clTag(c.tag)}${c.date === lastDate ? '<span class="badge clnew">최근</span>' : ''}${c.stage ? `<span class="clstage">${esc(c.stage)}</span>` : ''}<b>${esc(c.title)}</b></summary><dl class="clbody"><dt>바꾼 것</dt><dd>${mdLite(c.what)}</dd><dt>이유</dt><dd>${mdLite(c.why)}</dd><dt>결과</dt><dd>${mdLite(c.result)}</dd></dl></details>`).join('')}</div>`).join('') || '<p class="muted small">이 분류의 기록이 없습니다.</p>';
+}
+INIT[10] = () => {
+  const adoptAt = CL.flow.map((f, i) => (f.kind === 'eval' && 'ppo_' + f.version === ADOPTED ? i : -1)).reduce((a, b) => Math.max(a, b), -1);
+  $('#clFlow').innerHTML = CL.flow.map((f, i) => {
+    const col = recColor('ppo_' + f.version), steps = f.steps ? `${num(f.steps / 10000)}만 번` : '';
+    const label = f.kind === 'seed_check' ? `학습 시드만 바꿔 다시 학습 (시드 ${f.seed}${steps ? ` · ${steps}` : ''})` : `${steps ? steps + ' ' : ''}학습 후 평가`;
+    return `<div class="vcard clcard ${i === adoptAt ? 'adopt' : ''}" style="--c:${col}"><div class="vh"><span class="badge vb" style="background:${col}">${esc(f.version)}</span><span class="badge ${f.ok ? 'good' : 'bad'}">허용 기준 ${f.ok ? '지킴' : '넘음'}</span>${i === adoptAt ? '<span class="badge good">채택</span>' : ''}</div>
+      <div class="vf">${label}</div><div class="vn"><span>90일 순이익</span><b>${man(f.profit)}</b><span>알림 끈 사람</span><b style="color:${f.ok ? COLORS.good : COLORS.bad}">${num(f.opt_outs, 1)}명</b></div><div class="vd">${clDate(f.date)}</div></div>`;
+  }).join('') || '<p class="muted small">아직 평가 기록이 없습니다.</p>';
+  seg($('#clTags'), [['all', '전체'], ...CL_TAGS.map(t => [t, t])], CLV.tag, v => { CLV.tag = v; drawClList(); });
+  seg($('#clOrder'), [['new', '최신순'], ['old', '처음부터']], CLV.order, v => { CLV.order = v; drawClList(); });
+  drawClList();
+  $('#clRunCount').textContent = `${CL.runs.length}번`;
+  $('#clRuns').innerHTML = '<tr><th>날짜</th><th>실행</th><th>보상</th><th>결과</th><th>메모</th></tr>' + [...CL.runs].reverse().map(r => `<tr><td style="white-space:nowrap">${esc(r.date.slice(5, 16))}</td><td style="white-space:nowrap">${esc(r.kind)}</td><td>${esc(r.version)}</td><td>${esc(r.result)}</td><td class="small muted">${esc(r.memo)}</td></tr>`).join('');
+};
+
+/* ───────── 11. 그림으로 보기 — 저녁 6시 마포구 장면 ─────────
    그림 파일 없이 Canvas 2D로 그림. 좌표(x, y, 높이)를 화면 위치로 바꾸는 함수(iso) 하나와,
    윗면·앞면·옆면을 밝기만 달리해 칠하는 상자 함수(box) 하나로 건물·차를 쌓아 만든다.
    창문 1칸 = 유저 1명. 누가 무엇을 받았고 제보·수신거부했는지는 평가 기록(replay) 그대로. */
@@ -2392,7 +2535,7 @@ function scFrame(now) {
 function scStart() { scStop(); SCN.last = 0; SCN.raf = requestAnimationFrame(scFrame); }
 function scStop() { if (SCN.raf) cancelAnimationFrame(SCN.raf); SCN.raf = null; }
 const scJump = d => { SCN.day = clamp(d, 0, N_DAYS - 1); SCN.t = 0; scBuild(); };
-INIT[10] = () => {
+INIT[11] = () => {
   SCN.cv = $('#scene'); SCN.ctx = SCN.cv.getContext('2d');
   seg($('#scRec'), REC_KEYS.map(k => [k, `<span class="dot" style="background:${recColor(k)}"></span>${esc(recName(k))}`]), SCN.rec, v => { SCN.rec = v; scJump(SCN.day); scNoteDraw(); });
   seg($('#scEp'), P.eval_starts.map((s, i) => [String(i), epLabel(s)]), '0', v => { SCN.ep = +v; scTimeline(); scJump(SCN.day); });
@@ -2412,7 +2555,7 @@ INIT[10] = () => {
     + `<span>🚶 코인세탁방으로 제보하러 가는 유저</span><span>📡→🪟 날아가는 알림 · 🧺→📡 초록 점 = 제보 데이터</span>`;
   scTimeline(); scBuild(); scNoteDraw();
 };
-DRAW[10] = () => { scResize(); scStart(); };
+DRAW[11] = () => { scResize(); scStart(); };
 
 /* ───────── 시작 ───────── */
 go(+location.hash.slice(1) || 0);

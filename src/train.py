@@ -30,7 +30,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 
 
 # 학습 설정  # 가정 (4-6에서 시험 학습으로 정함)
-TOTAL_TIMESTEPS = 4_000_000      # 본 학습 스텝 수 — 3회차 v2 진단 '학습 부족'으로 200만 → 400만 (이 PC 약 11분)
+TOTAL_TIMESTEPS = 4_000_000      # 본 학습 스텝 수 — 3회차 v2 진단 '학습 부족'으로 200만 → 400만 (이 PC 약 8~10분)
 TRIAL_TIMESTEPS = 30_000         # 시험 학습
 N_ENVS = 8                       # 동시에 돌리는 가상 매장 수
 PPO_KWARGS = dict(n_steps=1024, batch_size=1024, n_epochs=5, gamma=0.99, learning_rate=3e-4, ent_coef=0.01)
@@ -88,7 +88,7 @@ class EpisodeStats(gym.Wrapper):
         return obs, rew, term, trunc, info
 
 
-def plot_curve(monitor_csv: Path, version: str) -> pd.DataFrame:
+def plot_curve(monitor_csv: Path, version: str, out: Path = CURVES) -> pd.DataFrame:
     m = pd.read_csv(monitor_csv, skiprows=1)
     m["timesteps"] = m["l"].cumsum()
     window = max(50, len(m) // 100)
@@ -100,7 +100,7 @@ def plot_curve(monitor_csv: Path, version: str) -> pd.DataFrame:
         curve["opt_out_rate"] = roll(m["ep_opt_out"])          # 그 판에서 수신거부한 비율
         for k in PARTS:
             curve[f"part_{k}"] = m[f"ep_part_{k}"]
-    curve.to_csv(CURVES / f"learning_curve_{version}.csv", index=False)
+    curve.to_csv(out / f"learning_curve_{version}.csv", index=False)
     plt.rcParams["font.family"] = "Malgun Gothic"
     plt.rcParams["axes.unicode_minus"] = False
     fig, ax = plt.subplots(figsize=(8, 4.5))
@@ -117,23 +117,25 @@ def plot_curve(monitor_csv: Path, version: str) -> pd.DataFrame:
     ax.set_title(f"학습 곡선 — 보상 {version} (고객 1명 × 90일)")
     ax.grid(alpha=0.3)
     fig.tight_layout()
-    fig.savefig(CURVES / f"learning_curve_{version}.png", dpi=120)
+    fig.savefig(out / f"learning_curve_{version}.png", dpi=120)
     plt.close(fig)
     return curve
 
 
-def train(version: str, timesteps: int, trial: bool) -> dict:
-    for d in (CURVES, EXPERIENCE):
+def train(version: str, timesteps: int, trial: bool, seed: int = C.TRAIN_SEED, out: Path | None = None) -> dict:
+    """out을 주면 그 폴더에만 저장한다 (채택 버전 다시 확인 — 기존 모델·곡선을 덮어쓰지 않게)."""
+    curves, samples, model_dir = (out, out, out) if out else (CURVES, EXPERIENCE, RESULTS / "models" / version)
+    for d in (curves, samples):
         d.mkdir(parents=True, exist_ok=True)
     traits, factors = load_traits(), load_factors()
     store: list = []
     fns = [(lambda i=i: EpisodeStats(ExperienceRecorder(LaunPotEnv(traits, factors), store) if i == 0 else LaunPotEnv(traits, factors)))
            for i in range(N_ENVS)]
     tag = f"{version}_trial" if trial else version
-    monitor = CURVES / f"train_{tag}"
+    monitor = curves / f"train_{tag}"
     venv = VecMonitor(DummyVecEnv(fns), filename=str(monitor), info_keywords=EPISODE_KEYS)
-    venv.seed(C.TRAIN_SEED)
-    model = PPO("MlpPolicy", venv, device="cpu", seed=C.TRAIN_SEED, verbose=0, **PPO_KWARGS)
+    venv.seed(seed)
+    model = PPO("MlpPolicy", venv, device="cpu", seed=seed, verbose=0, **PPO_KWARGS)
     t = time.time()
     model.learn(total_timesteps=timesteps, progress_bar=False)
     sec = time.time() - t
@@ -142,10 +144,10 @@ def train(version: str, timesteps: int, trial: bool) -> dict:
     if trial:
         Path(f"{monitor}.monitor.csv").unlink(missing_ok=True)
         return out
-    (RESULTS / "models" / version).mkdir(parents=True, exist_ok=True)
-    model.save(RESULTS / "models" / version / "model.zip")
-    pd.DataFrame(store).to_csv(EXPERIENCE / f"experience_sample_{version}.csv", index=False, encoding="utf-8-sig")
-    curve = plot_curve(Path(f"{monitor}.monitor.csv"), version)
+    model_dir.mkdir(parents=True, exist_ok=True)
+    model.save(model_dir / "model.zip")
+    pd.DataFrame(store).to_csv(samples / f"experience_sample_{version}.csv", index=False, encoding="utf-8-sig")
+    curve = plot_curve(Path(f"{monitor}.monitor.csv"), version, curves)
     n = max(1, len(curve) // 10)
     out |= {"episodes": len(curve), "first_return": curve["episode_return"].head(n).mean(),
             "last_return": curve["episode_return"].tail(n).mean()}

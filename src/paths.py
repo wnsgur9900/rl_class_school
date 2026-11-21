@@ -9,11 +9,13 @@ from pathlib import Path
 os.chdir(Path(__file__).resolve().parent.parent)
 
 DATA = Path("data")
+SPEC = Path("docs/project_spec.md")       # 기준 명세 (6절 변경 기록을 화면 변경 흐름이 읽음)
 REPORTS = Path("docs/reports")            # 사람이 읽는 결과 글 (점검 · 평가 · 진단 · 정책 해석)
 RESULTS = Path("results")
 LOGS = RESULTS / "logs"                   # 규칙별 날짜 · 고객 단위 기록
 CURVES = RESULTS / "curves"               # 학습 곡선과 학습 기록
 DIAGNOSIS = RESULTS / "diagnosis"         # 진단 그림과 화면용 진단 숫자
 EXPERIENCE = RESULTS / "experience"       # 학습 경험 표본
+SEED_CHECK = RESULTS / "seed_check"       # 채택 버전 다시 확인 (채택 모델을 덮어쓰지 않는 별도 폴더)
 PUBLIC_DATA = Path("public/data")         # 화면이 읽는 재생 데이터
 REWARD_HISTORY = Path("src/reward_history")   # 앞 보상 버전 보관

@@ -6,7 +6,7 @@
 
 ## 명세
 3. docs/project_spec.md가이프로젝트의기준이다. 명세가바뀌면코드도명세에맞게고치고코드만따로바꾸지않는다
-4. 바꾼내용은docs/project_spec.md 끝의변경기록에날짜, 바꾼것, 이유, 결과로남긴다
+4. 바꾼내용은docs/project_spec.md 끝의변경기록에날짜, 바꾼것, 이유, 결과로남기고, src/export_timeline.py를실행해화면(public/index.html)의변경흐름에서바로볼수있게한다
 5. 요청한것만가장단순한방법으로만든다
 
 ## 숫자

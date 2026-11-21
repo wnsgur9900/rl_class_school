@@ -25,6 +25,7 @@ MENU = {
     "2": ("train_trial", "학습 — 시험 학습 (1분 안쪽, 오류 확인)"),
     "3": ("train", f"학습 — 본 학습 (보상 {R.VERSION}, 400만 스텝 약 8~10분)"),
     "4": ("eval", f"학습된 정책 평가와 진단 (보상 {R.VERSION} → summary · diagnosis_{R.VERSION}.md/png)"),
+    "5": ("seed_check", f"채택 버전 다시 확인 (보상 {R.VERSION}, 학습 시드만 바꿔 약 8~10분 · 기존 모델은 그대로)"),
 }
 
 
@@ -67,6 +68,15 @@ def do_eval(run_dir: Path) -> str:
             f"허용 기준 {'지킴' if s['success'] else '넘음'}")
 
 
+def do_seed_check(run_dir: Path) -> str:
+    import seed_check
+    r = seed_check.recheck()
+    shutil.copy(REPORTS / f"seed_check_{R.VERSION}.md", run_dir)
+    s = r["recheck"]
+    return (f"{R.VERSION} 시드 {r['seed']} 정책 {won(s['profit'])}/수신거부 {s['opt_outs']:.1f}명 · "
+            f"허용 기준 {'지킴' if s['success'] else '넘음'} · 다시 확인 {'통과' if r['passed'] else '실패'}")
+
+
 def run(choice: str, memo: str) -> None:
     name, label = MENU[choice]
     stamp = datetime.now()
@@ -79,6 +89,8 @@ def run(choice: str, memo: str) -> None:
         result = do_sanity(run_dir)
     elif name in ("train_trial", "train"):
         result = do_train(run_dir, trial=(name == "train_trial"))
+    elif name == "seed_check":
+        result = do_seed_check(run_dir)
     else:
         result = do_eval(run_dir)
     (run_dir / "result.txt").write_text(result + ("\n메모: " + memo if memo else "") + "\n", encoding="utf-8")
@@ -88,6 +100,8 @@ def run(choice: str, memo: str) -> None:
         if new:
             w.writerow(["date", "kind", "reward_version", "success_metric", "memo", "run_dir"])
         w.writerow([f"{stamp:%Y-%m-%d %H:%M:%S}", name, R.VERSION, result, memo, run_dir.as_posix()])
+    import export_timeline
+    export_timeline.export()   # 화면 10단계 변경 흐름을 새로 만듦
     print(f"✔ 완료: {result}")
 
 

@@ -1,12 +1,12 @@
 # 화면(public 폴더)을 GitHub Pages에 올린다 → https://wnsgur9900.github.io/rl_class_school/
-# main에 public 폴더가 바뀐 채로 올라오면 자동 실행. Actions 탭의 "Run workflow"로 직접 실행도 가능.
+# main에 화면 · 명세 · 실행 기록이 바뀐 채로 올라오면 자동 실행. Actions 탭의 "Run workflow"로 직접 실행도 가능.
 # 처음 한 번: 저장소 Settings → Pages → Source를 "GitHub Actions"로 바꿔야 한다.
 name: 화면 배포 (GitHub Pages)
 
 on:
   push:
     branches: [main]
-    paths: ["public/**", ".github/workflows/pages.yml"]
+    paths: ["public/**", ".github/workflows/pages.yml", "docs/project_spec.md", "results/run_history.csv", "src/export_timeline.py"]
   workflow_dispatch:
 
 permissions:
@@ -26,6 +26,8 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - name: 변경 흐름 데이터 새로 만들기   # 명세 6절 · 실행 기록 → public/data/timeline.js (라이브러리 설치 없음)
+        run: python3 -X utf8 src/export_timeline.py
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

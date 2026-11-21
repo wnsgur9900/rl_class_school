@@ -24,6 +24,7 @@
 | 2 | 학습 — 시험 학습 (1분 안쪽) | 화면에 스텝당 시간 |
 | 3 | 학습 — 본 학습 (400만 스텝, 약 8~10분) | `results/models/<버전>/`, `results/curves/` |
 | 4 | 학습된 정책 평가와 진단 | `docs/reports/summary_<버전>.md`, `docs/reports/diagnosis_<버전>.md`, `results/diagnosis/`, `public/data/` |
+| 5 | 채택 버전 다시 확인 (학습 시드만 바꿔 약 8~10분, 기존 모델은 그대로) | `docs/reports/seed_check_<버전>.md`, `results/seed_check/` |
 
 실행할 때마다 `results/runs/<날짜_시각_이름>/`에 그때의 결과와 `src/env.py`·`src/config.py`·`src/reward.py` 사본이 쌓이고,
 `results/run_history.csv`에 한 줄씩 기록된다.
@@ -34,8 +35,9 @@
 
 - 웹: **https://wnsgur9900.github.io/rl_class_school/** (어디서나 접속, `main`에 올리면 자동으로 새로 바뀜 — `.github/workflows/pages.yml`)
 - 내 PC: `public/index.html`을 더블클릭하면 브라우저에서 열린다 (인터넷·서버 필요 없음).
-0~10단계를 차례로 넘기며 문제 정의 → 가상 고객 → 반응 규칙(직접 해 보기) → 학습 전 점검 → AI 학습 → 결과 재생 → 진단·보상 고치기(v1 → v2 → v3) → AI가 배운 규칙 → 파일 지도 → 그림으로 보기(저녁 6시 마포구 장면, 전략·계절·상황 선택)를 본다.
-화면 데이터 `public/data/viewer_data.js`는 실행 메뉴 1번·4번이 끝날 때 자동으로 새로 만들어진다.
+0~11단계를 차례로 넘기며 문제 정의 → 가상 고객 → 반응 규칙(직접 해 보기) → 학습 전 점검 → AI 학습 → 결과 재생 → 진단·보상 고치기(v1 → v2 → v3) → AI가 배운 규칙 → 파일 지도 → 변경 흐름 → 그림으로 보기(저녁 6시 마포구 장면, 전략·계절·상황 선택)를 본다.
+화면 데이터 `public/data/viewer_data.js`는 실행 메뉴 1·4·5번이 끝날 때 자동으로 새로 만들어진다.
+10단계 변경 흐름(`public/data/timeline.js`)은 `docs/project_spec.md` 6절과 실행 기록을 읽어, 메뉴가 끝날 때와 웹에 배포될 때 자동으로 새로 만들어진다. 명세만 고친 뒤 내 PC 화면에 바로 보려면 `uv run python src/export_timeline.py`.
 
 ## 폴더 구성
 
@@ -44,10 +46,10 @@
 | `run.bat` | 더블클릭하면 뜨는 실행 메뉴 |
 | `docs/` | `project_spec.md`(기준 명세) · `presentation_notes.md`(발표 정리) · `screen_design.md`(강의 제공 화면 기준) |
 | `docs/reports/` | 실행이 만드는 결과 글: 환경 점검 · 버전별 평가 · 진단 · 정책 해석 |
-| `src/` | 파이썬 코드: `run.py`(메뉴) · `config.py`(문제 정의 값) · `env.py`(가상 환경) · `reward.py`(지금 보상) · `train.py`(학습) · `simulate.py`(평가) · `diagnose.py`(진단) · `check.py`(성향 검사) · `make_*.py`(입력 데이터) · `paths.py`(폴더 위치) |
+| `src/` | 파이썬 코드: `run.py`(메뉴) · `config.py`(문제 정의 값) · `env.py`(가상 환경) · `reward.py`(지금 보상) · `train.py`(학습) · `simulate.py`(평가) · `diagnose.py`(진단) · `check.py`(성향 검사) · `make_*.py`(입력 데이터) · `seed_check.py`(다시 확인) · `export_timeline.py`(변경 흐름) · `paths.py`(폴더 위치) |
 | `src/reward_history/` | 앞 보상 버전 보관 (`reward_v1.py`, `reward_v2.py`) |
 | `data/` | `personas.csv`(가상 고객 100명) · `customer_traits.csv`(성향 수치) · `external_factors.csv`(날짜별 날씨·공휴일) |
-| `results/` | `models/`(학습된 AI) · `logs/`(날짜별 기록) · `curves/`(학습 곡선) · `diagnosis/`(진단 그림·숫자) · `experience/`(경험 표본) · `screenshots/` · `runs/`(내 PC 실행 기록) · `run_history.csv` |
+| `results/` | `models/`(학습된 AI) · `logs/`(날짜별 기록) · `curves/`(학습 곡선) · `diagnosis/`(진단 그림·숫자) · `experience/`(경험 표본) · `seed_check/`(다시 확인) · `screenshots/` · `runs/`(내 PC 실행 기록) · `run_history.csv` |
 | `public/` | 단계별 둘러보기 화면 `index.html`과 재생용 데이터 `public/data/` |
 
 ## 데이터 출처

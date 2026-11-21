@@ -25,7 +25,7 @@ import env as E
 import reward as R
 from check import MEAN_TOLERANCE, TRAITS
 from env import LaunPotEnv, OBS_NAMES, load_factors
-from paths import CURVES, DIAGNOSIS, LOGS, PUBLIC_DATA, REPORTS, RESULTS, REWARD_HISTORY
+from paths import CURVES, DIAGNOSIS, LOGS, PUBLIC_DATA, REPORTS, RESULTS, REWARD_HISTORY, SEED_CHECK
 
 VIEWER_BUNDLE = PUBLIC_DATA / "viewer_data.js"
 ACTION_KEYS = {C.ACTION_NO_PUSH: "none", C.ACTION_GENERAL_PUSH: "general", C.ACTION_REWARD_PUSH: "reward"}
@@ -71,9 +71,9 @@ TEST_RULES = {
 }
 
 
-def policy_rule(version: str):
+def policy_rule(version: str, path=None):
     from stable_baselines3 import PPO
-    model = PPO.load(RESULTS / "models" / version / "model.zip", device="cpu")
+    model = PPO.load(path or RESULTS / "models" / version / "model.zip", device="cpu")
 
     def act(env, obs, rng):
         return int(model.predict(obs, deterministic=True)[0])
@@ -260,7 +260,9 @@ def export_viewer_bundle() -> None:
     """
     load = lambda p: json.loads(p.read_text(encoding="utf-8"))
     out = {"project": load(PUBLIC_DATA / "project.json"), "personas": load(PUBLIC_DATA / "personas.json"),
-           "replays": {}, "curves": {}, "sanity": [], "diagnosis": {}}
+           "replays": {}, "curves": {}, "sanity": [], "diagnosis": {}, "seed_checks": {}}
+    for p in sorted(SEED_CHECK.glob("seed_check_v*.json")):   # 채택 버전 다시 확인 (화면 7·10단계)
+        out["seed_checks"][p.stem.removeprefix("seed_check_")] = load(p)
     for p in sorted(DIAGNOSIS.glob("diagnosis_v*.json")):   # diagnose.py가 만든 진단 · 정책 해석 (화면 7·8단계)
         out["diagnosis"][p.stem.removeprefix("diagnosis_")] = load(p)
     keys = list(TEST_RULES) + sorted(p.stem.removeprefix("replay_") for p in PUBLIC_DATA.glob("replay_ppo_*.json"))
