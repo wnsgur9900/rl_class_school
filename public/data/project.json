@@ -46,10 +46,24 @@
   "rain_mm": 1.0,
   "cold_temp_min": -5.0
  },
- "reward": "v1: 그날 순이익(제보 1,500원 − 리워드 300원) ÷ 1,000",
- "reward_version": "v1",
+ "reward": "v3: 그날 순이익 ÷ 1,000 − 3점 × [피로도 75 이상] − 20점 × [알림을 끔]",
+ "reward_version": "v3",
  "reward_scale": 1000.0,
- "success_metric": "90일 누적 플랫폼 순이익(제보 데이터 전환 가치 - 포인트 지급 비용) 극대화, 수신거부 5명 이하",
+ "reward_versions": [
+  {
+   "version": "v1",
+   "formula": "그날 순이익 ÷ 1,000"
+  },
+  {
+   "version": "v2",
+   "formula": "그날 순이익 ÷ 1,000 − 3점 × [알림 받은 뒤 피로도 75 이상]"
+  },
+  {
+   "version": "v3",
+   "formula": "그날 순이익 ÷ 1,000 − 3점 × [피로도 75 이상] − 20점 × [알림을 끔]"
+  }
+ ],
+ "success_metric": "90일 누적 플랫폼 순이익(제보 데이터 전환 가치 - 포인트 지급 비용) 극대화, 수신거부 10명 이하",
  "episode_days": 90,
  "eval_starts": [
   "2025-01-01",
@@ -81,7 +95,7 @@
  "money": {
   "value_per_report": 1500,
   "reward_cost": 300,
-  "max_opt_outs": 5
+  "max_opt_outs": 10
  },
  "month_end_start_day": 25,
  "current_rule": {

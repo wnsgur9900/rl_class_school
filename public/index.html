@@ -10,6 +10,7 @@
   --teal:#0f766e; --teal-ink:#115e59; --teal-soft:#e3f3ef; --wood:#8b5e34; --wood-soft:#f3e8d8;
   --good:#15803d; --good-soft:#dcfce7; --warn:#c2410c; --warn-soft:#ffedd5; --bad:#b91c1c; --bad-soft:#fee2e2;
   --a0:#d6d3d1; --a1:#3b82f6; --a2:#f59e0b;
+  --v1:#0f766e; --v2:#db2777; --v3:#7c3aed;   /* 보상 버전 색 (PPO_COLORS와 같게) */
   --radius:14px; --shadow:0 1px 2px rgba(60,40,10,.04),0 6px 20px rgba(60,40,10,.06);
 }
 *{box-sizing:border-box}
@@ -43,6 +44,7 @@ a{color:var(--teal);font-weight:700;text-underline-offset:3px}
 .badge.good{background:var(--good-soft);color:var(--good)}
 .badge.bad{background:var(--bad-soft);color:var(--bad)}
 .badge.teal{background:var(--teal-soft);color:var(--teal-ink)}
+.badge.warn{background:var(--warn-soft);color:var(--warn)}
 .seg{display:inline-flex;flex-wrap:wrap;background:var(--soft);border:1px solid var(--line);border-radius:11px;padding:3px;gap:2px}
 .seg button{border:0;background:none;padding:5px 12px;border-radius:8px;font-size:13.5px;cursor:pointer;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
 .seg button:hover{color:var(--ink)}
@@ -321,7 +323,42 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
 .story div{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14px}
 .story b.sn{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--bad);color:#fff;font-size:12px;margin-right:6px}
 
-/* 8단계 */
+/* 7단계 — 보상 버전 흐름 · 진단 다섯 질문 */
+.vflow{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:12px}
+.vcard{position:relative;background:var(--soft);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:12px;padding:12px 14px;font-size:13.5px}
+.vcard.adopt{background:#f5f3ff;box-shadow:0 0 0 2px var(--c) inset}
+.vcard .vh{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px}
+.vcard .vf{color:var(--muted);font-size:12.5px;min-height:38px}
+.vcard .vn{display:grid;grid-template-columns:1fr auto;gap:2px 8px;margin:8px 0}
+.vcard .vn b{text-align:right}
+.vcard .vd{border-top:1px dashed var(--line);padding-top:6px;font-size:12.5px}
+.badge.vb{color:#fff;margin-right:4px}
+.dq td:nth-child(3){white-space:nowrap}
+.dq .why{font-size:12.5px;color:var(--muted)}
+
+/* 8단계 — 정책 해석 */
+.plrules{display:grid;gap:10px}
+.plr{display:grid;grid-template-columns:28px minmax(0,1.3fr) minmax(0,1fr);gap:10px 14px;align-items:center;padding:10px 0;border-bottom:1px dashed var(--line)}
+.plr:last-child{border-bottom:0}
+.plr .no{width:24px;height:24px;border-radius:50%;background:var(--teal);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700}
+.plr .tx{font-size:14px}
+.plr .tx small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+.plbars{display:grid;gap:4px}
+.plbar{display:grid;grid-template-columns:30px 1fr 132px;gap:6px;align-items:center;font-size:12px}
+.plbar .tr{height:10px;background:#ebe4d6;border-radius:5px;overflow:hidden}
+.plbar .tr i{display:block;height:100%;border-radius:5px}
+.plbar .v{color:var(--muted);white-space:nowrap}
+.plbar.on .v{color:var(--ink);font-weight:700}
+.plgrid{border-collapse:separate;border-spacing:4px;width:100%;min-width:560px;font-size:12.5px}
+.plgrid th{font-weight:700;color:var(--muted);text-align:center;padding:2px 4px}
+.plgrid th.rh{text-align:right;white-space:nowrap}
+.plgrid td{background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:6px 8px;cursor:default;vertical-align:top}
+.plgrid td .sb{display:flex;height:12px;border-radius:4px;overflow:hidden;margin-bottom:4px}
+.plgrid td .sb i{display:block;height:100%}
+.plgrid td .lb{display:flex;justify-content:space-between;gap:4px}
+.plgrid td.empty{color:var(--faint);text-align:center;background:transparent}
+
+/* 9단계 */
 .flow{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap}
 .flow .fb2{flex:1 1 140px;background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px}
 .flow .fb2 b{display:block;font-size:14.5px}
@@ -344,7 +381,7 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
 
 .row select{min-width:0;flex:1 1 160px}
 
-/* 9단계 */
+/* 10단계 */
 .scene-wrap{position:relative;border-radius:14px;overflow:hidden;background:#1b2340}
 #scene{display:block;width:100%;cursor:crosshair}
 .ov{position:absolute;top:12px;background:rgba(255,255,255,.9);backdrop-filter:blur(6px);border-radius:12px;padding:10px 13px;box-shadow:0 6px 22px rgba(0,0,0,.22);font-size:13px;line-height:1.5;pointer-events:none}
@@ -385,6 +422,9 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
   .brand small{display:none}
   .top .chip{display:none}
   .fitem{grid-template-columns:1fr}
+  .plr{grid-template-columns:28px minmax(0,1fr)}
+  .plr .plbars{grid-column:1 / -1}
+  .plbar{grid-template-columns:30px 1fr 118px}
 }
 </style>
 </head>
@@ -436,8 +476,9 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
         <h2>지금 어디까지 왔나</h2>
         <ol class="progress">
           <li class="done"><span class="pd">✓</span><div><b>1회차</b> — 문제 정의(강의 양식의 ‘매장 정의’), 반응 규칙 6줄<br><span class="muted small">무엇을 결정하고, 고객이 어떻게 반응하는지 글로 정함</span></div></li>
-          <li class="now"><span class="pd">✓</span><div><b>2회차 (지금)</b> — 가상 유저 · 가상 환경 · 점검 · 첫 학습(v1)<br><span class="muted small">이익은 늘었지만 알림 끈 사람이 너무 많아 목표 미달</span></div></li>
-          <li class="next"><span class="pd">3</span><div><b>3회차</b> — 보상 고치기(v2·v3), 화면 반영, 웹 배포<br><span class="muted small">‘알림 끄기’를 점수에 넣어 다시 학습</span></div></li>
+          <li class="done"><span class="pd">✓</span><div><b>2회차</b> — 가상 유저 · 가상 환경 · 점검 · 첫 학습(v1)<br><span class="muted small">이익은 늘었지만 알림 끈 사람이 너무 많아 허용 기준을 넘음</span></div></li>
+          <li class="now"><span class="pd">✓</span><div><b>3회차 (지금)</b> — 결과 진단 → 보상 v2(되돌림) → <b>v3 채택</b> · 화면 반영 · 웹 배포<br><span class="muted small">‘알림 끄기’에 벌점을 넣자 수신거부 0명, 순이익은 v1보다도 높아짐</span></div></li>
+          <li class="next"><span class="pd">4</span><div><b>4회차</b> — 최종 발표 (12월 3일)<br><span class="muted small">초기 보상 vs 수정 보상 비교 · 웹 화면 시연</span></div></li>
         </ol>
       </div>
     </div>
@@ -492,7 +533,7 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
       <tr><td>한 판의 길이</td><td>90일</td><td>분기 성과를 보는 단위. 피로도·의존도가 쌓여 결과가 드러나기에 충분하고, 학습이 느려지지 않음</td></tr>
       <tr><td>제보 1건 가치</td><td>1,500원 (가정)</td><td>제보 1건이 다른 유저의 헛걸음을 막아 앱 이용·전환으로 이어지는 가치를 객단가처럼 둠</td></tr>
       <tr><td>리워드</td><td>300P = 300원 (가정)</td><td>제보 가치의 20%(원가율 20%) — 리워드로 받은 제보도 건당 1,200원이 남게</td></tr>
-      <tr><td>수신거부 한도</td><td>5명 (5%)</td><td>이익만 쫓다 유저 기반을 잃지 않도록 두 번째 조건으로 고정</td></tr>
+      <tr><td>수신거부 허용 기준</td><td><span class="v-maxout"></span>명 (한 판, 100명 중)</td><td>이익만 쫓다 유저 기반을 잃지 않도록 넘지 말아야 할 선으로 둠 (2회차 5명 → 3회차 10명으로 조정)</td></tr>
       <tr><td>고정비</td><td>제외</td><td>서버·인건비는 어떤 알림을 보내든 같아서 결정에 영향이 없음</td></tr>
       <tr><td>수신거부 비용</td><td>이익에서 안 뺌</td><td>알림을 끄면 이후 제보가 사라져 이미 이익에 반영됨 → 또 빼면 두 번 빼는 셈</td></tr>
       <tr><td>현재 운영 (가정)</td><td>토요일 전원 일반 + 25일 전원 리워드</td><td>흔한 “주 1회 공지 + 월 1회 이벤트” 운영을 비교 기준선으로 둠</td></tr>
@@ -611,7 +652,7 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
   <section class="step" data-title="AI 학습" data-sub="PPO로 수만 판 연습">
     <div class="kicker">5단계 · 강화학습 (PPO)</div>
     <h1>AI가 수만 판을 연습하며 배운다</h1>
-    <p class="lead">AI(<span class="term" data-t="에이전트">에이전트</span>)는 2016~2024년 실제 달력 위에서, 무작위로 뽑은 고객 한 명과 90일을 보내는 연습을 수만 번 반복했습니다. 매일 아래 숫자 11개를 보고 행동 3개 중 하나를 고르며, 그날 번 돈을 점수로 받습니다.</p>
+    <p class="lead">AI(<span class="term" data-t="에이전트">에이전트</span>)는 2016~2024년 실제 달력 위에서, 무작위로 뽑은 고객 한 명과 90일을 보내는 연습을 수만 번 반복했습니다. 매일 아래 숫자 11개를 보고 행동 3개 중 하나를 고르며, 그날 번 돈을 점수로 받습니다. 3회차부터는 여기에 벌점이 더해졌습니다(채택한 보상 <b id="rewAdopted"></b>).</p>
     <div class="grid3">
       <div class="card"><h2>AI가 보는 것 <span class="muted">상태 11칸</span></h2><div id="obsList"></div>
         <div class="callout plain small">🙈 일부러 안 보여 준 것: 오늘 제보할지 · 오늘의 우연 · 오늘 알림을 끌지 — 저녁 6시에는 아직 모르는 ‘미래’라서</div></div>
@@ -625,19 +666,23 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
       <div class="facts-row" id="trainFacts"></div>
     </div>
     <div class="card">
-      <h2>학습 곡선 — 연습할수록 점수가 올랐나</h2>
-      <p class="hint">가로: 지금까지 내린 결정 수 · 세로: 한 판(고객 1명 × 90일) 평균 점수, 1점 = 1,000원</p>
+      <div class="row-between">
+        <div><h2>학습 곡선 — 연습할수록 점수가 올랐나</h2>
+        <p class="hint">가로: 지금까지 내린 결정 수 · 세로: 한 판(고객 1명 × 90일) 평균 점수, 1점 = 1,000원 · 보상 버전마다 따로 봄</p></div>
+        <div class="seg sm" id="curveSeg"></div>
+      </div>
       <div id="chCurve"></div>
       <div class="callout" id="curveNote"></div>
     </div>
     <details class="why"><summary>왜 PPO? 왜 CPU? <span>발표 Q&amp;A용</span></summary><div class="body"><table class="t">
       <tr><th>질문</th><th>답</th></tr>
       <tr><td>왜 PPO?</td><td>행동이 선택지 3개라 연속 행동용 SAC는 못 씀. 가상 환경 계산이 빨라(결정 1번 약 0.18ms) 경험이 충분하므로, 경험을 재사용하는 DQN보다 안정적인 PPO(한 번에 너무 크게 바뀌지 않게 막는 장치)를 택함</td></tr>
-      <tr><td>왜 CPU?</td><td>관측이 숫자 11개인 작은 신경망이라 CPU로 충분히 빠르고, 시간 대부분은 가상 환경 계산. 시험 학습 3만 번 5초, 본 학습 200만 번 약 6분</td></tr>
+      <tr><td>왜 CPU?</td><td>관측이 숫자 11개인 작은 신경망이라 CPU로 충분히 빠르고, 시간 대부분은 가상 환경 계산. 시험 학습 3만 번 5~9초, 본 학습 400만 번 약 8~10분 (v1은 200만 번 약 6분)</td></tr>
+      <tr><td>왜 3회차에 400만 번?</td><td>v2 진단에서 학습 곡선이 평평하지 않아 자료대로 학습량을 2배로 늘림. 늘려도 나아지지 않아 학습량이 아니라 보상의 허점이 원인임을 확인했고(7단계), v3도 같은 400만 번으로 맞춰 비교</td></tr>
       <tr><td>왜 2016~2024년으로 연습?</td><td>9년치 실제 날씨로 여러 계절·이상 날씨를 경험하게. 평가는 연습에 안 쓴 2025년으로 (처음 보는 날씨에서도 잘하는지)</td></tr>
       <tr><td>왜 ÷1,000?</td><td>점수 크기를 작게 맞춰 학습을 안정시키려고 (하루 최대 1.5점). 성공 척도 계산에는 영향 없음</td></tr>
     </table></div></details>
-    <p class="where">📁 관련 파일 <span class="file">train.py</span><span class="file">reward.py</span><span class="file">results/learning_curve_v1.png</span><span class="file">results/models/v1/model.zip</span><span class="file">results/experience_sample_v1.csv</span></p>
+    <p class="where">📁 관련 파일 <span class="file">train.py</span><span class="file">reward.py (지금 v3)</span><span class="file">reward_v1.py · reward_v2.py</span><span class="file">results/learning_curve_v*.png</span><span class="file">results/models/v*/model.zip</span><span class="file">results/experience_sample_v*.csv</span></p>
   </section>
 
   <!-- 6 ─────────────────────────────────────────── -->
@@ -648,6 +693,7 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
     <div class="card">
       <div class="ctl-row">
         <div><div class="lbl">재생할 기록</div><div class="seg" id="rpRec"></div></div>
+        <div><div class="lbl">비교 기록</div><div class="seg" id="rpCmp"></div></div>
         <div><div class="lbl">평가 기간 (2025년)</div><div class="seg" id="rpEp"></div></div>
       </div>
     </div>
@@ -670,25 +716,37 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
     </div>
     <div class="card" style="margin-top:16px">
       <h2 id="rpChartTitle">누적 순이익</h2>
-      <p class="hint">이번 판(선택한 분기)에서 날마다 쌓인 순이익 · 그래프를 누르면 그날로 이동</p>
+      <p class="hint">이번 판(선택한 분기)에서 날마다 쌓인 순이익(성공 척도) · 그래프를 누르면 그날로 이동</p>
       <div id="rpChart"></div>
     </div>
-    <p class="where">📁 관련 파일 <span class="file">public/data/replay_*.json</span><span class="file">simulate.py</span><span class="file">results/summary_v1.md</span></p>
+    <div class="grid2" style="margin-top:16px">
+      <div class="card"><h2 id="rpRewTitle">날마다 받은 보상</h2><p class="hint">재생 기록 하나만 그림 — 보상 버전마다 점수 기준이 달라 겹쳐 비교하지 않습니다</p><div id="rpReward"></div></div>
+      <div class="card"><h2 id="rpCurveTitle">학습 곡선</h2><p class="hint">이 기록의 AI가 연습할수록 받은 점수와 순이익 (점 = 1,000원)</p><div id="rpCurve"></div></div>
+    </div>
+    <p class="where">📁 관련 파일 <span class="file">public/data/replay_*.json</span><span class="file">simulate.py</span><span class="file">results/summary_v*.md</span><span class="file">results/diagnosis_v*.md</span></p>
   </section>
 
   <!-- 7 ─────────────────────────────────────────── -->
-  <section class="step" data-title="진단 · 다음 할 일" data-sub="왜 목표를 못 이뤘나">
-    <div class="kicker">7단계 · 결과 진단</div>
-    <h1>이익은 1등, 그런데 목표는 미달 — ‘막판 몰아주기’</h1>
-    <p class="lead">학습된 AI는 가장 많은 이익을 냈지만, 성공 척도의 두 번째 조건(알림 끈 사람 5명 이하)을 크게 어겼습니다. 날짜별로 펼쳐 보면 이유가 보입니다.</p>
+  <section class="step" data-title="진단 · 보상 고치기" data-sub="v1 → v2 → v3">
+    <div class="kicker">7단계 · 결과 진단 → 보상 고치기 (3회차)</div>
+    <h1>진단하고, 점수를 고치고, 다시 진단하기</h1>
+    <p class="lead">AI는 우리가 준 점수(<span class="term" data-t="보상">보상</span>)를 최대로 만들 뿐, 점수에 없는 목표는 신경 쓰지 않습니다. 그래서 결과를 <span class="term" data-t="진단">다섯 질문</span>으로 따져 문제 위치를 찾고, <span class="file">reward.py</span> 한 파일만 고쳐 다시 학습했습니다. <span class="term" data-t="채택">채택</span> = 허용 기준(알림 끈 사람 <span class="v-maxout"></span>명 이하)을 지키는 버전 가운데 순이익이 가장 높은 버전.</p>
     <div class="card">
-      <h2>성적표 <span class="muted">2025년 네 분기 평균</span></h2>
-      <div style="overflow-x:auto"><table class="t" id="score"></table></div>
+      <h2>보상 버전별 결과 <span class="muted">2025년 네 분기 평균 · 모두 같은 평가 조건(시드)</span></h2>
+      <div class="vflow" id="vflow"></div>
       <div class="callout" id="verdict"></div>
     </div>
     <div class="card">
       <div class="row-between">
-        <div><h2>날짜별로 펼쳐 보기</h2><p class="hint">위: 알림을 켜 둔 유저에게 그날 무엇을 보냈나 (비율) · 아래: 평균 피로도와 누적 수신거부</p></div>
+        <div><h2>진단 다섯 질문</h2><p class="hint">평가 기록과 학습 곡선으로 답합니다 (<span class="file">diagnose.py</span>, 실행 메뉴 4번 뒤 자동). 초록 = 바라는 답 · 빨강 = 고칠 곳</p></div>
+        <div class="seg sm" id="dqVer"></div>
+      </div>
+      <div style="overflow-x:auto"><table class="t dq" id="dqTable"></table></div>
+      <div class="callout" id="dqWhere"></div>
+    </div>
+    <div class="card">
+      <div class="row-between">
+        <div><h2>날짜별로 펼쳐 보기</h2><p class="hint">위: 알림을 켜 둔 유저에게 그날 무엇을 보냈나 (비율) · 아래: 평균 피로도와 누적 수신거부 · 기록을 바꿔 v1과 v3를 비교해 보세요</p></div>
         <div class="seg sm" id="dgRec"></div>
       </div>
       <div id="chShare"></div>
@@ -697,25 +755,68 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
       <p class="small muted" id="timing" style="margin:10px 0 0"></p>
     </div>
     <div class="card">
-      <h2>왜 이렇게 배웠을까</h2>
+      <h2><span class="badge vb" style="background:var(--v1)">v1</span> 허점 — ‘막판 몰아주기’</h2>
       <div class="story">
         <div><b class="sn">1</b><b>점수(보상 v1)에 ‘알림 끄기’가 없음</b><br>점수는 그날 번 돈뿐. 유저가 알림을 꺼도 점수를 깎지 않습니다.</div>
         <div><b class="sn">2</b><b>끝나기 직전엔 잃을 게 적음</b><br>80일째에 알림을 끄면 잃는 건 남은 열흘치 이익뿐. 그보다 리워드로 당장 버는 돈이 큽니다.</div>
         <div><b class="sn">3</b><b>그래서 막판에 몰아 보냄</b><br>AI는 “마지막 2주엔 리워드를 몰아 보내 이익을 짜내고, 유저는 떠나도 된다”를 배웠습니다.</div>
       </div>
-      <div class="callout">이건 코드 오류가 아니라 <b>점수 설계의 허점</b>입니다. AI는 우리가 준 점수를 정확히 최대로 만들었을 뿐, 점수에 없는 목표(수신거부 5명 이하)는 신경 쓰지 않았습니다(<span class="term" data-t="보상 해킹">보상 해킹</span>). 잘한 점도 있습니다 — 처음 60일은 피로도를 위험선 아래로 관리하며 리워드를 아껴 썼으니, 누적 효과 자체는 배웠습니다.</div>
+      <div class="callout">이건 코드 오류가 아니라 <b>점수 설계의 허점</b>입니다. AI는 우리가 준 점수를 정확히 최대로 만들었을 뿐입니다(<span class="term" data-t="보상 해킹">보상 해킹</span>). 진단 질문 1·2·5는 통과(학습은 됐고 상황도 봄) → 문제 위치는 <b>보상</b>. 그래서 피로 위험 구간에 벌점을 넣은 v2를 만들었습니다.</div>
     </div>
     <div class="card">
-      <h2>3회차에 할 일 — 점수(보상) 고치기</h2>
-      <p class="hint"><span class="file">reward.py</span> 한 파일만 고치고, 같은 평가 조건(2025년 네 분기, 같은 시드)에서 성공 척도로 비교합니다. 나빠진 점(예: 이익 감소)도 기록합니다.</p>
-      <div class="grid2" style="margin-bottom:0" id="nextPlans"></div>
+      <h2><span class="badge vb" style="background:var(--v2)">v2</span> 허점 — 벌점을 피하려고 유저를 내보냄</h2>
+      <p class="hint" id="v2Hint"></p>
+      <div class="grid2" style="margin-bottom:0">
+        <div><b class="small">학습 중 ‘수신거부로 끝난 판’ 비율</b><div id="chSegOpt"></div></div>
+        <div><b class="small">학습 중 보상 (판 평균, 점)</b><div id="chSegRew"></div></div>
+      </div>
+      <div class="story" style="margin-top:12px">
+        <div><b class="sn">1</b><b>위험 구간에선 쉬게 해도 매일 −3점</b><br>피로가 75 아래로 내려오기까지 며칠 동안 벌점이 계속 쌓입니다.</div>
+        <div><b class="sn">2</b><b>알림을 끄면 판이 끝나 벌점도 끝</b><br>수신거부 자체에는 벌점이 없어서, 끝내는 쪽이 오히려 덜 깎입니다.</div>
+        <div><b class="sn">3</b><b>그래서 지친 유저를 빨리 내보냄</b><br>학습 초반에 찾은 좋은 방법(수신거부가 적은 정책)을 스스로 버렸습니다.</div>
+      </div>
+      <div class="callout warn" id="v2Lesson"></div>
     </div>
-    <p class="where">📁 관련 파일 <span class="file">results/summary_v1.md</span><span class="file">project_spec.md 5절</span><span class="file">presentation_notes.md</span></p>
+    <div class="card">
+      <h2><span class="badge vb" style="background:var(--v3)">v3</span> ‘알림을 끈 날 −20점’으로 허점 막기 <span class="badge good" id="v3Adopt">채택</span></h2>
+      <p class="hint">v2에 항목 하나만 더했습니다. −20점 ≈ 유저 1명이 90일 동안 낼 순이익(가정). 이제 유저를 내보내면 벌점이 끝나는 게 아니라 크게 깎입니다.</p>
+      <div class="facts-row" id="v3Facts"></div>
+    </div>
+    <details class="why"><summary>전체 성적표 (시험 규칙 포함) <span>2025년 네 분기 평균</span></summary><div class="body">
+      <div style="overflow-x:auto"><table class="t" id="score"></table></div>
+    </div></details>
+    <p class="where">📁 관련 파일 <span class="file">diagnose.py</span><span class="file">results/diagnosis_v*.md · .png</span><span class="file">results/summary_v*.md</span><span class="file">reward.py · reward_v1.py · reward_v2.py</span><span class="file">project_spec.md 5절</span></p>
+  </section>
+
+  <!-- 8 ─────────────────────────────────────────── -->
+  <section class="step" data-title="AI가 배운 규칙" data-sub="상황 → 행동, 운영자의 말로">
+    <div class="kicker">8단계 · 정책 해석 (3회차)</div>
+    <h1>채택한 AI는 어떤 날, 누구에게 무엇을 보내나</h1>
+    <p class="lead">학습된 AI(<span class="term" data-t="정책">정책</span>)는 숫자 덩어리라 속을 직접 읽을 수 없습니다. 대신 2025년 평가 기록의 결정 <b id="plN"></b>번을 상황별로 세어, 앱 운영자가 읽을 수 있는 <b>규칙 다섯 줄</b>로 옮겼습니다. 막대는 그 상황에서 규칙대로 고른 비율입니다.</p>
+    <div class="card">
+      <h2>규칙 다섯 줄 <span class="muted">버전마다 같은 규칙을 얼마나 따랐나</span></h2>
+      <div class="plrules" id="plRules"></div>
+    </div>
+    <div class="card">
+      <div class="row-between">
+        <div><h2>상황 × 피로도 지도</h2><p class="hint">칸마다 그 상황에서 고른 행동의 비율 · 칸에 마우스를 올리면 숫자가 나옵니다</p></div>
+        <div class="seg sm" id="plVer"></div>
+      </div>
+      <div class="legend" id="plLegend"></div>
+      <div style="overflow-x:auto"><table class="plgrid" id="plGrid"></table></div>
+      <div class="facts-row" id="plFacts" style="margin-top:14px"></div>
+    </div>
+    <div class="card">
+      <h2>⚠️ 상식에 맞지 않아 보이는 규칙 <span class="muted" id="plOddVer"></span></h2>
+      <p class="hint">가정한 반응 규칙 안에서는 합리적이지만, 운영 상식과 다릅니다 → 실제 데이터가 생기면 먼저 확인할 곳이자 발표에서 말할 한계</p>
+      <div class="grid2" style="margin-bottom:0" id="plOdd"></div>
+    </div>
+    <p class="where">📁 관련 파일 <span class="file">results/policy_rules.md</span><span class="file">diagnose.py (정책 해석 숫자)</span><span class="file">results/logs/ppo_v3.csv</span></p>
   </section>
 
   <!-- 8 ─────────────────────────────────────────── -->
   <section class="step" data-title="만든 파일 지도" data-sub="어떤 파일이 무엇을 하나">
-    <div class="kicker">8단계 · 파일 지도</div>
+    <div class="kicker">9단계 · 파일 지도</div>
     <h1>폴더 안 파일이 각각 하는 일</h1>
     <p class="lead">데이터를 만들고 → 가상 환경(유저 반응 규칙)을 정하고 → 돌려 보고 → 결과를 이 화면으로 봅니다. 파일 이름 옆 <b>단계로 →</b>를 누르면 그 파일이 만든 내용을 볼 수 있습니다.</p>
     <div class="card">
@@ -724,7 +825,7 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
         <div class="fb2"><b>① 입력 데이터</b>가상 고객 100명 · 성향 · 2016~2025 날씨·공휴일</div><div class="farrow">→</div>
         <div class="fb2"><b>② 가상 환경</b>문제 정의 숫자 · 반응 규칙 · 보상</div><div class="farrow">→</div>
         <div class="fb2"><b>③ 돌려 보기</b>시험 규칙 점검 · PPO 학습 · 평가</div><div class="farrow">→</div>
-        <div class="fb2"><b>④ 결과</b>요약표 · 학습 곡선 · 날짜별 기록 · 모델</div><div class="farrow">→</div>
+        <div class="fb2"><b>④ 결과</b>요약표 · 진단 · 학습 곡선 · 날짜별 기록 · 모델</div><div class="farrow">→</div>
         <div class="fb2"><b>⑤ 이 화면</b>public/index.html</div>
       </div>
     </div>
@@ -736,16 +837,17 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
         <tr><th>번호</th><th>하는 일</th><th>결과</th></tr>
         <tr><td>1</td><td>가상 환경 점검 (시험 규칙 4개)</td><td>results/sanity_check.md · 이 화면 4·6단계</td></tr>
         <tr><td>2</td><td>시험 학습 (1분 안쪽, 오류 확인)</td><td>화면에 걸린 시간</td></tr>
-        <tr><td>3</td><td>본 학습 (약 6분)</td><td>results/models/ · 학습 곡선</td></tr>
-        <tr><td>4</td><td>학습된 AI 평가</td><td>results/summary_v1.md · 이 화면 5·6·7단계</td></tr>
+        <tr><td>3</td><td>본 학습 (400만 번, 약 8~10분)</td><td>results/models/v*/ · 학습 곡선</td></tr>
+        <tr><td>4</td><td>학습된 AI 평가와 진단</td><td>results/summary_v*.md · diagnosis_v*.md · 이 화면 5~8단계</td></tr>
       </table>
+      <p class="small muted" style="margin:8px 0 0">보상을 고칠 때: <span class="file">reward.py</span>를 <span class="file">reward_v3.py</span>처럼 복사해 보관 → <span class="file">reward.py</span>의 VERSION과 식을 바꿈 → 3번 → 4번. 새 버전이 이 화면에 자동으로 추가됩니다.</p>
     </div>
     <p class="where">📁 데이터 출처 — 가상 고객: NVIDIA Nemotron-Personas-Korea (CC BY 4.0, 실제 인물 아님) · 날씨: Open-Meteo (CC BY 4.0, 마포구청 좌표) · 공휴일: python-holidays</p>
   </section>
 
   <!-- 9 ─────────────────────────────────────────── -->
   <section class="step" data-title="그림으로 보기" data-sub="저녁 6시, 마포구에 알림이 퍼진다">
-    <div class="kicker">9단계 · 한 장면으로 보기</div>
+    <div class="kicker">10단계 · 한 장면으로 보기</div>
     <h1>저녁 6시, 마포구 유저 100명에게 알림이 도착하면</h1>
     <p class="lead">우리가 만든 것은 가게가 아니라 <b>앱 유저에게 보내는 마케팅 연락(푸시 알림)을 가장 효율적으로 보내는 방법</b>을 찾는 AI입니다. 2025년 평가 기록을 그대로 그림으로 옮겼습니다. 아래에서 <b>전략 · 계절 · 상황</b>을 골라 보고, 창문에 마우스를 올려 보세요.</p>
     <div class="card">
@@ -771,6 +873,7 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
       <div class="callout" id="scNote" style="margin-top:18px"></div>
     </div>
     <p class="where">🎨 그림 파일 없이 코드(Canvas 2D)로 그렸습니다. 누가 어떤 알림을 받았고 누가 제보·수신거부했는지, 그날의 비·한파·주말은 모두 평가 기록과 실제 날씨 그대로입니다. 📁 <span class="file">public/index.html</span><span class="file">public/data/viewer_data.js</span><span class="file">screen_design.md (참고)</span></p>
+    <p class="where">📊 데이터 출처 — 가상 유저: NVIDIA Nemotron-Personas-Korea (CC BY 4.0, 실제 인물 아님) · 날씨: Open-Meteo Historical Weather API (CC BY 4.0) · 공휴일: python-holidays · 반응 규칙 숫자는 모두 가정값</p>
   </section>
 
   </main>
@@ -793,7 +896,7 @@ const UI = {
   phases: [[1, 60], [61, 75], [76, 90]],          // 7단계 구간 (presentation_notes.md와 같게)
   candidates: 781,                                // 2단계: 조건에 맞는 후보 수 (make_personas.py 실행 결과)
   personaSeed: 42,                                // 2단계: 100명을 뽑은 시드 (config.py PERSONA_SEED)
-  sceneDayMs: [10000, 6000, 3000],                // 9단계: 하루(17:30~23:30) 장면 길이 ms — 느리게·보통·빠르게
+  sceneDayMs: [10000, 6000, 3000],                // 10단계:하루(17:30~23:30) 장면 길이 ms — 느리게·보통·빠르게
 };
 const COLORS = {
   action: ['#d6d3d1', '#3b82f6', '#f59e0b'],
@@ -812,11 +915,23 @@ const PEOPLE = D.personas, N_PEOPLE = PEOPLE.length;
 const REC_KEYS = Object.keys(D.replays);
 const TEST_KEYS = ['none', 'max_reward', 'random', 'current'].filter(k => D.replays[k]);
 const MY_RULE = REC_KEYS.find(k => D.replays[k].is_my_rule) || TEST_KEYS[TEST_KEYS.length - 1];
-const PPO_KEY = REC_KEYS.filter(k => k.startsWith('ppo_')).pop() || null;
-const CURVE_KEY = Object.keys(D.curves).pop() || null;
+const PPO_KEYS = REC_KEYS.filter(k => /^ppo_v\d+$/.test(k)).sort((a, b) => +a.slice(5) - +b.slice(5));
+const PPO_KEY = PPO_KEYS[PPO_KEYS.length - 1] || null;            // 가장 최근 보상 버전
+const CURVE_KEYS = Object.keys(D.curves).sort((a, b) => +a.slice(1) - +b.slice(1));
+const CURVE_KEY = CURVE_KEYS[CURVE_KEYS.length - 1] || null;
+const bestOf = keys => { const ok = keys.filter(k => D.replays[k].summary.success); return ok.length ? ok.reduce((a, b) => D.replays[b].summary.profit > D.replays[a].summary.profit ? b : a) : null; };
+const REVISED = PPO_KEYS.filter(k => k !== 'ppo_v1');               // 3회차 수정 보상 버전들
+// 채택 버전: 허용 기준을 지키는 버전 가운데 성공 척도(순이익)가 가장 높은 버전, 없으면 초기 보상 v1
+const ADOPTED = bestOf(PPO_KEYS) || (PPO_KEYS.includes('ppo_v1') ? 'ppo_v1' : PPO_KEY);
+// 처음 열 때: 재생 = 채택한 수정 보상(없으면 마지막 시도), 비교 = 초기 보상 v1 (3회차 3-1)
+const DEFAULT_REC = bestOf(REVISED) || REVISED[REVISED.length - 1] || PPO_KEY || MY_RULE;
+const DEFAULT_CMP = REVISED.length && D.replays.ppo_v1 ? 'ppo_v1' : MY_RULE;
+const verOf = k => k.startsWith('ppo_') ? k.slice(4) : null;
+const formulaOf = v => ((P.reward_versions || []).find(x => x.version === v) || {}).formula || '';
 const SHORT = { none: '아무것도 안 함', max_reward: '매일 전원 리워드', random: '무작위', current: '현재 운영 (가정)' };
 const recName = k => SHORT[k] || (k.startsWith('ppo_') ? `학습된 AI ${k.slice(4)}` : D.replays[k].label);
-const recColor = k => COLORS.rec[k] || COLORS.ppo;
+const PPO_COLORS = ['#0f766e', '#db2777', '#7c3aed', '#0891b2'];   // 보상 버전 v1 · v2 · v3 · v4 (진단 그림과 같은 색)
+const recColor = k => COLORS.rec[k] || (/^ppo_v\d+$/.test(k) ? PPO_COLORS[(+k.slice(5) - 1) % PPO_COLORS.length] : COLORS.ppo);
 const WD = ['월', '화', '수', '목', '금', '토', '일'];
 const ACT = ['안 보냄', '일반 알림', '리워드 알림'];
 const CAL = D.replays[REC_KEYS[0]].episodes.map(e => e.days);   // 판별 날짜·날씨 (모든 기록이 같음)
@@ -948,13 +1063,16 @@ const GLOSSARY = {
   '매장 정의': '강의 양식에 붙은 이름. 우리 프로젝트에서는 가게가 아니라 ‘론팟 앱이 유저에게 보내는 마케팅 알림’ 문제를 정의한 절(project_spec.md 1절).',
   '상태': 'AI가 결정할 때 보는 숫자 목록. 여기서는 11개(고객 성향, 피로도, 의존도, 오늘 날씨, 남은 날 등). ‘관측’이라고도 함.',
   '행동': 'AI가 고를 수 있는 선택지. 여기서는 안 보냄 · 일반 알림 · 300P 리워드 알림 3개.',
-  '보상': 'AI가 행동 하나마다 받는 점수. 여기서는 그날 순이익 ÷ 1,000 (1,000원 = 1점). 성공 척도와 달리 버전을 바꿔 가며 고칠 수 있음.',
+  '보상': 'AI가 행동 하나마다 받는 점수. 기본은 그날 순이익 ÷ 1,000 (1,000원 = 1점)이고, 3회차부터 벌점을 더함 (채택 v3: 알림 받은 뒤 피로도 75 이상 −3점, 알림을 끔 −20점). 성공 척도와 달리 버전을 바꿔 가며 고칠 수 있음.',
   '스텝': '결정 한 번. 여기서는 하루.',
   '에피소드': '처음부터 끝까지 한 판. 여기서는 고객 한 명의 90일 (알림을 끄면 그날 끝).',
-  '정책': '상황(상태)을 보고 행동을 고르는 규칙. 학습의 결과물(results/models/v1/model.zip).',
+  '정책': '상황(상태)을 보고 행동을 고르는 규칙. 학습의 결과물(보상 버전마다 results/models/v1·v2·v3/model.zip). 8단계에서 사람이 읽는 규칙으로 옮김.',
+  '진단': '학습 결과를 다섯 질문(학습 곡선 · 순이익 · 허용 기준 · 행동 쏠림 · 상황별 차이)으로 따져, 문제가 학습 · 관측 · 보상 · 환경 중 어디에 있는지 찾는 일 (diagnose.py).',
+  '채택': '허용 기준을 지키는 보상 버전 가운데 순이익이 가장 높은 버전을 최종으로 고르는 것. 지키는 버전이 없으면 초기 보상 v1.',
   'PPO': '정책을 조금씩, 한 번에 너무 크게 바뀌지 않게 고쳐 가는 강화학습 방법. 안정적이라 많이 씀.',
   '학습 곡선': '연습할수록 점수가 어떻게 변했는지 그린 그래프. 오르다 평평해지면 그 점수로 배울 만큼 배운 것.',
-  '성공 척도': '프로젝트가 잘됐는지 판단하는 고정 기준. 90일 순이익(100명 합) 최대 + 수신거부 5명 이하.',
+  '성공 척도': '프로젝트가 잘됐는지 판단하는 고정 기준. 90일 순이익(100명 합) 최대.',
+  '허용 기준': `보조 지표마다 넘지 말아야 할 선. 여기서는 알림 끈 사람(수신거부) ${MONEY.max_opt_outs}명 이하(한 판마다). 보상 버전은 이 선을 지키는 것 가운데 순이익이 가장 높은 것을 고름.`,
   '수신거부': '유저가 앱 알림을 꺼 버리는 것. 다시는 알림을 못 보내므로 영구 이탈로 봄.',
   '알림 피로도': '알림을 받을수록 쌓이는 귀찮음(0~100). 75 이상이면 매일 20% 확률로 알림을 끔.',
   '보상 의존도': '리워드를 받을수록 쌓이는 “포인트 없으면 안 함” 습관(0~100). 60 이상이면 리워드 없는 날 제보가 반으로.',
@@ -963,7 +1081,7 @@ const GLOSSARY = {
   '가정': '실제 데이터가 없어서 합리적으로 정해 둔 숫자. 실제와 다를 수 있어 결과는 ‘설계가 타당한가’로만 해석.',
   '시험 규칙': '학습 없이 사람이 정한 단순한 규칙(아무것도 안 함, 매일 리워드 등). 가상 환경 점검과 비교 기준으로 씀.',
   '환경 타당성 검증': 'AI를 가르치기 전에 가상 환경이 상식대로 움직이는지 시험 규칙으로 확인하는 단계.',
-  '보상 해킹': 'AI가 점수 규칙의 허점을 찾아, 우리가 원하지 않는 방식으로 점수를 올리는 것. 여기서는 ‘막판 몰아주기’.',
+  '보상 해킹': 'AI가 점수 규칙의 허점을 찾아, 우리가 원하지 않는 방식으로 점수를 올리는 것. 여기서는 v1의 ‘막판 몰아주기’와 v2의 ‘지친 유저 내보내기’.',
   '신경망': '숫자를 넣으면 숫자를 내놓는 계산 덩어리. 학습으로 안의 숫자가 조정됨. 여기서는 상태 11개 → 행동 3개의 확률.',
 };
 $('#glossList').innerHTML = Object.entries(GLOSSARY).map(([k, v]) => `<div><b>${esc(k)}</b>${esc(v)}</div>`).join('');
@@ -1086,14 +1204,15 @@ function seg(host, items, on, onPick) {
   host.innerHTML = items.map(([v, label]) => `<button data-v="${esc(v)}" class="${v === on ? 'on' : ''}">${label}</button>`).join('');
   host.onclick = e => { const b = e.target.closest('button'); if (!b) return; $$('button', host).forEach(x => x.classList.toggle('on', x === b)); onPick(b.dataset.v); };
 }
-$('#verChip').textContent = `보상 ${P.reward_version} · 2회차 결과`;
+$$('.v-maxout').forEach(e => e.textContent = MONEY.max_opt_outs);
+$('#verChip').textContent = ADOPTED && ADOPTED !== 'ppo_v1' ? `3회차 · 채택 보상 ${verOf(ADOPTED)}` : `보상 ${P.reward_version}`;
 
 /* ───────── 0. 한눈에 보기 ───────── */
 const LOOP = [
   { k: '① 상태 보기', who: 'ai', v: '고객 성향 · 피로도 · 오늘 날씨 …', d: 'AI가 결정 전에 보는 숫자 11개입니다. 이 고객이 제보를 잘하는 사람인지, 지금 얼마나 지쳤는지, 오늘 비가 오는지, 판이 며칠 남았는지 등.' },
   { k: '② 행동 고르기', who: 'ai', v: '안 보냄 · 일반 · 리워드', d: '셋 중 하나를 고릅니다. 처음엔 거의 무작위로 고르다가, 연습할수록 점수가 잘 나온 쪽을 더 자주 고릅니다.' },
   { k: '③ 가상 유저의 반응', who: 'env', v: '제보했나? 피로도 +15', d: '가상 고객이 반응 규칙대로 반응합니다. 제보할지는 확률로 정해지고, 알림을 받으면 피로도가 쌓이고, 너무 지치면 알림을 꺼 버립니다.' },
-  { k: '④ 점수(보상) 받기', who: 'env', v: `그날 순이익 ÷ ${num(P.reward_scale)}`, d: `그날 번 돈을 점수로 돌려줍니다. 제보 1건 = ${num(MONEY.value_per_report / P.reward_scale, 1)}점, 리워드로 받은 제보 = ${num((MONEY.value_per_report - MONEY.reward_cost) / P.reward_scale, 1)}점, 제보 없음 = 0점. AI는 90일 동안의 점수 합이 커지도록 ②를 고쳐 갑니다.` },
+  { k: '④ 점수(보상) 받기', who: 'env', v: `그날 순이익 ÷ ${num(P.reward_scale)} − 벌점`, d: `그날 번 돈을 점수로 돌려줍니다. 제보 1건 = ${num(MONEY.value_per_report / P.reward_scale, 1)}점, 리워드로 받은 제보 = ${num((MONEY.value_per_report - MONEY.reward_cost) / P.reward_scale, 1)}점, 제보 없음 = 0점. 3회차에 채택한 보상 ${P.reward_version}는 여기서 벌점을 뺍니다 — ${formulaOf(P.reward_version)}. AI는 90일 동안의 점수 합이 커지도록 ②를 고쳐 갑니다.` },
 ];
 let loopIdx = 0, loopAuto = true, loopTimer = null;
 function setLoop(i) { loopIdx = i; $$('#loop .lnode').forEach((b, j) => b.classList.toggle('on', j === i)); $('#loopText').innerHTML = `<b>${LOOP[i].k}</b> — ${LOOP[i].d}`; }
@@ -1111,18 +1230,19 @@ INIT[0] = () => {
     ['에이전트(Agent)', 'CRM 매니저 AI'],
     ['상태(State)', `${L.slice(0, 5).join(' · ')} 외 ${L.length - 5}개`],
     ['행동(Action)', '안 보냄 · 일반 알림 · 300P 리워드'],
-    ['보상(Reward)', `${P.reward_version} : 그날 순이익 ÷ ${num(P.reward_scale)}`],
+    ['보상(Reward)', `${P.reward_version} : ${formulaOf(P.reward_version) || P.reward}`, ADOPTED ? `채택 버전 ${verOf(ADOPTED)}` : ''],
     ['한 걸음 · 한 판', `하루 · 고객 한 명의 ${P.episode_days}일`],
   ];
   $('#introCard').innerHTML = kv.map(([k, v, s]) => `<dt>${esc(k)}</dt><dd>${esc(v)}${s ? ` <small>· ${esc(s)}</small>` : ''}</dd>`).join('');
-  const ppo = PPO_KEY && D.replays[PPO_KEY].summary, cv = CURVE_KEY && D.curves[CURVE_KEY];
+  const ppo = ADOPTED && D.replays[ADOPTED].summary, cv = CURVE_KEY && D.curves[CURVE_KEY];
   const passed = D.sanity.filter(c => c.passed).length;
   const stat = {
     1: '행동 3개 · 성공 기준 2개', 2: `${N_PEOPLE}명 · 성향 3가지`, 3: '규칙 6줄 · 직접 보내 보기',
     4: D.sanity.length ? `시험 규칙 4개 · 기준 ${passed}/${D.sanity.length} 통과` : '시험 규칙 4개',
     5: cv ? `${num(cv.timesteps / 10000)}만 번 결정 · ${num(cv.first_return, 1)}→${num(cv.last_return, 1)}점` : '학습 전',
-    6: ppo ? `AI ${man(ppo.profit)} · 알림 끔 ${num(ppo.opt_outs)}명` : '시험 규칙 재생',
-    7: '‘막판 몰아주기’ 발견 → 3회차', 8: '폴더 안 파일이 하는 일', 9: '움직이는 장면 · 전략·계절·상황 고르기',
+    6: ppo ? `AI ${verOf(ADOPTED)} ${man(ppo.profit)} · 알림 끔 ${num(ppo.opt_outs)}명` : '시험 규칙 재생',
+    7: PPO_KEYS.length > 1 ? `다섯 질문 진단 · ${PPO_KEYS.map(verOf).join(' → ')} · ${verOf(ADOPTED)} 채택` : '다섯 질문 진단',
+    8: '규칙 다섯 줄 · 상황 × 피로도 지도', 9: '폴더 안 파일이 하는 일', 10: '움직이는 장면 · 전략·계절·상황 고르기',
   };
   $('#tour').innerHTML = STEPS.slice(1).map((s, j) => `<button class="tcard" data-go="${j + 1}"><span class="tn">${j + 1}단계</span><b>${esc(s.dataset.title)}</b><span>${esc(s.dataset.sub)}</span><em>${esc(stat[j + 1] || '')}</em></button>`).join('');
 };
@@ -1159,8 +1279,8 @@ INIT[1] = () => {
   };
   seg($('#dayType'), DAY_TYPES.map(d => [d[0], d[1]]), 'normal', evDraw);
   evDraw('normal');
-  $('#goal').innerHTML = `<div><span class="muted small">조건 ① 최대로</span><b>${P.episode_days}일 누적 순이익</b><span class="small muted">고객 ${N_PEOPLE}명 합</span></div>
-    <div><span class="muted small">조건 ② 지키기</span><b>수신거부 ${MONEY.max_opt_outs}명 이하</b><span class="small muted">알림을 끈 유저 수</span></div>`;
+  $('#goal').innerHTML = `<div><span class="muted small">① 성공 척도 (최대로)</span><b>${P.episode_days}일 누적 순이익</b><span class="small muted">고객 ${N_PEOPLE}명 합</span></div>
+    <div><span class="muted small">② 허용 기준 (넘지 말 선)</span><b>수신거부 ${MONEY.max_opt_outs}명 이하</b><span class="small muted">알림을 끈 유저 수</span></div>`;
   $('#formula').innerHTML = `<b>순이익</b> = 제보 수 × ${won(MONEY.value_per_report)} − 리워드 알림으로 생긴 제보 수 × ${won(MONEY.reward_cost)}<br><span class="muted small">넣지 않은 것: 서버·인건비(어떤 알림을 보내든 같음), 푸시 발송비(거의 0원)</span>`;
 };
 
@@ -1368,7 +1488,7 @@ INIT[4] = () => {
   $('#testRules').innerHTML = TEST_KEYS.map(k => { const s = D.replays[k].summary; return `<div class="rc" style="border-left-color:${recColor(k)}"><b class="nm">${esc(recName(k))}</b><div class="ds">${esc(TEST_DESC[k] || '')}</div>
     <div class="big">${man(s.profit)}</div><div class="sm">90일 순이익</div>
     <div style="margin-top:6px"><b style="color:${s.opt_outs > MONEY.max_opt_outs ? COLORS.bad : COLORS.good}">알림 끔 ${num(s.opt_outs)}명</b> · <span class="sm">하루 제보 ${num(s.reports_per_day, 1)}건</span></div>
-    <div style="margin-top:6px"><span class="badge ${s.success ? 'good' : 'bad'}">성공 척도 ${s.success ? '달성' : '미달'}</span></div></div>`; }).join('');
+    <div style="margin-top:6px"><span class="badge ${s.success ? 'good' : 'bad'}">허용 기준 ${s.success ? '지킴' : '넘음'}</span></div></div>`; }).join('');
   $('#checks').innerHTML = D.sanity.length ? D.sanity.map(c => `<div class="check"><span class="ok" style="background:${c.passed ? COLORS.good : COLORS.bad}">${c.passed ? '✓' : '✕'}</span><div><b>${esc(c.name)}</b><div class="why">${esc(c.why)}</div></div></div>`).join('')
     : '<p class="muted">results/sanity_check.md가 없어 통과 기준을 보여 줄 수 없습니다. run.bat → 1번을 실행하세요.</p>';
   const rnd = D.replays.random?.summary;
@@ -1385,37 +1505,38 @@ INIT[5] = () => {
   $('#obsList').innerHTML = groups.map(([t, ix]) => `<div class="obs-g"><div class="gt">${t}</div><div class="row">${ix.map(i => `<span class="chip">${esc(L[i])}</span>`).join('')}</div></div>`).join('');
   $('#actList').innerHTML = ACT.map((a, i) => `<div><span class="dot" style="background:${COLORS.action[i]}"></span><b>${i}</b> ${a}</div>`).join('');
   const sc = P.reward_scale;
-  $('#rewVer').textContent = `보상 ${P.reward_version}`;
+  $('#rewVer').textContent = '보상 버전별';
   $('#rewTable').innerHTML = [['제보 없음', '0점'], ['안 보냄·일반 알림으로 제보', `+${num(MONEY.value_per_report / sc, 1)}점`], ['리워드 알림으로 제보', `+${num((MONEY.value_per_report - MONEY.reward_cost) / sc, 1)}점`]].map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('')
-    + `<p class="small muted" style="margin:4px 0 0">→ 90일 점수 합 = 그 고객의 90일 순이익 ÷ ${num(sc)}</p>`;
-  $('#rewNote').innerHTML = `⚠️ 알림을 끄면? 그날로 판이 끝나 이후 점수를 못 받을 뿐, <b>따로 깎이는 점수는 없습니다.</b> 이 점이 7단계의 문제로 이어집니다.`;
-  const cv = CURVE_KEY && D.curves[CURVE_KEY];
-  $('#trainFacts').innerHTML = [
-    [cv ? `${num(cv.timesteps / 10000)}만 번` : '–', '결정 연습 횟수 (하루 1번 = 1번)'],
-    [cv ? `${num(cv.episodes)}판` : '–', '고객 1명 × 90일 판을 반복한 수'],
-    ['가상 환경 8개', '동시에 돌려 경험을 빨리 모음'],
-    ['약 6분 · CPU', '2016~2024년 달력, 시작일·고객 무작위'],
-  ].map(([b, s]) => `<div class="ftile"><b>${b}</b><span>${s}</span></div>`).join('');
+    + `<p class="small muted" style="margin:4px 0 8px">↑ 모든 버전 공통 (단기 항목: 그날 순이익 ÷ ${num(sc)})</p>`
+    + (P.reward_versions || []).map(x => `<div><span><span class="dot" style="background:${recColor('ppo_' + x.version)}"></span> <b>${x.version}</b></span><span style="text-align:right">${esc(x.formula)}</span></div>`).join('');
+  $('#rewAdopted').textContent = ADOPTED ? verOf(ADOPTED) : P.reward_version;
+  $('#rewNote').innerHTML = `⚠️ <b>v1</b>은 알림을 끄면 판이 끝날 뿐 깎이는 점수가 없어 ‘막판 몰아주기’를 배웠고, <b>v2</b>는 위험 구간 벌점을 더했지만 알림을 끄면 벌점도 끝나는 허점 때문에 지친 유저를 내보냈습니다. <b>v3</b>는 ‘알림을 끈 날 벌점’을 더해 허점을 막았습니다. <a href="#7" data-go="7">7단계 진단 →</a>`;
 };
+// 버전별 학습 횟수·시간 — 시간은 results/run_history.csv 기록 (반올림)
+const TRAIN_TIME = { v1: '약 6분', v2: '약 10분', v3: '약 8분' };
+let CURVE_SEL = 'v1' in D.curves ? 'v1' : CURVE_KEY;   // 5단계는 v1 이야기로 시작 (버전은 위에서 바꿈)
 DRAW[5] = () => {
-  const cv = CURVE_KEY && D.curves[CURVE_KEY];
-  if (!cv) { $('#chCurve').innerHTML = '<p class="muted">학습 곡선이 없습니다. run.bat → 3번(본 학습) 뒤 4번(평가)을 실행하세요.</p>'; return; }
-  const xs = cv.points.map(p => p[0]), ys = cv.points.map(p => p[1]);
-  const step = niceStep(xs[xs.length - 1], 4);
-  const ticks = []; for (let v = 0; v <= xs[xs.length - 1] + 1; v += step) ticks.push(v);
-  lineChart($('#chCurve'), {
-    series: [{ name: `한 판 평균 점수 (보상 ${CURVE_KEY})`, color: COLORS.ppo, values: ys, width: 2.5 }], xs, xTicks: ticks, xFmt: v => v ? num(v / 10000) + '만' : '0',
-    tipX: x => `${num(x / 10000, 1)}만 번째 결정까지`, tipFmt: v => num(v, 1) + '점', yMin: 0, height: 260,
-    notes: [{ x: xs[xs.length - 1], y: ys[ys.length - 1], text: `끝 무렵 ${num(ys[ys.length - 1], 1)}점`, color: COLORS.ppo, anchor: 'end', dy: -12 }],
-  });
-  $('#curveNote').innerHTML = `처음 10% 판의 평균 <b>${num(cv.first_return, 1)}점</b> → 마지막 10% 판의 평균 <b>${num(cv.last_return, 1)}점</b>. 점수가 빠르게 오르다 평평해졌습니다 = 이 보상으로 배울 수 있는 만큼 배웠다는 뜻입니다. 1점이 ${num(P.reward_scale)}원이니, 고객 한 명에게서 90일 동안 약 ${won(cv.last_return * P.reward_scale)}을 버는 법을 익힌 셈입니다. <span class="muted">(그래프 선은 최근 여러 판의 평균이라 출렁임이 줄어 보입니다)</span><br><b>그런데 점수가 높다고 목표를 이룬 걸까요?</b> → <a href="#6" data-go="6">6단계 결과 재생</a>`;
+  if (!CURVE_SEL) { $('#chCurve').innerHTML = '<p class="muted">학습 곡선이 없습니다. run.bat → 3번(본 학습) 뒤 4번(평가)을 실행하세요.</p>'; return; }
+  seg($('#curveSeg'), CURVE_KEYS.map(v => [v, `<span class="dot" style="background:${recColor('ppo_' + v)}"></span>보상 ${v}`]), CURVE_SEL, v => { CURVE_SEL = v; DRAW[5](); });
+  const cv = D.curves[CURVE_SEL], dq = D.diagnosis && D.diagnosis[CURVE_SEL];
+  $('#trainFacts').innerHTML = [
+    [`${num(cv.timesteps / 10000)}만 번`, `결정 연습 횟수 (보상 ${CURVE_SEL}, 하루 1번 = 1번)`],
+    [`${num(cv.episodes)}판`, '고객 1명 × 90일 판을 반복한 수'],
+    ['가상 환경 8개', '동시에 돌려 경험을 빨리 모음'],
+    [`${TRAIN_TIME[CURVE_SEL] || '–'} · CPU`, '2016~2024년 달력, 시작일·고객 무작위'],
+  ].map(([b, s]) => `<div class="ftile"><b>${b}</b><span>${s}</span></div>`).join('');
+  curveChart($('#chCurve'), CURVE_SEL);
+  const q1 = dq && dq.questions[0];
+  const shape = q1 ? (q1.yes ? '✓ 오르다 평평해짐 — 이 보상으로 배울 만큼 배움' : `⚠️ 평평하지 않음 — ${esc(dq.where_tag)} (<a href="#7" data-go="7">7단계 진단</a>)`) : '';
+  $('#curveNote').innerHTML = `<b>보상 ${CURVE_SEL}</b> (${esc(formulaOf(CURVE_SEL))}) — 처음 10% 판의 평균 <b>${num(cv.first_return, 1)}점</b> → 마지막 10% 판의 평균 <b>${num(cv.last_return, 1)}점</b>. ${shape ? `<b>${shape}</b>` : '점수가 오르다 평평해지면 이 보상으로 배울 수 있는 만큼 배웠다는 뜻입니다.'} <span class="muted">(선은 최근 여러 판의 평균이라 출렁임이 줄어 보입니다. 보상 버전마다 점수 기준이 달라 버전끼리 점수를 비교하지 않고, 회색 점선 순이익으로 비교합니다.)</span><br><b>그런데 점수가 높다고 목표를 이룬 걸까요?</b> → <a href="#6" data-go="6">6단계 결과 재생</a>`;
 };
 
 /* ───────── 6. 결과 재생 ───────── */
-const RP = { rec: PPO_KEY || MY_RULE, ep: 0, day: 0, speed: UI.playSpeeds[1][0], timer: null };
+const RP = { rec: DEFAULT_REC, cmp: DEFAULT_CMP, ep: 0, day: 0, speed: UI.playSpeeds[1][0], timer: null };
 let cells = [];
 INIT[6] = () => {
   seg($('#rpRec'), REC_KEYS.map(k => [k, `<span class="dot" style="background:${recColor(k)}"></span>${esc(recName(k))}`]), RP.rec, v => { RP.rec = v; rpFull(); });
+  seg($('#rpCmp'), REC_KEYS.map(k => [k, `<span class="dot" style="background:${recColor(k)}"></span>${esc(recName(k))}`]), RP.cmp, v => { RP.cmp = v; rpUpdate(); });
   seg($('#rpEp'), P.eval_starts.map((s, i) => [String(i), epLabel(s)]), '0', v => { RP.ep = +v; RP.day = Math.min(RP.day, N_DAYS - 1); rpFull(); });
   seg($('#rpSpeed'), UI.playSpeeds.map(([v, l]) => [String(v), l]), String(RP.speed), v => { RP.speed = +v; if (RP.timer) { rpPause(); rpPlay(); } });
   $('#rpGrid').innerHTML = PEOPLE.map((p, i) => `<div class="cell" data-i="${i}"><span class="cn">${p.id}</span><span class="mk"></span><span class="fb"><i></i></span></div>`).join('');
@@ -1450,7 +1571,7 @@ function rpFull() {
   rpUpdate();
 }
 function rpUpdate() {
-  const k = RP.rec, rp = D.replays[k], day = rp.episodes[RP.ep].days[RP.day], st = epStats(k, RP.ep), cmp = epStats(MY_RULE, RP.ep), di = RP.day;
+  const k = RP.rec, K2 = RP.cmp, rp = D.replays[k], day = rp.episodes[RP.ep].days[RP.day], st = epStats(k, RP.ep), cmp = epStats(K2, RP.ep), di = RP.day;
   $('#rpDay').innerHTML = `<div><div class="d">${dateLabel(day)}</div><div class="chips">${dayChips(day)}</div><div class="small muted">${weatherLine(day)} · ${esc(dayEffect(day))}</div></div><div class="dn"><b>${di + 1}</b> / ${N_DAYS}일째<br>${epLabel(rp.episodes[RP.ep].start)} 판</div>`;
   cells.forEach((c, i) => {
     const a = day.action[i], f = day.fatigue[i];
@@ -1460,13 +1581,17 @@ function rpUpdate() {
     bar.classList.toggle('hi', f >= RU.FATIGUE_DANGER);
   });
   $$('#rpTimeline .tl').forEach((b, i) => { b.classList.toggle('cur', i === di); b.classList.toggle('future', i > di); });
-  const diff = st.cum[di] - cmp.cum[di], outs = st.outs[di], s = rp.summary, my = D.replays[MY_RULE].summary;
+  const diff = st.cum[di] - cmp.cum[di], outs = st.outs[di], s = rp.summary, cs = D.replays[K2].summary;
   const c = st.counts[di];
-  const verdict = k === MY_RULE ? `<span class="muted">이 기록이 비교 기준(내가 정한 규칙)입니다.</span>`
-    : (() => { const better = s.profit > my.profit && s.success; return `<span style="color:${better ? COLORS.good : COLORS.bad};font-weight:700">${better ? '✓ 현재 운영보다 낫다' : '✕ 현재 운영보다 낫지 않다'}</span><br><span class="small muted">순이익 ${man(s.profit)} vs ${man(my.profit)} · 알림 끔 ${num(s.opt_outs, 1)}명 vs ${num(my.opt_outs, 1)}명</span>`; })();
+  const better = s.success && (!cs.success || s.profit > cs.profit);
+  const badge = t => `<span class="badge ${t.success ? 'good' : 'bad'}">${t.success ? '지킴' : '넘음'}</span>`;
+  const cmpRows = [['90일 순이익 (성공 척도)', man(s.profit), man(cs.profit)], ['알림 끈 사람', `${num(s.opt_outs, 1)}명`, `${num(cs.opt_outs, 1)}명`],
+    [`허용 기준 (${MONEY.max_opt_outs}명 이하)`, badge(s), badge(cs)], ['하루 제보', `${num(s.reports_per_day, 1)}건`, `${num(cs.reports_per_day, 1)}건`], ['리워드 비용', man(s.reward_cost), man(cs.reward_cost)]];
+  const verdict = k === K2 ? '<span class="muted">재생 기록과 비교 기록이 같습니다. 위에서 비교 기록을 바꿔 보세요.</span>'
+    : `<span style="color:${better ? COLORS.good : COLORS.bad};font-weight:700">${better ? '✓ 비교 기록보다 낫다' : '✕ 비교 기록보다 낫지 않다'}</span><br><span class="small muted">허용 기준을 지키면서 순이익이 더 높아야 ‘낫다’</span>`;
   $('#rpSide').innerHTML = `
     <div class="card"><div class="kl">이번 판 누적 순이익 (오늘까지)</div><div class="kbig" style="color:${recColor(k)}">${won(st.cum[di])}</div>
-      <div class="ksub">${k === MY_RULE ? '<span class="muted">비교 기준 기록</span>' : `현재 운영보다 <b style="color:${diff >= 0 ? COLORS.good : COLORS.bad}">${diff >= 0 ? '+' : '−'}${won(Math.abs(diff))}</b> <span class="muted">(같은 날 기준)</span>`}</div>
+      <div class="ksub">${k === K2 ? '<span class="muted">비교 기록과 같음</span>' : `${esc(recName(K2))}보다 <b style="color:${diff >= 0 ? COLORS.good : COLORS.bad}">${diff >= 0 ? '+' : '−'}${won(Math.abs(diff))}</b> <span class="muted">(같은 날 기준)</span>`}</div>
       <div class="ksub muted">누적 보상 ${num(st.cumRew[di], 1)}점 (1점 = ${num(P.reward_scale)}원)</div></div>
     <div class="card"><div class="kl">알림을 끈 사람 (누적)</div><div class="kmid" style="color:${outs > MONEY.max_opt_outs ? COLORS.bad : COLORS.good}">${outs}명 <span class="small muted">/ ${N_PEOPLE}명</span></div>
       <div class="meter"><i style="width:${outs / N_PEOPLE * 100}%;background:${outs > MONEY.max_opt_outs ? COLORS.bad : COLORS.good}"></i><b style="left:${MONEY.max_opt_outs / N_PEOPLE * 100}%"></b></div>
@@ -1475,34 +1600,101 @@ function rpUpdate() {
       <div><span>보낸 알림</span><b>일반 ${c[1]} · 리워드 ${c[2]}</b></div><div><span>안 보냄</span><b>${c[0]}명</b></div>
       <div><span>제보</span><b>${st.reports[di]}건</b></div><div><span>오늘 순이익</span><b>${won(day.profit)}</b></div>
       <div><span>오늘 알림 끔</span><b style="color:${st.outToday[di] ? COLORS.bad : 'inherit'}">${st.outToday[di]}명</b></div></div></div>
-    <div class="card"><div class="kl">네 분기 평균 최종 결과</div><div class="kmid">${man(s.profit)}</div>
-      <div class="ksub">알림 끔 <b>${num(s.opt_outs, 1)}명</b> · <span class="badge ${s.success ? 'good' : 'bad'}">성공 척도 ${s.success ? '달성' : '미달'}</span></div>
-      <div class="ksub" style="margin-top:6px">${verdict}</div></div>`;
-  $('#rpChartTitle').textContent = `누적 순이익 — ${recName(k)}${k === MY_RULE ? '' : ' vs ' + recName(MY_RULE)}`;
+    <div class="card"><div class="kl">네 분기 평균 — 재생 vs 비교</div>
+      <table class="t" style="font-size:12.5px;margin-top:4px"><tr><th></th><th class="r" style="color:${recColor(k)}">${esc(recName(k))}</th><th class="r" style="color:${recColor(K2)}">${esc(recName(K2))}</th></tr>
+      ${cmpRows.map(([a, b, c2]) => `<tr><td>${a}</td><td class="r"><b>${b}</b></td><td class="r">${c2}</td></tr>`).join('')}</table>
+      <div class="ksub" style="margin-top:8px">${verdict}</div></div>`;
+  $('#rpChartTitle').textContent = `누적 순이익 — ${recName(k)}${k === K2 ? '' : ' vs ' + recName(K2)}`;
   const series = [{ name: recName(k), color: recColor(k), values: st.cum, width: 2.6 }];
-  if (k !== MY_RULE) series.push({ name: recName(MY_RULE) + ' (기준)', color: recColor(MY_RULE), values: cmp.cum, dash: '6 4' });
-  lineChart($('#rpChart'), { series, cursor: di, yFmt: v => man(v).replace(' 원', ''), tipFmt: won, ml: 62, height: 210, onClick: i => { rpPause(); RP.day = i; rpUpdate(); } });
+  if (k !== K2) series.push({ name: recName(K2) + ' (비교)', color: recColor(K2), values: cmp.cum, dash: '6 4' });
+  const jump = i => { rpPause(); RP.day = i; rpUpdate(); };
+  lineChart($('#rpChart'), { series, cursor: di, yFmt: v => man(v).replace(' 원', ''), tipFmt: won, ml: 62, height: 210, onClick: jump });
+  const v = verOf(k) || rp.reward_version;
+  $('#rpRewTitle').textContent = `날마다 받은 보상 — ${recName(k)} (보상 ${v})`;
+  lineChart($('#rpReward'), { series: [{ name: `그날 받은 보상 합 (100명, 보상 ${v})`, color: recColor(k), values: rp.episodes[RP.ep].days.map(d => d.reward) }],
+    cursor: di, yFmt: v2 => num(v2), tipFmt: v2 => num(v2, 1) + '점', height: 190, onClick: jump });
+  $('#rpCurveTitle').textContent = `학습 곡선 — ${recName(k)}`;
+  if (verOf(k) && D.curves[verOf(k)]) curveChart($('#rpCurve'), verOf(k), 190);
+  else $('#rpCurve').innerHTML = '<p class="muted small">시험 규칙은 학습하지 않은 사람이 정한 규칙이라 학습 곡선이 없습니다. 재생 기록을 ‘학습된 AI’로 바꿔 보세요.</p>';
+}
+/* 학습 곡선: 보상(점)과 순이익 ÷ 1,000(점)을 한 축에 — 1점 = 1,000원이라 같은 눈금 */
+function curveChart(host, ver, height = 260) {
+  const cv = D.curves[ver], xs = cv.points.map(p => p[0]), ys = cv.points.map(p => p[1]), ps = cv.points.map(p => p[2] ?? p[1]);
+  const step = niceStep(xs[xs.length - 1], 4), ticks = [];
+  for (let x = 0; x <= xs[xs.length - 1] + 1; x += step) ticks.push(x);
+  const col = recColor('ppo_' + ver), same = ys.every((y, i) => Math.abs(y - ps[i]) < 0.01);
+  const series = [{ name: `보상 (보상 ${ver})`, color: col, values: ys, width: 2.5 }];
+  if (!same) series.push({ name: '성공 척도: 순이익 ÷ 1,000', color: '#64748b', values: ps, dash: '6 4' });
+  lineChart(host, { series, xs, xTicks: ticks, xFmt: v => v ? num(v / 10000) + '만' : '0', tipX: x => `${num(x / 10000, 1)}만 번째 결정까지`,
+    tipFmt: v => num(v, 1) + '점', height, notes: [{ x: xs[xs.length - 1], y: ys[ys.length - 1], text: `끝 무렵 ${num(ys[ys.length - 1], 1)}점`, color: col, anchor: 'end', dy: -12 }] });
+  if (same) host.insertAdjacentHTML('beforeend', `<p class="small muted" style="margin:4px 0 0">보상 ${ver}은 ‘순이익 ÷ 1,000’ 그대로라 성공 척도 선이 보상 선과 겹칩니다.</p>`);
 }
 DRAW[6] = rpFull;
 
-/* ───────── 7. 진단 ───────── */
-const DG = { rec: PPO_KEY || MY_RULE };
+/* ───────── 7. 진단 · 보상 고치기 ───────── */
+const DG = { rec: D.replays.ppo_v1 ? 'ppo_v1' : (PPO_KEY || MY_RULE) };   // 날짜별 펼쳐 보기는 v1 이야기로 시작
+const DIAG = D.diagnosis || {};                                          // diagnose.py가 만든 진단 · 정책 해석
+const DIAG_KEYS = Object.keys(DIAG).sort((a, b) => +a.slice(1) - +b.slice(1));
+let DQ_SEL = DIAG_KEYS.includes('v1') ? 'v1' : DIAG_KEYS[0];
+const verSeg = v => `<span class="dot" style="background:${recColor('ppo_' + v)}"></span>보상 ${v}`;
+function drawDQ() {
+  const dq = DIAG[DQ_SEL];
+  if (!dq) { $('#dqTable').innerHTML = ''; $('#dqWhere').textContent = '진단 결과가 없습니다 (run.bat → 4번 평가와 진단).'; return; }
+  $('#dqTable').innerHTML = '<tr><th>#</th><th>질문</th><th>답</th><th>근거 숫자</th></tr>' + dq.questions.map((q, i) =>
+    `<tr><td>${i + 1}</td><td>${esc(q.q)}</td><td><span class="badge ${q.good ? 'good' : 'bad'}">${q.yes ? '예' : '아니오'}</span></td><td class="why">${esc(q.why)}</td></tr>`).join('');
+  $('#dqWhere').innerHTML = `<b>보상 ${dq.version} 문제 위치</b> <span class="muted small">(학습 → 관측 → 보상 → 환경 순서로 확인)</span><br>${esc(dq.where)}`;
+}
+function segChart(host, field, vers, o = {}) {   // 학습을 10구간으로 나눈 평균 (diagnose.py)
+  const series = vers.filter(v => DIAG[v]?.segments?.[field]?.[0] != null)
+    .map(v => ({ name: `보상 ${v}`, color: recColor('ppo_' + v), values: DIAG[v].segments[field].map(x => o.scale ? x * o.scale : x) }));
+  if (!series.length) { host.innerHTML = '<p class="muted small">기록 없음</p>'; return; }
+  lineChart(host, { series, xs: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], xTicks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], xFmt: x => x + '', tipX: x => `학습 ${x}번째 10% 구간`, height: 190, ml: 44, ...o.chart });
+}
 INIT[7] = () => {
   const my = D.replays[MY_RULE].summary;
-  $('#score').innerHTML = `<tr><th>규칙</th><th class="r">90일 순이익</th><th class="r">알림 끈 사람</th><th>성공 척도</th><th class="r">하루 제보</th><th class="r">리워드 비용</th></tr>` +
-    REC_KEYS.map(k => { const s = D.replays[k].summary; return `<tr class="${k === PPO_KEY ? 'hl' : ''}"><td><span class="dot" style="background:${recColor(k)};margin-right:6px"></span>${esc(recName(k))}${k === MY_RULE ? ' <span class="badge teal">기준</span>' : ''}</td>
+  $('#vflow').innerHTML = (P.reward_versions || []).map(x => {
+    const v = x.version, k = 'ppo_' + v, s = D.replays[k]?.summary, dq = DIAG[v];
+    const tag = k === ADOPTED ? '<span class="badge good">채택</span>' : s ? `<span class="badge ${s.success ? 'good' : 'bad'}">허용 기준 ${s.success ? '지킴' : '넘음'}</span>` : '';
+    const res = s ? `<div class="vn"><span>90일 순이익</span><b>${man(s.profit)}</b><span>현재 운영 대비</span><b>${num(s.profit / my.profit, 2)}배</b><span>알림 끈 사람</span><b style="color:${s.success ? COLORS.good : COLORS.bad}">${num(s.opt_outs, 1)}명</b><span>리워드 비용</span><b>${man(s.reward_cost)}</b></div>` : '<p class="muted small">아직 학습·평가 전</p>';
+    return `<div class="vcard ${k === ADOPTED ? 'adopt' : ''}" style="--c:${recColor(k)}"><div class="vh"><span class="badge vb" style="background:${recColor(k)}">${v}</span>${tag}</div>
+      <div class="vf">${esc(x.formula)}</div>${res}${dq ? `<div class="vd">진단 → <b>${esc(dq.where_tag)}</b></div>` : ''}</div>`;
+  }).join('');
+  if (DIAG_KEYS.length) seg($('#dqVer'), DIAG_KEYS.map(v => [v, verSeg(v)]), DQ_SEL, v => { DQ_SEL = v; drawDQ(); });
+  drawDQ();
+  const v2 = DIAG.v2, v2s = D.replays.ppo_v2?.summary, v1s = D.replays.ppo_v1?.summary, v3s = D.replays.ppo_v3?.summary;
+  if (v2 && v2.segments) {
+    const sg = v2.segments, pk = sg.peak - 1;
+    $('#v2Hint').innerHTML = `v2 = ${esc(formulaOf('v2'))}. 학습을 10구간으로 나눠 보면, <b>${sg.peak}번째 구간</b>에서 보상이 가장 높고(${num(sg.reward[pk], 1)}점) 수신거부로 끝난 판도 <b>${pct(sg.opt[pk])}</b>까지 줄었다가, 마지막 구간엔 <b>${pct(sg.opt[9])}</b>로 늘었습니다. 좋은 방법을 찾았다가 버린 것입니다.`;
+    $('#v2Lesson').innerHTML = `📝 진단 프로그램은 처음에 v2를 ‘학습 부족’으로 판정했고, 자료대로 학습을 200만 → 400만 번으로 늘렸습니다. 그래도 알림 끈 사람은 거의 줄지 않았습니다(지금 기록 ${v2s ? num(v2s.opt_outs, 1) : '–'}명). 학습량이 아니라 <b>보상의 허점</b>이었던 것 — 그래서 진단에 ‘학습 곡선이 오르다 떨어짐’ 판별을 더했고, v2는 되돌렸습니다 (지금 판정: ${esc(v2.where_tag)}).`;
+  } else $('#v2Hint').textContent = 'v2 진단 기록이 없습니다.';
+  if (v1s && v3s) {
+    const p1 = DIAG.v1?.policy, p3 = DIAG.v3?.policy;
+    $('#v3Facts').innerHTML = [
+      [`${num(v1s.opt_outs, 1)} → <span style="color:${COLORS.good}">${num(v3s.opt_outs, 1)}명</span>`, `알림 끈 사람 (v1 → v3, 허용 기준 ${MONEY.max_opt_outs}명)`],
+      [`${man(v1s.profit)} → ${man(v3s.profit)}`, `90일 순이익 (${v3s.profit >= v1s.profit ? '+' : ''}${man(v3s.profit - v1s.profit)})`],
+      [`${man(v1s.reward_cost)} → ${man(v3s.reward_cost)}`, '리워드 비용 — 막판 몰아주기가 사라짐'],
+      [p1 && p3 ? `${num(p1.danger_decisions)} → ${num(p3.danger_decisions)}번` : '–', `피로 ${RU.FATIGUE_DANGER} 이상인 유저에게 결정한 횟수`],
+    ].map(([b, s]) => `<div class="ftile"><b>${b}</b><span>${s}</span></div>`).join('');
+  }
+  $('#v3Adopt').style.display = ADOPTED === 'ppo_v3' ? '' : 'none';
+  $('#score').innerHTML = `<tr><th>규칙</th><th class="r">90일 순이익</th><th class="r">알림 끈 사람</th><th>허용 기준</th><th class="r">하루 제보</th><th class="r">리워드 비용</th></tr>` +
+    REC_KEYS.map(k => { const s = D.replays[k].summary; return `<tr class="${k === ADOPTED ? 'hl' : ''}"><td><span class="dot" style="background:${recColor(k)};margin-right:6px"></span>${esc(recName(k))}${k === MY_RULE ? ' <span class="badge teal">내 규칙</span>' : ''}${k === ADOPTED ? ' <span class="badge good">채택</span>' : ''}</td>
       <td class="r"><b>${won(s.profit)}</b></td><td class="r" style="color:${s.opt_outs > MONEY.max_opt_outs ? COLORS.bad : 'inherit'}">${num(s.opt_outs, 1)}명</td>
-      <td><span class="badge ${s.success ? 'good' : 'bad'}">${s.success ? '달성' : '미달'}</span></td><td class="r">${num(s.reports_per_day, 1)}건</td><td class="r">${won(s.reward_cost)}</td></tr>`; }).join('');
-  if (PPO_KEY) {
-    const s = D.replays[PPO_KEY].summary, better = s.profit > my.profit && s.success;
-    $('#verdict').innerHTML = `<b>한 줄 판별: ${recName(PPO_KEY)}은 ‘현재 운영’보다 ${better ? '낫다' : '낫지 않다'}.</b> 순이익은 ${num(s.profit / my.profit, 2)}배(${man(s.profit)} vs ${man(my.profit)})지만, 알림 끈 사람이 ${num(s.opt_outs, 1)}명으로 한도 ${MONEY.max_opt_outs}명을 크게 넘었습니다.`;
+      <td><span class="badge ${s.success ? 'good' : 'bad'}">${s.success ? '지킴' : '넘음'}</span></td><td class="r">${num(s.reports_per_day, 1)}건</td><td class="r">${won(s.reward_cost)}</td></tr>`; }).join('');
+  if (PPO_KEYS.length) {
+    const v1 = D.replays.ppo_v1 && D.replays.ppo_v1.summary, a = D.replays[ADOPTED].summary;
+    const v1line = v1 ? `v1은 순이익이 현재 운영의 ${num(v1.profit / my.profit, 2)}배(${man(v1.profit)} vs ${man(my.profit)})지만, 알림 끈 사람이 ${num(v1.opt_outs, 1)}명으로 허용 기준 ${MONEY.max_opt_outs}명을 크게 넘었습니다.` : '';
+    const adoptLine = bestOf(PPO_KEYS)
+      ? `<b>채택 버전: ${verOf(ADOPTED)}</b> — 허용 기준을 지키는 버전 가운데 순이익이 가장 높음 (${man(a.profit)} · 알림 끔 ${num(a.opt_outs, 1)}명, 현재 운영의 ${num(a.profit / my.profit, 2)}배).`
+      : `<b>아직 허용 기준을 지키는 수정 보상이 없어 초기 보상 v1이 채택 버전</b>입니다.`;
+    $('#verdict').innerHTML = `${v1line}<br>${adoptLine}`;
   } else $('#verdict').textContent = '아직 학습된 AI 기록이 없습니다 (run.bat → 3번, 4번).';
   seg($('#dgRec'), REC_KEYS.map(k => [k, `<span class="dot" style="background:${recColor(k)}"></span>${esc(recName(k))}`]), DG.rec, v => { DG.rec = v; DRAW[7](); });
-  const perUser = D.replays[MY_RULE].summary.profit / N_PEOPLE;
-  $('#nextPlans').innerHTML = `<div class="card" style="box-shadow:none;background:var(--soft)"><span class="badge teal">v2</span> <b>수신거부 벌점</b><p class="small" style="margin:6px 0 0">알림을 끈 날, 그 유저에게서 앞으로 잃게 될 이익만큼 점수를 뺍니다. 예: 현재 운영 기준 유저 1명의 90일 이익 ≈ ${man(perUser)} → 약 −${num(perUser / P.reward_scale)}점 (가정). 성공 척도의 두 번째 조건을 점수에 직접 넣는 방법.</p></div>
-    <div class="card" style="box-shadow:none;background:var(--soft)"><span class="badge teal">v3</span> <b>피로도 위험 구간 벌점</b><p class="small" style="margin:6px 0 0">피로도가 ${RU.FATIGUE_DANGER} 이상인 날마다 작은 벌점. 알림을 끄기 전에, 위험선에 다가가는 것 자체를 피하게 합니다.</p></div>`;
 };
 DRAW[7] = () => {
+  const segVers = DIAG_KEYS.filter(v => v !== 'v1');   // 수신거부 비율은 v2부터 기록
+  segChart($('#chSegOpt'), 'opt', segVers, { scale: 100, chart: { yMin: 0, yMax: 100, yStep: 25, yFmt: v => v + '%', tipFmt: v => num(v, 1) + '%' } });
+  segChart($('#chSegRew'), 'reward', DIAG.v2 ? ['v2'] : [], { chart: { yFmt: v => num(v), tipFmt: v => num(v, 1) + '점' } });
   const k = DG.rec, s = avgStats(k);
   stackChart($('#chShare'), { data: s.share, colors: COLORS.action, legend: ACT, height: 160 });
   lineChart($('#chFat'), {
@@ -1524,13 +1716,73 @@ DRAW[7] = () => {
   $('#timing').innerHTML = od.length ? `알림을 끈 시점 (네 분기 합 ${od.length}명): 가장 빠른 날 <b>${od[0]}일째</b>, 절반이 <b>${od[Math.floor(od.length / 2)]}일째</b> 이후. 붉은 구간 = ${UI.phases[2][0]}일~끝.` : '이 기록에서는 아무도 알림을 끄지 않았습니다.';
 };
 
-/* ───────── 8. 파일 지도 ───────── */
+/* ───────── 8. AI가 배운 규칙 (정책 해석) ───────── */
+let PL_SEL = ADOPTED && DIAG[verOf(ADOPTED)] ? verOf(ADOPTED) : DIAG_KEYS[DIAG_KEYS.length - 1];
+const ACT_SHORT = ['안 보냄', '일반', '리워드'];
+function policyRules(c) {   // [규칙 글, 선택한 버전의 덧붙임]  — 구간 숫자는 diagnose.py의 가정값을 그대로 씀
+  return [
+    ['<b>평범한 평일</b>(비 · 주말 · 공휴일 · 월말 · 한파가 아닌 날)에는 <b>보내지 않는다</b>', () => ''],
+    [`<b>비 오는 날 · 주말 · 공휴일</b>이고 <b>피로가 낮은 유저</b>(${c.low_fatigue} 미만)에게는 <b>300P 리워드</b>를 보낸다`, () => ''],
+    [`<b>피로가 ${c.rest_fatigue} 이상</b>이면 <b>아무것도 보내지 않는다</b> — 위험선 ${RU.FATIGUE_DANGER}에 닿기 전에 멈춤`, p => `피로 ${c.near_rest}~${c.rest_fatigue - 1}에서도 ${pct(p.rest_near)}는 쉬게 함`],
+    [`<b>보상 의존도 ${c.dep_danger} 이상</b>인 유저에게는 <b>리워드를 보내지 않는다</b>`, p => `이 유저들에게 리워드를 보낸 비율 ${pct(p.dep_reward, 1)}`],
+    ['<b>일반 알림</b>은 주로 <b>비 · 주말 · 공휴일</b>에 쓴다', p => p.rules[4].n ? `알림에 덜 지치는 유저(피로 민감도 ${c.fsens[0]} 이하)에게 일반 알림 ${pct(p.general_by_fsens[0], 1)} · ${c.fsens[1]} 이상 ${pct(p.general_by_fsens[1], 1)}` : '이 버전은 일반 알림을 한 번도 안 씀'],
+  ];
+}
+function drawPolicy() {
+  const p = DIAG[PL_SEL].policy, c = p.cuts, g = p.grid;
+  $('#plN').textContent = num(p.decisions);
+  $('#plRules').innerHTML = policyRules(c).map(([t, sub], i) => {
+    const extra = sub(p);
+    return `<div class="plr"><span class="no">${i + 1}</span><div class="tx">${t}${extra ? `<small>${PL_SEL}: ${esc(extra)}</small>` : ''}</div><div class="plbars">${DIAG_KEYS.map(v => {
+      const r = DIAG[v].policy.rules[i], sh = r.n ? r.k / r.n : 0, col = recColor('ppo_' + v);
+      return `<div class="plbar ${v === PL_SEL ? 'on' : ''}"><b style="color:${col}">${v}</b><div class="tr"><i style="width:${sh * 100}%;background:${col}"></i></div><span class="v">${r.n ? `${pct(sh)} · ${num(r.k)}/${num(r.n)}번` : '해당 결정 없음'}</span></div>`;
+    }).join('')}</div></div>`;
+  }).join('');
+  $('#plLegend').innerHTML = ACT.map((a, i) => `<span><i style="background:${COLORS.action[i]}"></i>${a}</span>`).join('');
+  $('#plGrid').innerHTML = `<tr><th class="rh">피로도 ＼ 날</th>${g.cols.map(x => `<th>${esc(x)}</th>`).join('')}</tr>` + g.rows.map((r, i) =>
+    `<tr><th class="rh">피로 ${esc(r)}</th>${g.cells[i].map((x, j) => {
+      if (!x.s) return '<td class="empty">–</td>';
+      const top = x.s.indexOf(Math.max(...x.s));
+      return `<td data-i="${i}" data-j="${j}"><div class="sb">${x.s.map((v, k) => `<i style="width:${v * 100}%;background:${COLORS.action[k]}"></i>`).join('')}</div><div class="lb"><b>${ACT_SHORT[top]} ${pct(x.s[top])}</b><span class="faint">${num(x.n)}번</span></div></td>`;
+    }).join('')}</tr>`).join('');
+  $('#plGrid').onmousemove = e => {
+    const td = e.target.closest('td[data-i]'); if (!td) return hideTip();
+    const x = g.cells[+td.dataset.i][+td.dataset.j];
+    showTip(`<div class="tt">${esc(g.cols[+td.dataset.j])} · 피로 ${esc(g.rows[+td.dataset.i])}</div>` + x.s.map((v, k) => `<div><i class="sw" style="background:${COLORS.action[k]}"></i>${ACT[k]} <b>${pct(v, 1)}</b></div>`).join('') + `<div class="faint">결정 ${num(x.n)}번 (보상 ${PL_SEL})</div>`, e.clientX, e.clientY);
+  };
+  $('#plGrid').onmouseleave = hideTip;
+  $('#plFacts').innerHTML = [
+    [pct(p.reward_late, 1), `판 끝(76~90일) 리워드 비율 · 처음 60일 ${pct(p.reward_early, 1)}`],
+    [`${num(p.danger_decisions)}번`, `피로 ${RU.FATIGUE_DANGER} 이상인 유저에게 결정한 횟수`],
+    [p.gap_mean != null ? `${num(p.gap_mean, 1)}일` : '–', '같은 유저에게 다시 알림을 보내기까지 평균'],
+    [`${num(p.decisions)}번`, '센 결정 수 (4판 × 100명 × 90일, 알림 켠 유저만)'],
+  ].map(([b, s]) => `<div class="ftile"><b>${b}</b><span>${s}</span></div>`).join('');
+  const rs = p.reward_by_rsens, me = p.month_end_dry, plain = p.rules[0];
+  const meNone = me.n ? me.k / me.n : 0, plainNone = plain.n ? plain.k / plain.n : 0;
+  const shows = b => `<span class="badge ${b ? 'warn' : 'teal'}">${b ? `${PL_SEL}에 나타남` : `${PL_SEL}에는 나타나지 않음`}</span>`;
+  $('#plOddVer').textContent = `· 숫자는 보상 ${PL_SEL}`;
+  $('#plOdd').innerHTML = [
+    ['포인트를 좋아하는 유저에게 리워드를 <b>오히려 덜</b> 보낸다', rs[1] < rs[0],
+      `리워드 민감도 ${c.sens[1]} 이상 유저에게 리워드 ${pct(rs[1], 1)} · ${c.sens[0]} 미만 유저 ${pct(rs[0], 1)}`,
+      `반응 규칙 4에서 리워드 1회의 의존도 증가가 ${RU.DEPENDENCY_PER_REWARD} × (0.5 + 리워드 민감도)라, 포인트를 좋아할수록 의존도가 빨리 ${RU.DEPENDENCY_DANGER}을 넘습니다. AI는 이 유저를 오래 쓰려고 아끼는 쪽을 배웠습니다 → 가정한 규칙 때문에 생긴 행동이라, 실제 데이터가 있으면 의존도 규칙부터 확인.`],
+    ['맑은 평일 <b>월말</b>에는 거의 보내지 않는다', meNone >= plainNone,
+      `월말 & 비·주말·공휴일 아님 ${num(me.n)}번 중 안 보냄 ${pct(meNone, 1)} (평범한 평일 ${pct(plainNone, 1)})`,
+      `월말 효과(리워드 제보 ×${RU.MONTH_END_REWARD_MULTIPLIER})가 비·주말 효과(×${RU.DEMAND_UP})보다 약해서, 피로를 아껴 두었다가 비 오는 날·주말에 쓰는 편이 이득이라고 판단. 운영 상식(‘급여일 전엔 포인트 이벤트’)과 다르지만 가정값 안에서는 합리적 → 월말 배수를 실제 기록으로 바꾸면 달라질 수 있음.`],
+  ].map(([t, b, n, w]) => `<div class="card" style="box-shadow:none;background:var(--soft);margin:0"><div class="row-between" style="align-items:flex-start"><b>${t}</b>${shows(b)}</div><p class="small" style="margin:6px 0"><b>${esc(n)}</b></p><p class="small muted" style="margin:0">${esc(w)}</p></div>`).join('');
+}
+INIT[8] = () => {
+  if (!DIAG_KEYS.length) { $('#plRules').innerHTML = '<p class="muted">진단 결과가 없습니다 (run.bat → 4번 평가와 진단).</p>'; return; }
+  seg($('#plVer'), DIAG_KEYS.map(v => [v, verSeg(v)]), PL_SEL, v => { PL_SEL = v; drawPolicy(); });
+  drawPolicy();
+};
+
+/* ───────── 9. 파일 지도 ───────── */
 const FILES = [
   ['📘 기준 문서', [
     ['project_spec.md', '설계의 기준. 1 문제 정의(양식 이름 ‘매장 정의’) · 2 반응 규칙 · 3 고객 성향 · 4 설계 카드 · 5 보상 · 6 변경 기록', 1],
     ['CLAUDE.md', '코딩 AI가 지키는 작업 규칙 14가지 (쉬운 말, 가정 표시, 변경 기록 등)', null],
     ['presentation_notes.md', '발표용 정리 — 숫자마다 그렇게 정한 이유, 예상 질문과 답', 7],
-    ['screen_design.md', '강의에서 받은 재생 화면 디자인 기준 (그대로 둠, 9단계 그림에 참고)', 9],
+    ['screen_design.md', '강의에서 받은 재생 화면 디자인 기준 (그대로 둠, 10단계 그림에 참고)', 10],
     ['README.md', '설치·실행 방법, 폴더 구성, 데이터 출처', null],
   ]],
   ['🧑‍🤝‍🧑 입력 데이터', [
@@ -1544,18 +1796,22 @@ const FILES = [
   ['👥 가상 환경', [
     ['config.py', '1절 문제 정의 숫자 (유저 수, 가격, 기간, 시드)', 1],
     ['env.py', '가상 환경 본체 — 가상 유저 100명이 알림에 반응. 맨 위에 2절 반응 규칙 가정값', 3],
-    ['reward.py', '보상(점수) — 3회차에 버전별로 고칠 파일', 5],
+    ['reward.py', '보상(점수) — 지금은 채택 버전 v3 (순이익 − 위험 구간 벌점 − 수신거부 벌점)', 5],
+    ['reward_v1.py · reward_v2.py', '앞 보상 버전 보관 (v1 초기 · v2 되돌림) — 화면의 보상 식 목록도 여기서 읽음', 7],
   ]],
   ['▶ 실행', [
-    ['run.bat · run.py', '번호 메뉴 (1 점검 · 2 시험 학습 · 3 본 학습 · 4 평가), 실행마다 기록', 8],
+    ['run.bat · run.py', '번호 메뉴 (1 점검 · 2 시험 학습 · 3 본 학습 · 4 평가와 진단), 실행마다 기록', 9],
     ['simulate.py', '시험 규칙·학습된 AI를 2025년 평가 조건으로 돌림, 재생 데이터 생성', 4],
-    ['train.py', 'PPO 학습, 학습 곡선 그림', 5],
+    ['train.py', 'PPO 학습(400만 번), 학습 곡선 그림 — 보상 항목별 점수와 수신거부 비율도 기록', 5],
+    ['diagnose.py', '결과 진단 — 다섯 질문 · 진단 그림 · 정책 해석 숫자 (4번 평가 뒤 자동)', 7],
   ]],
   ['📊 결과', [
     ['results/sanity_check.md', '학습 전 점검 결과 (통과 기준 4가지)', 4],
-    ['results/summary_v1.md', '학습된 AI v1 평가 결과', 7],
-    ['results/learning_curve_v1.png', '학습 곡선 그림', 5],
-    ['results/models/v1/model.zip', '학습된 AI(정책)', 5],
+    ['results/summary_v*.md', '보상 버전별 평가 결과 (앞 버전과 나란히)', 7],
+    ['results/diagnosis_v*.md · .png', '다섯 질문 진단표 · 진단 그림 · 문제 위치', 7],
+    ['results/policy_rules.md', '채택 버전이 배운 규칙 다섯 줄 · 상식과 다른 규칙', 8],
+    ['results/learning_curve_v*.png', '버전별 학습 곡선 그림', 5],
+    ['results/models/v*/model.zip', '학습된 AI(정책), 보상 버전마다 하나', 5],
     ['results/logs/', '규칙별 날짜·고객 단위 상세 기록 (사람이 읽는 표)', 6],
     ['results/run_history.csv · runs/', '실행할 때마다 한 줄 기록 + 그때 파일 사본', null],
   ]],
@@ -1564,11 +1820,11 @@ const FILES = [
     ['public/data/', '재생 데이터(JSON)와 이 화면용 묶음(viewer_data.js)', 6],
   ]],
 ];
-INIT[8] = () => {
+INIT[9] = () => {
   $('#fileGroups').innerHTML = `<div class="grid2">${FILES.map(([g, list]) => `<div class="card fgroup"><h3>${g}</h3><div class="flist">${list.map(([f, d, s]) => `<div class="fitem"><span class="file">${esc(f)}</span><span>${esc(d)}</span>${s != null ? `<button class="go" data-go="${s}">${s}단계로 →</button>` : '<span></span>'}</div>`).join('')}</div></div>`).join('')}</div>`;
 };
 
-/* ───────── 9. 그림으로 보기 — 저녁 6시 마포구 장면 ─────────
+/* ───────── 10. 그림으로 보기 — 저녁 6시 마포구 장면 ─────────
    그림 파일 없이 Canvas 2D로 그림. 좌표(x, y, 높이)를 화면 위치로 바꾸는 함수(iso) 하나와,
    윗면·앞면·옆면을 밝기만 달리해 칠하는 상자 함수(box) 하나로 건물·차를 쌓아 만든다.
    창문 1칸 = 유저 1명. 누가 무엇을 받았고 제보·수신거부했는지는 평가 기록(replay) 그대로. */
@@ -1623,9 +1879,9 @@ const SC_NOTES = {
   max_reward: '매일 모든 창문이 금색(리워드)입니다. 첫날은 많이 걸어 나오지만, 며칠 뒤 창문이 하나둘 꺼집니다(알림 끔). ‘연속 재생’으로 확인해 보세요.',
   random: '매일 셋 중 무작위 — 3일 중 2일은 알림을 받으니 피로가 쌓여 결국 모두 알림을 끕니다.',
   current: '토요일엔 파랑(일반 알림), 매월 25일엔 금색(리워드). 나머지 날은 조용합니다 — 아무도 떠나지 않지만 기회도 놓칩니다.',
-  ppo: '처음 60일은 4일에 1번꼴로 리워드를 아껴 보냅니다. ‘⏳ 막판 85일째’를 눌러 보세요 — 창문 대부분이 꺼져 있습니다. 점수(보상)에 ‘알림 끄기’가 없어서 생긴 일입니다(7단계).',
+  ppo_v1: '처음 60일은 4일에 1번꼴로 리워드를 아껴 보냅니다. ‘⏳ 막판 85일째’를 눌러 보세요 — 창문 대부분이 꺼져 있습니다. 점수(보상)에 ‘알림 끄기’가 없어서 생긴 일입니다(7단계).',
 };
-const SCN = { rec: PPO_KEY || MY_RULE, ep: 0, day: 0, t: 0, playing: false, speed: 1, raf: null, last: 0, ev: null, hover: null, hits: [], objs: [], lmTop: [], ant: null, antBase: null, sig: '', W: 0, H: 0, cv: null, ctx: null };
+const SCN = { rec: DEFAULT_REC, ep: 0, day: 0, t: 0, playing: false, speed: 1, raf: null, last: 0, ev: null, hover: null, hits: [], objs: [], lmTop: [], ant: null, antBase: null, sig: '', W: 0, H: 0, cv: null, ctx: null };
 let TW = 40, TH = 20, ZH = 12, OX = 0, OY = 0, NIGHT = 0;
 const LIGHT = { k: 1, tint: [255, 180, 110], ta: 0.08 };
 
@@ -2099,7 +2355,8 @@ function scMarkUi() {
 function scTimeline() { $('#scTimeline').innerHTML = CAL[SCN.ep].map((d, i) => `<button class="tl ${flags(d).monthEnd ? 'me' : ''}" data-d="${i}" style="background:${dayColor(d)}" aria-label="${d.date}"></button>`).join(''); }
 function scNoteDraw() {
   const k = SCN.rec, s = D.replays[k].summary;
-  $('#scNote').innerHTML = `<b style="color:${recColor(k)}">${esc(recName(k))}</b> — ${k.startsWith('ppo') ? SC_NOTES.ppo : SC_NOTES[k] || ''}<br><span class="small">2025년 네 분기 평균: 90일 순이익 <b>${man(s.profit)}</b> · 알림 끈 사람 <b>${num(s.opt_outs, 1)}명</b> · <span class="badge ${s.success ? 'good' : 'bad'}">성공 척도 ${s.success ? '달성' : '미달'}</span></span>`;
+  const note = SC_NOTES[k] || (verOf(k) ? `보상 ${verOf(k)}(${esc(formulaOf(verOf(k)))})로 다시 학습한 AI입니다. ‘⏳ 막판 85일째’를 누르고, 전략을 ‘학습된 AI v1’로 바꿔 꺼진 창문 수를 비교해 보세요.` : '');
+  $('#scNote').innerHTML = `<b style="color:${recColor(k)}">${esc(recName(k))}</b> — ${note}<br><span class="small">2025년 네 분기 평균: 90일 순이익 <b>${man(s.profit)}</b> · 알림 끈 사람 <b>${num(s.opt_outs, 1)}명</b> · <span class="badge ${s.success ? 'good' : 'bad'}">허용 기준 ${s.success ? '지킴' : '넘음'}</span></span>`;
 }
 function scTip(i) {
   const p = PEOPLE[i], ev = SCN.ev, d = ev.d, a = d.action[i];
@@ -2133,7 +2390,7 @@ function scFrame(now) {
 function scStart() { scStop(); SCN.last = 0; SCN.raf = requestAnimationFrame(scFrame); }
 function scStop() { if (SCN.raf) cancelAnimationFrame(SCN.raf); SCN.raf = null; }
 const scJump = d => { SCN.day = clamp(d, 0, N_DAYS - 1); SCN.t = 0; scBuild(); };
-INIT[9] = () => {
+INIT[10] = () => {
   SCN.cv = $('#scene'); SCN.ctx = SCN.cv.getContext('2d');
   seg($('#scRec'), REC_KEYS.map(k => [k, `<span class="dot" style="background:${recColor(k)}"></span>${esc(recName(k))}`]), SCN.rec, v => { SCN.rec = v; scJump(SCN.day); scNoteDraw(); });
   seg($('#scEp'), P.eval_starts.map((s, i) => [String(i), epLabel(s)]), '0', v => { SCN.ep = +v; scTimeline(); scJump(SCN.day); });
@@ -2153,7 +2410,7 @@ INIT[9] = () => {
     + `<span>🚶 코인세탁방으로 제보하러 가는 유저</span><span>📡→🪟 날아가는 알림 · 🧺→📡 초록 점 = 제보 데이터</span>`;
   scTimeline(); scBuild(); scNoteDraw();
 };
-DRAW[9] = () => { scResize(); scStart(); };
+DRAW[10] = () => { scResize(); scStart(); };
 
 /* ───────── 시작 ───────── */
 go(+location.hash.slice(1) || 0);

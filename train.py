@@ -30,7 +30,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 RESULTS = Path("results")
 
 # 학습 설정  # 가정 (4-6에서 시험 학습으로 정함)
-TOTAL_TIMESTEPS = 2_000_000      # 본 학습 스텝 수 (이 PC에서 10분 안쪽)
+TOTAL_TIMESTEPS = 4_000_000      # 본 학습 스텝 수 — 3회차 v2 진단 '학습 부족'으로 200만 → 400만 (이 PC 약 11분)
 TRIAL_TIMESTEPS = 30_000         # 시험 학습
 N_ENVS = 8                       # 동시에 돌리는 가상 매장 수
 PPO_KWARGS = dict(n_steps=1024, batch_size=1024, n_epochs=5, gamma=0.99, learning_rate=3e-4, ent_coef=0.01)
@@ -60,18 +60,60 @@ class ExperienceRecorder(gym.Wrapper):
         return nxt, rew, term, trunc, info
 
 
+PARTS = getattr(R, "PARTS", ())          # 보상 항목 이름 (v2부터)
+EPISODE_KEYS = ("ep_profit", "ep_opt_out") + tuple(f"ep_part_{k}" for k in PARTS)
+
+
+class EpisodeStats(gym.Wrapper):
+    """한 판(고객 1명 × 90일)이 끝날 때 성공 척도(순이익)·수신거부·보상 항목별 합계를 info에 넣는다
+    → VecMonitor가 학습 곡선 파일에 함께 기록 (보상 점수와 성공 척도를 두 선으로 그리기 위해)."""
+
+    def __init__(self, env):
+        super().__init__(env)
+        self.sums = {}
+
+    def reset(self, **kw):
+        self.sums = dict.fromkeys(EPISODE_KEYS, 0.0)
+        return self.env.reset(**kw)
+
+    def step(self, action):
+        obs, rew, term, trunc, info = self.env.step(action)
+        self.sums["ep_profit"] += info["profit"]
+        self.sums["ep_opt_out"] += info["opted_out"]
+        if PARTS:
+            for k, v in R.reward_parts(info).items():
+                self.sums[f"ep_part_{k}"] += v
+        if term or trunc:
+            info.update(self.sums)
+        return obs, rew, term, trunc, info
+
+
 def plot_curve(monitor_csv: Path, version: str) -> pd.DataFrame:
     m = pd.read_csv(monitor_csv, skiprows=1)
     m["timesteps"] = m["l"].cumsum()
     window = max(50, len(m) // 100)
-    m["return_mean"] = m["r"].rolling(window, min_periods=1).mean()
-    curve = m[["timesteps", "r", "return_mean"]].rename(columns={"r": "episode_return"})
+    roll = lambda s: s.rolling(window, min_periods=1).mean()
+    curve = pd.DataFrame({"timesteps": m["timesteps"], "episode_return": m["r"], "return_mean": roll(m["r"])})
+    if "ep_profit" in m:
+        curve["episode_profit"] = m["ep_profit"]
+        curve["profit_mean"] = roll(m["ep_profit"])            # 성공 척도: 한 판 순이익(원)
+        curve["opt_out_rate"] = roll(m["ep_opt_out"])          # 그 판에서 수신거부한 비율
+        for k in PARTS:
+            curve[f"part_{k}"] = m[f"ep_part_{k}"]
     curve.to_csv(RESULTS / f"learning_curve_{version}.csv", index=False)
     plt.rcParams["font.family"] = "Malgun Gothic"
+    plt.rcParams["axes.unicode_minus"] = False
     fig, ax = plt.subplots(figsize=(8, 4.5))
-    ax.plot(curve["timesteps"], curve["return_mean"], color="#2563eb")
+    ax.plot(curve["timesteps"], curve["return_mean"], color="#2563eb", label="보상 (점)")
     ax.set_xlabel("학습 스텝")
     ax.set_ylabel(f"에피소드 평균 보상 (최근 {window}판, 1점 = {R.REWARD_SCALE:,.0f}원)")
+    if "profit_mean" in curve:
+        ax2 = ax.twinx()
+        ax2.plot(curve["timesteps"], curve["profit_mean"], color="#64748b", ls="--", label="성공 척도: 순이익 (원)")
+        ax2.set_ylabel("에피소드 평균 순이익 (원)")
+        h1, l1 = ax.get_legend_handles_labels()
+        h2, l2 = ax2.get_legend_handles_labels()
+        ax.legend(h1 + h2, l1 + l2, loc="lower right")
     ax.set_title(f"학습 곡선 — 보상 {version} (고객 1명 × 90일)")
     ax.grid(alpha=0.3)
     fig.tight_layout()
@@ -84,11 +126,11 @@ def train(version: str, timesteps: int, trial: bool) -> dict:
     RESULTS.mkdir(exist_ok=True)
     traits, factors = load_traits(), load_factors()
     store: list = []
-    fns = [(lambda i=i: ExperienceRecorder(LaunPotEnv(traits, factors), store) if i == 0 else LaunPotEnv(traits, factors))
+    fns = [(lambda i=i: EpisodeStats(ExperienceRecorder(LaunPotEnv(traits, factors), store) if i == 0 else LaunPotEnv(traits, factors)))
            for i in range(N_ENVS)]
     tag = f"{version}_trial" if trial else version
     monitor = RESULTS / f"train_{tag}"
-    venv = VecMonitor(DummyVecEnv(fns), filename=str(monitor))
+    venv = VecMonitor(DummyVecEnv(fns), filename=str(monitor), info_keywords=EPISODE_KEYS)
     venv.seed(C.TRAIN_SEED)
     model = PPO("MlpPolicy", venv, device="cpu", seed=C.TRAIN_SEED, verbose=0, **PPO_KWARGS)
     t = time.time()

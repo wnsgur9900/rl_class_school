@@ -23,8 +23,8 @@ SNAPSHOT_FILES = ["env.py", "config.py", "reward.py"]
 MENU = {
     "1": ("sanity", "가상 데이터 생성과 환경 타당성 검증"),
     "2": ("train_trial", "학습 — 시험 학습 (1분 안쪽, 오류 확인)"),
-    "3": ("train", f"학습 — 본 학습 (보상 {R.VERSION}, 약 6분)"),
-    "4": ("eval", f"학습된 정책 평가 (보상 {R.VERSION} → summary_{R.VERSION}.md)"),
+    "3": ("train", f"학습 — 본 학습 (보상 {R.VERSION}, 400만 스텝 약 8~10분)"),
+    "4": ("eval", f"학습된 정책 평가와 진단 (보상 {R.VERSION} → summary · diagnosis_{R.VERSION}.md/png)"),
 }
 
 
@@ -56,12 +56,15 @@ def do_train(run_dir: Path, trial: bool) -> str:
 
 def do_eval(run_dir: Path) -> str:
     import simulate
+    import diagnose
     summaries = simulate.evaluate(R.VERSION)
-    shutil.copy(RESULTS / f"summary_{R.VERSION}.md", run_dir)
+    md, png = diagnose.diagnose(R.VERSION)   # 3회차 1-1: 다섯 질문 진단표 · 진단 그림
+    for f in [RESULTS / f"summary_{R.VERSION}.md", md, png]:
+        shutil.copy(f, run_dir)
     shutil.copytree(simulate.LOGS, run_dir / "logs")
     s = summaries[f"ppo_{R.VERSION}"][1]
     return (f"{R.VERSION} 정책 {won(s['profit'])}/수신거부 {s['opt_outs']:.1f}명 · "
-            f"성공 척도 {'달성' if s['success'] else '미달'}")
+            f"허용 기준 {'지킴' if s['success'] else '넘음'}")
 
 
 def run(choice: str, memo: str) -> None:

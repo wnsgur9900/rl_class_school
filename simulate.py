@@ -88,6 +88,7 @@ def policy_rule(version: str):
 # ---------------------------------------------------------------------------
 def run(policy) -> pd.DataFrame:
     env = LaunPotEnv()
+    parts = getattr(R, "reward_parts", None)   # 보상 항목별 기록 (v2부터)
     rows = []
     for ep, start in enumerate(C.EVAL_START_DATES):
         for cid in sorted(env.traits.index):
@@ -99,6 +100,8 @@ def run(policy) -> pd.DataFrame:
                 action = policy(env, obs, rng)
                 obs, rew, term, trunc, info = env.step(action)
                 info.update(episode=ep + 1, reward=rew)
+                if parts:
+                    info.update({f"rp_{k}": v for k, v in parts(info).items()})
                 rows.append(info)
                 done = term or trunc
     df = pd.DataFrame(rows)
@@ -116,7 +119,7 @@ def summarize(df: pd.DataFrame) -> dict:
     return {
         "profit": df["profit"].sum() / n_ep,
         "opt_outs": df["opted_out"].sum() / n_ep,
-        "success": bool(df.groupby("episode")["opted_out"].sum().le(5).all()),
+        "success": bool(df.groupby("episode")["opted_out"].sum().le(C.MAX_OPT_OUT_CUSTOMERS).all()),   # 허용 기준을 네 판 모두 지킴
         "reports_per_day": df["reported"].sum() / n_ep / days,
         "reward_cost": df["reward_cost"].sum() / n_ep,
         "general_pushes": (df["action"] == C.ACTION_GENERAL_PUSH).sum() / n_ep,
@@ -128,16 +131,17 @@ def summarize(df: pd.DataFrame) -> dict:
         "report_rate_cold": df.loc[cold & ~up, "reported"].mean(),
         "avg_fatigue": df["fatigue_after"].mean(),
         "total_reward": df["reward"].sum() / n_ep,
+        "reward_parts": {c[3:]: df[c].sum() / n_ep for c in df.columns if c.startswith("rp_")},   # 보상 항목별 한 판 합계
     }
 
 
 def compare_table(summaries: dict[str, tuple[str, dict]]) -> str:
-    head = ("| 규칙 | 90일 순이익 | 수신거부 | 성공 척도 | 하루 평균 제보 | 리워드 비용 | 일반 발송 | 리워드 발송 | 미발송 |\n"
+    head = (f"| 규칙 | 90일 순이익 | 수신거부 | 허용 기준 (수신거부 {C.MAX_OPT_OUT_CUSTOMERS}명 이하) | 하루 평균 제보 | 리워드 비용 | 일반 발송 | 리워드 발송 | 미발송 |\n"
             "| --- | ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: |")
     lines = [head]
     for key, (label, s) in summaries.items():
         lines.append(
-            f"| {label} | {s['profit']:,.0f}원 | {s['opt_outs']:.1f}명 | {'달성' if s['success'] else '미달'} "
+            f"| {label} | {s['profit']:,.0f}원 | {s['opt_outs']:.1f}명 | {'지킴' if s['success'] else '넘음'} "
             f"| {s['reports_per_day']:.1f}건 | {s['reward_cost']:,.0f}원 | {s['general_pushes']:,.0f} "
             f"| {s['reward_pushes']:,.0f} | {s['none_count']:,.0f} |")
     return "\n".join(lines)
@@ -202,6 +206,16 @@ def export_replay(key: str, label: str, df: pd.DataFrame, summary: dict) -> None
     (PUBLIC_DATA / f"replay_{key}.json").write_text(json.dumps(out, ensure_ascii=False), encoding="utf-8")
 
 
+def reward_versions() -> list[dict]:
+    """보관된 보상 파일(reward_v1.py …)과 지금 reward.py의 버전·한 줄 식 — 화면의 버전 설명용."""
+    import importlib
+    out = {}
+    for p in sorted(Path(".").glob("reward_v*.py")) + [Path("reward.py")]:
+        m = importlib.import_module(p.stem)
+        out[m.VERSION] = getattr(m, "SUMMARY", "그날 순이익 ÷ 1,000")
+    return [{"version": v, "formula": f} for v, f in sorted(out.items(), key=lambda x: int(x[0][1:]))]
+
+
 def export_static() -> None:
     PUBLIC_DATA.mkdir(parents=True, exist_ok=True)
     p = pd.read_csv("data/personas.csv", encoding="utf-8-sig")
@@ -224,8 +238,9 @@ def export_static() -> None:
         "actions": {str(k): v for k, v in C.ACTION_NAMES.items()},
         "weather_rules": {"rain_mm": E.RAIN_MM, "cold_temp_min": E.COLD_TEMP_MIN},
         "location": {"lat": C.STORE_LAT, "lon": C.STORE_LON},
-        "reward": f"{R.VERSION}: 그날 순이익(제보 1,500원 − 리워드 300원) ÷ {R.REWARD_SCALE:,.0f}",
+        "reward": f"{R.VERSION}: {getattr(R, 'SUMMARY', '그날 순이익 ÷ 1,000')}",
         "reward_version": R.VERSION, "reward_scale": R.REWARD_SCALE,
+        "reward_versions": reward_versions(),
         "success_metric": C.SUCCESS_METRIC + f", 수신거부 {C.MAX_OPT_OUT_CUSTOMERS}명 이하",
         "episode_days": C.EPISODE_LENGTH_DAYS, "eval_starts": C.EVAL_START_DATES,
         "rules": {k: getattr(E, k) for k in RULE_NAMES},
@@ -247,7 +262,9 @@ def export_viewer_bundle() -> None:
     """
     load = lambda p: json.loads(p.read_text(encoding="utf-8"))
     out = {"project": load(PUBLIC_DATA / "project.json"), "personas": load(PUBLIC_DATA / "personas.json"),
-           "replays": {}, "curves": {}, "sanity": []}
+           "replays": {}, "curves": {}, "sanity": [], "diagnosis": {}}
+    for p in sorted(RESULTS.glob("diagnosis_v*.json")):   # diagnose.py가 만든 진단 · 정책 해석 (화면 7·8단계)
+        out["diagnosis"][p.stem.removeprefix("diagnosis_")] = load(p)
     keys = list(TEST_RULES) + sorted(p.stem.removeprefix("replay_") for p in PUBLIC_DATA.glob("replay_ppo_*.json"))
     for k in keys:
         if (PUBLIC_DATA / f"replay_{k}.json").exists():
@@ -259,7 +276,9 @@ def export_viewer_bundle() -> None:
             pts = pd.concat([pts, c.tail(1)])
         n = max(1, len(c) // 10)      # train.py와 같이 처음·마지막 10% 판의 평균
         out["curves"][p.stem.removeprefix("learning_curve_")] = {
-            "points": [[int(t), round(float(r), 2)] for t, r in zip(pts["timesteps"], pts["return_mean"])],
+            # [학습 스텝, 보상(점), 순이익 ÷ 1,000(점)] — 순이익은 v2부터 기록 (v1은 보상 = 순이익 ÷ 1,000)
+            "points": [[int(t), round(float(r), 2), round(float(p) / 1000, 2)] for t, r, p in
+                       zip(pts["timesteps"], pts["return_mean"], pts["profit_mean"] if "profit_mean" in pts else pts["return_mean"] * 1000)],
             "episodes": len(c), "timesteps": int(c["timesteps"].iloc[-1]),
             "first_return": round(float(c["episode_return"].head(n).mean()), 2),
             "last_return": round(float(c["episode_return"].tail(n).mean()), 2)}
@@ -281,6 +300,7 @@ def run_rules(rules: dict) -> dict:
         df = run(fn)
         cols = ["date", "episode", "customer_id", "fatigue_before", "dependency_before", "action", "action_name",
                 "report_prob", "reported", "opted_out", "value", "reward_cost", "profit", "reward"]
+        cols += [c for c in df.columns if c.startswith("rp_")]   # 보상 항목별 (v2부터)
         df[cols].round(4).to_csv(LOGS / f"{key}.csv", index=False, encoding="utf-8-sig")
         s = summarize(df)
         summaries[key] = (label, s)
@@ -303,21 +323,53 @@ def sanity_check() -> tuple[dict, bool]:
 
 
 def evaluate(version: str) -> dict:
-    rules = {**TEST_RULES, f"ppo_{version}": (f"학습된 정책 {version} (PPO)", policy_rule(version))}
+    key = f"ppo_{version}"
+    rules = {**TEST_RULES, key: (f"학습된 정책 {version} (PPO)", policy_rule(version))}
     summaries = run_rules(rules)
+    # 앞 보상 버전들은 저장된 재생 기록의 결과를 그대로 읽어 나란히 둔다
+    # (다시 돌리면 그 버전 재생 기록의 '받은 보상'이 지금 보상 식으로 바뀌어 버리므로 다시 돌리지 않음)
+    pols = {}
+    for p in sorted(PUBLIC_DATA.glob("replay_ppo_*.json"), key=lambda p: int(p.stem.split("_v")[-1])):
+        k = p.stem.removeprefix("replay_")
+        if k == key:
+            pols[k] = summaries.pop(k)
+        else:
+            r = json.loads(p.read_text(encoding="utf-8"))
+            pols[k] = (f"{r['label']} — 보상 {r['reward_version']}", r["summary"])
+    summaries.update(pols)
     table = compare_table(summaries)
-    s = summaries[f"ppo_{version}"][1]
-    cur = summaries["current"][1]
-    total = s["none_count"] + s["general_pushes"] + s["reward_pushes"]
+    s, cur = summaries[key][1], summaries["current"][1]
+    acts = "| 행동 | " + " | ".join(k.removeprefix("ppo_") for k in pols) + " |\n| --- |" + " ---: |" * len(pols) + "\n"
+    for name, col in [("보내지 않음", "none_count"), ("일반 알림", "general_pushes"), ("리워드 알림", "reward_pushes")]:
+        cells = []
+        for k in pols:
+            t = pols[k][1]
+            tot = t["none_count"] + t["general_pushes"] + t["reward_pushes"]
+            cells.append(f"{t[col]:,.0f} ({t[col] / tot:.0%})")
+        acts += f"| {name} | " + " | ".join(cells) + " |\n"
+    parts = s.get("reward_parts") or {"total": s["total_reward"]}
+    part_names = {"profit": "단기: 순이익 ÷ 1,000", "fatigue_danger": "장기: 피로 위험 구간 벌점", "opt_out": "장기: 수신거부 벌점",
+                  "total": "보상 합계"}
+    part_rows = "".join(f"| {part_names.get(k, k)} | {v:,.1f}점 |\n" for k, v in parts.items())
+    ok = {k: t for k, (_, t) in pols.items() if t["success"]}
+    adopt = max(ok, key=lambda k: ok[k]["profit"]) if ok else "ppo_v1"
+    adopt_why = (f"허용 기준을 지키는 버전 가운데 순이익이 가장 높음 ({ok[adopt]['profit']:,.0f}원)" if ok
+                 else "허용 기준을 지키는 버전이 없어 초기 보상 v1이 채택 버전")
+    v1 = pols.get("ppo_v1", (None, s))[1]
     verdict = "낫다" if (s["profit"] > cur["profit"] and s["success"]) else "낫지 않다"
     md = (f"# 평가 결과 — 보상 {version}\n\n평가 조건: {', '.join(C.EVAL_START_DATES)} 시작 90일 × 고객 {C.NUM_CUSTOMERS}명, "
-          f"시드 {C.EVAL_SEED} (환경 타당성 검증과 같음) · 값은 4판 평균\n\n## 성공 척도와 보조 지표\n\n{table}\n\n"
-          f"## 학습된 정책의 행동별 횟수 (한 판 평균)\n\n| 행동 | 횟수 | 비율 |\n| --- | ---: | ---: |\n"
-          f"| 보내지 않음 | {s['none_count']:,.0f} | {s['none_count'] / total:.0%} |\n"
-          f"| 일반 알림 | {s['general_pushes']:,.0f} | {s['general_pushes'] / total:.0%} |\n"
-          f"| 리워드 알림 | {s['reward_pushes']:,.0f} | {s['reward_pushes'] / total:.0%} |\n\n"
-          f"**한 줄 판별: 학습된 정책 {version}은 '현재 운영'보다 {verdict}** "
-          f"(순이익 {s['profit']:,.0f}원 vs {cur['profit']:,.0f}원, 수신거부 {s['opt_outs']:.1f}명 vs {cur['opt_outs']:.1f}명)\n")
+          f"시드 {C.EVAL_SEED} (환경 타당성 검증과 같음) · 값은 4판 평균 · 성공 척도 = 90일 순이익 · "
+          f"허용 기준 = 수신거부 {C.MAX_OPT_OUT_CUSTOMERS}명 이하 (한 판마다)\n\n"
+          f"## 성공 척도와 보조 지표 (보상 버전 나란히)\n\n{table}\n\n"
+          f"## 학습된 정책의 행동별 횟수 (한 판 평균)\n\n{acts}\n"
+          f"## 보상 {version}의 항목별 합계 (한 판 평균, 고객 100명 합)\n\n| 보상 항목 | 합계 |\n| --- | ---: |\n{part_rows}\n"
+          f"보상 점수는 버전마다 기준이 달라 버전끼리 비교하지 않는다 — 비교는 위의 성공 척도와 허용 기준으로.\n\n"
+          f"## 판별\n\n"
+          f"- v1 대비: 순이익 {s['profit']:,.0f}원 vs {v1['profit']:,.0f}원 ({s['profit'] - v1['profit']:+,.0f}원), "
+          f"수신거부 {s['opt_outs']:.1f}명 vs {v1['opt_outs']:.1f}명 · 허용 기준 {'지킴' if s['success'] else '넘음'}\n"
+          f"- **학습된 정책 {version}은 '현재 운영'보다 {verdict}** "
+          f"(순이익 {s['profit']:,.0f}원 vs {cur['profit']:,.0f}원, 수신거부 {s['opt_outs']:.1f}명 vs {cur['opt_outs']:.1f}명)\n"
+          f"- **지금까지의 채택 버전: {adopt.removeprefix('ppo_')}** — {adopt_why}\n")
     (RESULTS / f"summary_{version}.md").write_text(md, encoding="utf-8")
     export_viewer_bundle()
     return summaries
