@@ -32,7 +32,7 @@
 
 - 학습: 문제 없음 (질문 1 예)
 - 관측: 문제 없음 (질문 5 예 — 상황·피로도·남은 날에 따라 행동이 달라짐)
-- 환경: 시험 규칙 결과가 상식대로 (results/sanity_check.md 통과) → 문제 없음
+- 환경: 시험 규칙 결과가 상식대로 (docs/reports/sanity_check.md 통과) → 문제 없음
 - 판정: **보상** — 학습은 됐고 상황에 따라 행동도 달라지지만, 허용 기준을 넘거나 행동이 쏠림 → 보상 재설계
 
-진단 그림: results/diagnosis_v1.png
+진단 그림: results/diagnosis/diagnosis_v1.png

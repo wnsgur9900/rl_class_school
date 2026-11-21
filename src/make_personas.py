@@ -5,17 +5,17 @@
 2) 시드를 고정해 100명을 뽑는다.
 3) 뽑힌 100명의 줄만 골라 소개글 칸을 읽는다.
 
-실행: uv run python make_personas.py  →  data/personas.csv
+실행: uv run python src/make_personas.py  →  data/personas.csv
 출처: NVIDIA, Nemotron-Personas-Korea (CC BY 4.0)
 """
 import json
 import urllib.request
-from pathlib import Path
 
 import duckdb
 import pandas as pd
 
 from config import AGE_MAX, AGE_MIN, NUM_CUSTOMERS, PERSONA_DISTRICT, PERSONA_FAMILY_TYPES, PERSONA_SEED
+from paths import DATA
 
 DATASET = "nvidia/Nemotron-Personas-Korea"
 HF_API = "https://datasets-server.huggingface.co"
@@ -23,7 +23,7 @@ TEXT_COLUMNS = [
     "persona", "professional_persona", "family_persona",
     "culinary_persona", "sports_persona", "hobbies_and_interests",
 ]
-OUT = Path("data/personas.csv")
+OUT = DATA / "personas.csv"
 
 
 def load_candidates(con, urls) -> pd.DataFrame:

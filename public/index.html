@@ -538,7 +538,7 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
       <tr><td>수신거부 비용</td><td>이익에서 안 뺌</td><td>알림을 끄면 이후 제보가 사라져 이미 이익에 반영됨 → 또 빼면 두 번 빼는 셈</td></tr>
       <tr><td>현재 운영 (가정)</td><td>토요일 전원 일반 + 25일 전원 리워드</td><td>흔한 “주 1회 공지 + 월 1회 이벤트” 운영을 비교 기준선으로 둠</td></tr>
     </table></div></details>
-    <p class="where">📁 관련 파일 <span class="file">project_spec.md 1절</span><span class="file">config.py</span></p>
+    <p class="where">📁 관련 파일 <span class="file">docs/project_spec.md 1절</span><span class="file">src/config.py</span></p>
   </section>
 
   <!-- 2 ─────────────────────────────────────────── -->
@@ -579,10 +579,10 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
       <tr><td>20대 무직을 넣은 이유</td><td>자취생·취업준비생으로 봄 (가정) — 주 고객 “20~40대 자취생 및 직장인”에 맞추기 위해</td></tr>
       <tr><td>성향 칸이 3개인 이유</td><td>2절 반응 규칙 중 사람마다 달라야 자연스러운 숫자만 칸으로 (나머지는 모두에게 같은 값)</td></tr>
       <tr><td>성향을 정한 방법</td><td>소개글·식생활·운동·취미 글과 직업·주거 형태를 근거로 AI가 추정하고, 근거 인용과 확신도를 함께 기록 (나이·성별만으로 정하지 않음)</td></tr>
-      <tr><td>검사</td><td><span class="file">check.py</span> — 100명 · 범위 · 근거 빈칸 · 칸별 평균이 목표의 ±10% 안 → 통과</td></tr>
+      <tr><td>검사</td><td><span class="file">src/check.py</span> — 100명 · 범위 · 근거 빈칸 · 칸별 평균이 목표의 ±10% 안 → 통과</td></tr>
       <tr><td>확신도 ‘낮음’</td><td>소개글에 빨래 이야기가 드물어 생기는 것이 정상. 낮음인 사람은 기준표 가운데 값 근처로 둠</td></tr>
     </table></div></details>
-    <p class="where">📁 관련 파일 <span class="file">make_personas.py</span><span class="file">data/personas.csv</span><span class="file">data/customer_traits.csv</span><span class="file">check.py</span><span class="file">project_spec.md 3절</span></p>
+    <p class="where">📁 관련 파일 <span class="file">src/make_personas.py</span><span class="file">data/personas.csv</span><span class="file">data/customer_traits.csv</span><span class="file">src/check.py</span><span class="file">docs/project_spec.md 3절</span></p>
   </section>
 
   <!-- 3 ─────────────────────────────────────────── -->
@@ -594,7 +594,7 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
 
     <div class="card">
       <h2>직접 해 보기 — 한 사람에게 90일 동안 알림 보내기</h2>
-      <p class="hint">버튼을 하나 누를 때마다 하루가 지나갑니다. 날짜·날씨·공휴일은 2025년 실제 기록입니다. 계산은 <span class="file">env.py</span>와 같은 규칙·숫자를 씁니다.</p>
+      <p class="hint">버튼을 하나 누를 때마다 하루가 지나갑니다. 날짜·날씨·공휴일은 2025년 실제 기록입니다. 계산은 <span class="file">src/env.py</span>와 같은 규칙·숫자를 씁니다.</p>
       <div class="play-grid">
         <div class="play-left">
           <label>고객 <select id="simCust"></select></label>
@@ -626,7 +626,7 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
       <tr><td>6</td><td>우연</td><td>매일 ×0.85~1.15</td><td>같은 조건에서도 사람마다 그날 사정이 다름</td></tr>
     </table>
     <p class="small muted">처음 초안에 있던 “하루 전체 제보가 적으면 가치가 줄어드는” 규칙은 뺐습니다 → 고객끼리 서로 영향을 주지 않아서 고객마다 따로 학습할 수 있습니다.</p></div></details>
-    <p class="where">📁 관련 파일 <span class="file">project_spec.md 2절</span><span class="file">env.py (맨 위 가정값)</span><span class="file">data/external_factors.csv</span><span class="file">make_external_factors.py</span></p>
+    <p class="where">📁 관련 파일 <span class="file">docs/project_spec.md 2절</span><span class="file">src/env.py (맨 위 가정값)</span><span class="file">data/external_factors.csv</span><span class="file">src/make_external_factors.py</span></p>
   </section>
 
   <!-- 4 ─────────────────────────────────────────── -->
@@ -645,7 +645,7 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
       <div id="checks"></div>
       <div class="callout warn" id="memo"></div>
     </div>
-    <p class="where">📁 관련 파일 <span class="file">simulate.py</span><span class="file">results/sanity_check.md</span><span class="file">results/logs/</span></p>
+    <p class="where">📁 관련 파일 <span class="file">src/simulate.py</span><span class="file">docs/reports/sanity_check.md</span><span class="file">results/logs/</span></p>
   </section>
 
   <!-- 5 ─────────────────────────────────────────── -->
@@ -682,7 +682,7 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
       <tr><td>왜 2016~2024년으로 연습?</td><td>9년치 실제 날씨로 여러 계절·이상 날씨를 경험하게. 평가는 연습에 안 쓴 2025년으로 (처음 보는 날씨에서도 잘하는지)</td></tr>
       <tr><td>왜 ÷1,000?</td><td>점수 크기를 작게 맞춰 학습을 안정시키려고 (하루 최대 1.5점). 성공 척도 계산에는 영향 없음</td></tr>
     </table></div></details>
-    <p class="where">📁 관련 파일 <span class="file">train.py</span><span class="file">reward.py (지금 v3)</span><span class="file">reward_v1.py · reward_v2.py</span><span class="file">results/learning_curve_v*.png</span><span class="file">results/models/v*/model.zip</span><span class="file">results/experience_sample_v*.csv</span></p>
+    <p class="where">📁 관련 파일 <span class="file">src/train.py</span><span class="file">src/reward.py (지금 v3)</span><span class="file">src/reward_history/</span><span class="file">results/curves/learning_curve_v*.png</span><span class="file">results/models/v*/model.zip</span><span class="file">results/experience/experience_sample_v*.csv</span></p>
   </section>
 
   <!-- 6 ─────────────────────────────────────────── -->
@@ -723,14 +723,14 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
       <div class="card"><h2 id="rpRewTitle">날마다 받은 보상</h2><p class="hint">재생 기록 하나만 그림 — 보상 버전마다 점수 기준이 달라 겹쳐 비교하지 않습니다</p><div id="rpReward"></div></div>
       <div class="card"><h2 id="rpCurveTitle">학습 곡선</h2><p class="hint">이 기록의 AI가 연습할수록 받은 점수와 순이익 (점 = 1,000원)</p><div id="rpCurve"></div></div>
     </div>
-    <p class="where">📁 관련 파일 <span class="file">public/data/replay_*.json</span><span class="file">simulate.py</span><span class="file">results/summary_v*.md</span><span class="file">results/diagnosis_v*.md</span></p>
+    <p class="where">📁 관련 파일 <span class="file">public/data/replay_*.json</span><span class="file">src/simulate.py</span><span class="file">docs/reports/summary_v*.md</span><span class="file">docs/reports/diagnosis_v*.md</span></p>
   </section>
 
   <!-- 7 ─────────────────────────────────────────── -->
   <section class="step" data-title="진단 · 보상 고치기" data-sub="v1 → v2 → v3">
     <div class="kicker">7단계 · 결과 진단 → 보상 고치기 (3회차)</div>
     <h1>진단하고, 점수를 고치고, 다시 진단하기</h1>
-    <p class="lead">AI는 우리가 준 점수(<span class="term" data-t="보상">보상</span>)를 최대로 만들 뿐, 점수에 없는 목표는 신경 쓰지 않습니다. 그래서 결과를 <span class="term" data-t="진단">다섯 질문</span>으로 따져 문제 위치를 찾고, <span class="file">reward.py</span> 한 파일만 고쳐 다시 학습했습니다. <span class="term" data-t="채택">채택</span> = 허용 기준(알림 끈 사람 <span class="v-maxout"></span>명 이하)을 지키는 버전 가운데 순이익이 가장 높은 버전.</p>
+    <p class="lead">AI는 우리가 준 점수(<span class="term" data-t="보상">보상</span>)를 최대로 만들 뿐, 점수에 없는 목표는 신경 쓰지 않습니다. 그래서 결과를 <span class="term" data-t="진단">다섯 질문</span>으로 따져 문제 위치를 찾고, <span class="file">src/reward.py</span> 한 파일만 고쳐 다시 학습했습니다. <span class="term" data-t="채택">채택</span> = 허용 기준(알림 끈 사람 <span class="v-maxout"></span>명 이하)을 지키는 버전 가운데 순이익이 가장 높은 버전.</p>
     <div class="card">
       <h2>보상 버전별 결과 <span class="muted">2025년 네 분기 평균 · 모두 같은 평가 조건(시드)</span></h2>
       <div class="vflow" id="vflow"></div>
@@ -738,7 +738,7 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
     </div>
     <div class="card">
       <div class="row-between">
-        <div><h2>진단 다섯 질문</h2><p class="hint">평가 기록과 학습 곡선으로 답합니다 (<span class="file">diagnose.py</span>, 실행 메뉴 4번 뒤 자동). 초록 = 바라는 답 · 빨강 = 고칠 곳</p></div>
+        <div><h2>진단 다섯 질문</h2><p class="hint">평가 기록과 학습 곡선으로 답합니다 (<span class="file">src/diagnose.py</span>, 실행 메뉴 4번 뒤 자동). 초록 = 바라는 답 · 빨강 = 고칠 곳</p></div>
         <div class="seg sm" id="dqVer"></div>
       </div>
       <div style="overflow-x:auto"><table class="t dq" id="dqTable"></table></div>
@@ -785,7 +785,7 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
     <details class="why"><summary>전체 성적표 (시험 규칙 포함) <span>2025년 네 분기 평균</span></summary><div class="body">
       <div style="overflow-x:auto"><table class="t" id="score"></table></div>
     </div></details>
-    <p class="where">📁 관련 파일 <span class="file">diagnose.py</span><span class="file">results/diagnosis_v*.md · .png</span><span class="file">results/summary_v*.md</span><span class="file">reward.py · reward_v1.py · reward_v2.py</span><span class="file">project_spec.md 5절</span></p>
+    <p class="where">📁 관련 파일 <span class="file">src/diagnose.py</span><span class="file">docs/reports/diagnosis_v*.md</span><span class="file">results/diagnosis/</span><span class="file">docs/reports/summary_v*.md</span><span class="file">src/reward.py · src/reward_history/</span><span class="file">docs/project_spec.md 5절</span></p>
   </section>
 
   <!-- 8 ─────────────────────────────────────────── -->
@@ -811,7 +811,7 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
       <p class="hint">가정한 반응 규칙 안에서는 합리적이지만, 운영 상식과 다릅니다 → 실제 데이터가 생기면 먼저 확인할 곳이자 발표에서 말할 한계</p>
       <div class="grid2" style="margin-bottom:0" id="plOdd"></div>
     </div>
-    <p class="where">📁 관련 파일 <span class="file">results/policy_rules.md</span><span class="file">diagnose.py (정책 해석 숫자)</span><span class="file">results/logs/ppo_v3.csv</span></p>
+    <p class="where">📁 관련 파일 <span class="file">docs/reports/policy_rules.md</span><span class="file">src/diagnose.py (정책 해석 숫자)</span><span class="file">results/logs/ppo_v3.csv</span></p>
   </section>
 
   <!-- 8 ─────────────────────────────────────────── -->
@@ -835,12 +835,12 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
       <p class="hint"><span class="file">run.bat</span>을 더블클릭하면 번호 메뉴가 뜹니다. 실행할 때마다 <span class="file">results/runs/</span>에 기록이 쌓이고, 1번·4번이 끝나면 이 화면의 데이터(<span class="file">public/data/viewer_data.js</span>)도 새로 바뀝니다 (새로고침하면 반영).</p>
       <table class="t">
         <tr><th>번호</th><th>하는 일</th><th>결과</th></tr>
-        <tr><td>1</td><td>가상 환경 점검 (시험 규칙 4개)</td><td>results/sanity_check.md · 이 화면 4·6단계</td></tr>
+        <tr><td>1</td><td>가상 환경 점검 (시험 규칙 4개)</td><td>docs/reports/sanity_check.md · 이 화면 4·6단계</td></tr>
         <tr><td>2</td><td>시험 학습 (1분 안쪽, 오류 확인)</td><td>화면에 걸린 시간</td></tr>
         <tr><td>3</td><td>본 학습 (400만 번, 약 8~10분)</td><td>results/models/v*/ · 학습 곡선</td></tr>
-        <tr><td>4</td><td>학습된 AI 평가와 진단</td><td>results/summary_v*.md · diagnosis_v*.md · 이 화면 5~8단계</td></tr>
+        <tr><td>4</td><td>학습된 AI 평가와 진단</td><td>docs/reports/summary_v*.md · diagnosis_v*.md · 이 화면 5~8단계</td></tr>
       </table>
-      <p class="small muted" style="margin:8px 0 0">보상을 고칠 때: <span class="file">reward.py</span>를 <span class="file">reward_v3.py</span>처럼 복사해 보관 → <span class="file">reward.py</span>의 VERSION과 식을 바꿈 → 3번 → 4번. 새 버전이 이 화면에 자동으로 추가됩니다.</p>
+      <p class="small muted" style="margin:8px 0 0">보상을 고칠 때: <span class="file">src/reward.py</span>를 <span class="file">src/reward_history/reward_v3.py</span>처럼 복사해 보관 → <span class="file">src/reward.py</span>의 VERSION과 식을 바꿈 → 3번 → 4번. 새 버전이 이 화면에 자동으로 추가됩니다.</p>
     </div>
     <p class="where">📁 데이터 출처 — 가상 고객: NVIDIA Nemotron-Personas-Korea (CC BY 4.0, 실제 인물 아님) · 날씨: Open-Meteo (CC BY 4.0, 마포구청 좌표) · 공휴일: python-holidays</p>
   </section>
@@ -872,7 +872,7 @@ ol.progress .next .pd{background:var(--soft);border:1px dashed var(--faint);colo
       <div class="timeline" id="scTimeline"></div>
       <div class="callout" id="scNote" style="margin-top:18px"></div>
     </div>
-    <p class="where">🎨 그림 파일 없이 코드(Canvas 2D)로 그렸습니다. 누가 어떤 알림을 받았고 누가 제보·수신거부했는지, 그날의 비·한파·주말은 모두 평가 기록과 실제 날씨 그대로입니다. 📁 <span class="file">public/index.html</span><span class="file">public/data/viewer_data.js</span><span class="file">screen_design.md (참고)</span></p>
+    <p class="where">🎨 그림 파일 없이 코드(Canvas 2D)로 그렸습니다. 누가 어떤 알림을 받았고 누가 제보·수신거부했는지, 그날의 비·한파·주말은 모두 평가 기록과 실제 날씨 그대로입니다. 📁 <span class="file">public/index.html</span><span class="file">public/data/viewer_data.js</span><span class="file">docs/screen_design.md (참고)</span></p>
     <p class="where">📊 데이터 출처 — 가상 유저: NVIDIA Nemotron-Personas-Korea (CC BY 4.0, 실제 인물 아님) · 날씨: Open-Meteo Historical Weather API (CC BY 4.0) · 공휴일: python-holidays · 반응 규칙 숫자는 모두 가정값</p>
   </section>
 
@@ -893,7 +893,7 @@ const UI = {
   loopMs: 2200,                                   // 0단계 '강화학습 한 바퀴'가 다음 상자로 넘어가는 간격
   simStepMs: 60,                                  // 3단계 '끝까지 자동'에서 하루가 지나가는 간격
   playSpeeds: [[1, '천천히'], [3, '보통'], [10, '빠르게']],  // 6단계 재생: 1초에 며칠
-  phases: [[1, 60], [61, 75], [76, 90]],          // 7단계 구간 (presentation_notes.md와 같게)
+  phases: [[1, 60], [61, 75], [76, 90]],          // 7단계 구간 (docs/presentation_notes.md와 같게)
   candidates: 781,                                // 2단계: 조건에 맞는 후보 수 (make_personas.py 실행 결과)
   personaSeed: 42,                                // 2단계: 100명을 뽑은 시드 (config.py PERSONA_SEED)
   sceneDayMs: [10000, 6000, 3000],                // 10단계:하루(17:30~23:30) 장면 길이 ms — 느리게·보통·빠르게
@@ -1059,15 +1059,15 @@ function hideTip() { tip.classList.remove('on'); }
 const GLOSSARY = {
   '강화학습': '정답을 알려 주지 않고, 직접 해 보고 받은 점수(보상)를 보며 점수가 높아지는 쪽으로 행동을 고쳐 가는 학습 방법.',
   '에이전트': '결정을 내리는 주인공. 여기서는 매일 18시에 유저마다 알림을 고르는 ‘CRM 매니저 AI’.',
-  '환경': 'AI의 행동에 반응하는 세계. 여기서는 가상 유저 100명과 반응 규칙으로 만든 컴퓨터 속 세계(env.py). 강의 자료에서는 ‘가상 매장’이라고 부름.',
-  '매장 정의': '강의 양식에 붙은 이름. 우리 프로젝트에서는 가게가 아니라 ‘론팟 앱이 유저에게 보내는 마케팅 알림’ 문제를 정의한 절(project_spec.md 1절).',
+  '환경': 'AI의 행동에 반응하는 세계. 여기서는 가상 유저 100명과 반응 규칙으로 만든 컴퓨터 속 세계(src/env.py). 강의 자료에서는 ‘가상 매장’이라고 부름.',
+  '매장 정의': '강의 양식에 붙은 이름. 우리 프로젝트에서는 가게가 아니라 ‘론팟 앱이 유저에게 보내는 마케팅 알림’ 문제를 정의한 절(docs/project_spec.md 1절).',
   '상태': 'AI가 결정할 때 보는 숫자 목록. 여기서는 11개(고객 성향, 피로도, 의존도, 오늘 날씨, 남은 날 등). ‘관측’이라고도 함.',
   '행동': 'AI가 고를 수 있는 선택지. 여기서는 안 보냄 · 일반 알림 · 300P 리워드 알림 3개.',
   '보상': 'AI가 행동 하나마다 받는 점수. 기본은 그날 순이익 ÷ 1,000 (1,000원 = 1점)이고, 3회차부터 벌점을 더함 (채택 v3: 알림 받은 뒤 피로도 75 이상 −3점, 알림을 끔 −20점). 성공 척도와 달리 버전을 바꿔 가며 고칠 수 있음.',
   '스텝': '결정 한 번. 여기서는 하루.',
   '에피소드': '처음부터 끝까지 한 판. 여기서는 고객 한 명의 90일 (알림을 끄면 그날 끝).',
   '정책': '상황(상태)을 보고 행동을 고르는 규칙. 학습의 결과물(보상 버전마다 results/models/v1·v2·v3/model.zip). 8단계에서 사람이 읽는 규칙으로 옮김.',
-  '진단': '학습 결과를 다섯 질문(학습 곡선 · 순이익 · 허용 기준 · 행동 쏠림 · 상황별 차이)으로 따져, 문제가 학습 · 관측 · 보상 · 환경 중 어디에 있는지 찾는 일 (diagnose.py).',
+  '진단': '학습 결과를 다섯 질문(학습 곡선 · 순이익 · 허용 기준 · 행동 쏠림 · 상황별 차이)으로 따져, 문제가 학습 · 관측 · 보상 · 환경 중 어디에 있는지 찾는 일 (src/diagnose.py).',
   '채택': '허용 기준을 지키는 보상 버전 가운데 순이익이 가장 높은 버전을 최종으로 고르는 것. 지키는 버전이 없으면 초기 보상 v1.',
   'PPO': '정책을 조금씩, 한 번에 너무 크게 바뀌지 않게 고쳐 가는 강화학습 방법. 안정적이라 많이 씀.',
   '학습 곡선': '연습할수록 점수가 어떻게 변했는지 그린 그래프. 오르다 평평해지면 그 점수로 배울 만큼 배운 것.',
@@ -1490,7 +1490,7 @@ INIT[4] = () => {
     <div style="margin-top:6px"><b style="color:${s.opt_outs > MONEY.max_opt_outs ? COLORS.bad : COLORS.good}">알림 끔 ${num(s.opt_outs)}명</b> · <span class="sm">하루 제보 ${num(s.reports_per_day, 1)}건</span></div>
     <div style="margin-top:6px"><span class="badge ${s.success ? 'good' : 'bad'}">허용 기준 ${s.success ? '지킴' : '넘음'}</span></div></div>`; }).join('');
   $('#checks').innerHTML = D.sanity.length ? D.sanity.map(c => `<div class="check"><span class="ok" style="background:${c.passed ? COLORS.good : COLORS.bad}">${c.passed ? '✓' : '✕'}</span><div><b>${esc(c.name)}</b><div class="why">${esc(c.why)}</div></div></div>`).join('')
-    : '<p class="muted">results/sanity_check.md가 없어 통과 기준을 보여 줄 수 없습니다. run.bat → 1번을 실행하세요.</p>';
+    : '<p class="muted">docs/reports/sanity_check.md가 없어 통과 기준을 보여 줄 수 없습니다. run.bat → 1번을 실행하세요.</p>';
   const rnd = D.replays.random?.summary;
   $('#memo').innerHTML = `📝 <b>짚어 둔 점</b> — ‘무작위’(3일 중 2일꼴로 알림)${rnd ? `도 ${num(rnd.opt_outs)}명이 알림을 껐습니다` : '도 많은 유저가 알림을 껐습니다'}. 피로도 규칙(${RU.FATIGUE_DANGER} 이상이면 매일 ${pct(RU.OPT_OUT_PROB)})이 꽤 엄격하다는 뜻이라 메모해 두었고, 점검은 통과해서 그대로 두었습니다. 보상을 고칠 때 다시 봅니다.`;
 };
@@ -1644,7 +1644,7 @@ function drawDQ() {
     `<tr><td>${i + 1}</td><td>${esc(q.q)}</td><td><span class="badge ${q.good ? 'good' : 'bad'}">${q.yes ? '예' : '아니오'}</span></td><td class="why">${esc(q.why)}</td></tr>`).join('');
   $('#dqWhere').innerHTML = `<b>보상 ${dq.version} 문제 위치</b> <span class="muted small">(학습 → 관측 → 보상 → 환경 순서로 확인)</span><br>${esc(dq.where)}`;
 }
-function segChart(host, field, vers, o = {}) {   // 학습을 10구간으로 나눈 평균 (diagnose.py)
+function segChart(host, field, vers, o = {}) {   // 학습을 10구간으로 나눈 평균 (src/diagnose.py)
   const series = vers.filter(v => DIAG[v]?.segments?.[field]?.[0] != null)
     .map(v => ({ name: `보상 ${v}`, color: recColor('ppo_' + v), values: DIAG[v].segments[field].map(x => o.scale ? x * o.scale : x) }));
   if (!series.length) { host.innerHTML = '<p class="muted small">기록 없음</p>'; return; }
@@ -1779,38 +1779,40 @@ INIT[8] = () => {
 /* ───────── 9. 파일 지도 ───────── */
 const FILES = [
   ['📘 기준 문서', [
-    ['project_spec.md', '설계의 기준. 1 문제 정의(양식 이름 ‘매장 정의’) · 2 반응 규칙 · 3 고객 성향 · 4 설계 카드 · 5 보상 · 6 변경 기록', 1],
+    ['docs/project_spec.md', '설계의 기준. 1 문제 정의(양식 이름 ‘매장 정의’) · 2 반응 규칙 · 3 고객 성향 · 4 설계 카드 · 5 보상 · 6 변경 기록', 1],
     ['CLAUDE.md', '코딩 AI가 지키는 작업 규칙 14가지 (쉬운 말, 가정 표시, 변경 기록 등)', null],
-    ['presentation_notes.md', '발표용 정리 — 숫자마다 그렇게 정한 이유, 예상 질문과 답', 7],
-    ['screen_design.md', '강의에서 받은 재생 화면 디자인 기준 (그대로 둠, 10단계 그림에 참고)', 10],
+    ['docs/presentation_notes.md', '발표용 정리 — 숫자마다 그렇게 정한 이유, 예상 질문과 답', 7],
+    ['docs/screen_design.md', '강의에서 받은 재생 화면 디자인 기준 (그대로 둠, 10단계 그림에 참고)', 10],
     ['README.md', '설치·실행 방법, 폴더 구성, 데이터 출처', null],
   ]],
   ['🧑‍🤝‍🧑 입력 데이터', [
-    ['make_personas.py', '가상 인물 데이터에서 마포구 자취 가구 100명을 뽑음', 2],
+    ['src/make_personas.py', '가상 인물 데이터에서 마포구 자취 가구 100명을 뽑음', 2],
     ['data/personas.csv', '가상 고객 100명 (나이·성별·직업·소개글)', 2],
     ['data/customer_traits.csv', '고객별 성향 3칸 + 근거 인용 + 확신도', 2],
-    ['check.py', '성향 표 검사 (100명 · 범위 · 근거 · 평균 ±10%)', 2],
-    ['make_external_factors.py', '2016~2025년 실제 날씨·공휴일 내려받기', 3],
+    ['src/check.py', '성향 표 검사 (100명 · 범위 · 근거 · 평균 ±10%)', 2],
+    ['src/make_external_factors.py', '2016~2025년 실제 날씨·공휴일 내려받기', 3],
     ['data/external_factors.csv', '날짜별 기온·강수·공휴일·주말·월말 (3,653일)', 3],
   ]],
   ['👥 가상 환경', [
-    ['config.py', '1절 문제 정의 숫자 (유저 수, 가격, 기간, 시드)', 1],
-    ['env.py', '가상 환경 본체 — 가상 유저 100명이 알림에 반응. 맨 위에 2절 반응 규칙 가정값', 3],
-    ['reward.py', '보상(점수) — 지금은 채택 버전 v3 (순이익 − 위험 구간 벌점 − 수신거부 벌점)', 5],
-    ['reward_v1.py · reward_v2.py', '앞 보상 버전 보관 (v1 초기 · v2 되돌림) — 화면의 보상 식 목록도 여기서 읽음', 7],
+    ['src/config.py', '1절 문제 정의 숫자 (유저 수, 가격, 기간, 시드)', 1],
+    ['src/paths.py', '폴더 위치를 한곳에 모은 파일', null],
+    ['src/env.py', '가상 환경 본체 — 가상 유저 100명이 알림에 반응. 맨 위에 2절 반응 규칙 가정값', 3],
+    ['src/reward.py', '보상(점수) — 지금은 채택 버전 v3 (순이익 − 위험 구간 벌점 − 수신거부 벌점)', 5],
+    ['src/reward_history/', '앞 보상 버전 보관 (v1 초기 · v2 되돌림) — 화면의 보상 식 목록도 여기서 읽음', 7],
   ]],
   ['▶ 실행', [
-    ['run.bat · run.py', '번호 메뉴 (1 점검 · 2 시험 학습 · 3 본 학습 · 4 평가와 진단), 실행마다 기록', 9],
-    ['simulate.py', '시험 규칙·학습된 AI를 2025년 평가 조건으로 돌림, 재생 데이터 생성', 4],
-    ['train.py', 'PPO 학습(400만 번), 학습 곡선 그림 — 보상 항목별 점수와 수신거부 비율도 기록', 5],
-    ['diagnose.py', '결과 진단 — 다섯 질문 · 진단 그림 · 정책 해석 숫자 (4번 평가 뒤 자동)', 7],
+    ['run.bat · src/run.py', '번호 메뉴 (1 점검 · 2 시험 학습 · 3 본 학습 · 4 평가와 진단), 실행마다 기록', 9],
+    ['src/simulate.py', '시험 규칙·학습된 AI를 2025년 평가 조건으로 돌림, 재생 데이터 생성', 4],
+    ['src/train.py', 'PPO 학습(400만 번), 학습 곡선 그림 — 보상 항목별 점수와 수신거부 비율도 기록', 5],
+    ['src/diagnose.py', '결과 진단 — 다섯 질문 · 진단 그림 · 정책 해석 숫자 (4번 평가 뒤 자동)', 7],
   ]],
   ['📊 결과', [
-    ['results/sanity_check.md', '학습 전 점검 결과 (통과 기준 4가지)', 4],
-    ['results/summary_v*.md', '보상 버전별 평가 결과 (앞 버전과 나란히)', 7],
-    ['results/diagnosis_v*.md · .png', '다섯 질문 진단표 · 진단 그림 · 문제 위치', 7],
-    ['results/policy_rules.md', '채택 버전이 배운 규칙 다섯 줄 · 상식과 다른 규칙', 8],
-    ['results/learning_curve_v*.png', '버전별 학습 곡선 그림', 5],
+    ['docs/reports/sanity_check.md', '학습 전 점검 결과 (통과 기준 4가지)', 4],
+    ['docs/reports/summary_v*.md', '보상 버전별 평가 결과 (앞 버전과 나란히)', 7],
+    ['docs/reports/diagnosis_v*.md', '다섯 질문 진단표 · 문제 위치', 7],
+    ['results/diagnosis/', '진단 그림과 화면용 진단 숫자', 7],
+    ['docs/reports/policy_rules.md', '채택 버전이 배운 규칙 다섯 줄 · 상식과 다른 규칙', 8],
+    ['results/curves/learning_curve_v*.png', '버전별 학습 곡선 그림', 5],
     ['results/models/v*/model.zip', '학습된 AI(정책), 보상 버전마다 하나', 5],
     ['results/logs/', '규칙별 날짜·고객 단위 상세 기록 (사람이 읽는 표)', 6],
     ['results/run_history.csv · runs/', '실행할 때마다 한 줄 기록 + 그때 파일 사본', null],

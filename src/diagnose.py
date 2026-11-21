@@ -1,12 +1,12 @@
 """결과 진단 — 3회차 1-1: 다섯 질문 진단표와 진단 그림.
 
-읽는 것: results/logs/<규칙>.csv (평가 기록), results/learning_curve_<버전>.csv (학습 곡선)
-만드는 것: results/diagnosis_<버전>.md (진단표 · 이상한 장면 · 문제 위치)
-          results/diagnosis_<버전>.png (다섯 칸 그림 + 요약)
-          results/diagnosis_<버전>.json (같은 진단 + 정책 해석 숫자 → 화면 7·8단계, viewer_data.js에 묶임)
+읽는 것: results/logs/<규칙>.csv (평가 기록), results/curves/learning_curve_<버전>.csv (학습 곡선)
+만드는 것: docs/reports/diagnosis_<버전>.md (진단표 · 이상한 장면 · 문제 위치)
+          results/diagnosis/diagnosis_<버전>.png (다섯 칸 그림 + 요약)
+          results/diagnosis/diagnosis_<버전>.json (같은 진단 + 정책 해석 숫자 → 화면 7·8단계, viewer_data.js에 묶임)
 v1이 아닌 버전은 v1을 나란히 그린다 (학습 곡선 칸만 버전마다 보상 기준이 달라 그 버전 하나).
 
-실행: uv run python diagnose.py --version v1   (실행 메뉴 4번 평가가 끝나면 자동으로도 실행됨)
+실행: uv run python src/diagnose.py --version v1   (실행 메뉴 4번 평가가 끝나면 자동으로도 실행됨)
 """
 import argparse
 import json
@@ -20,19 +20,17 @@ import pandas as pd
 
 import config as C
 from env import DEPENDENCY_DANGER, FATIGUE_DANGER, load_factors
+from paths import CURVES, DIAGNOSIS, LOGS, PUBLIC_DATA, REPORTS
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-RESULTS = Path("results")
-LOGS = RESULTS / "logs"
-PUBLIC_DATA = Path("public/data")
 # 진단 판정 기준  # 가정 (화면·발표용 판정선, 학습에는 영향 없음)
 FLAT_TOLERANCE = 0.03      # 질문 1: 마지막 10% 판 평균이 그 앞 10%와 3% 안쪽 차이면 '평평'
 PEAK_DROP = 0.15           # 질문 1: 마지막 10%가 가장 높았던 10% 구간보다 15% 넘게 낮으면 '오르다 떨어짐'
 BIAS_SHARE = 0.80          # 질문 4: 한 행동이 80%를 넘거나 한 번도 안 쓴 행동이 있으면 '쏠림'
 SITUATION_GAP = 0.10       # 질문 5: 상황별 리워드 비율 차이가 10%p를 넘으면 '상황에 따라 달라짐'
-# 정책 해석(3회차 2-2) 규칙 다섯 줄을 셀 때 쓰는 구간  # 가정 (results/policy_rules.md와 같은 기준, 학습에는 영향 없음)
+# 정책 해석(3회차 2-2) 규칙 다섯 줄을 셀 때 쓰는 구간  # 가정 (docs/reports/policy_rules.md와 같은 기준, 학습에는 영향 없음)
 LOW_FATIGUE = 25           # 규칙 2: '피로가 낮은 유저'
 REST_FATIGUE = 60          # 규칙 3: 이 피로부터는 쉬게 함 (50~59도 함께 셈)
 NEAR_REST_FATIGUE = 50
@@ -151,7 +149,7 @@ def policy_stats(df: pd.DataFrame) -> dict:
 
 
 def curve_stats(v: str) -> dict | None:
-    p = RESULTS / f"learning_curve_{v}.csv"
+    p = CURVES / f"learning_curve_{v}.csv"
     if not p.exists():
         return None
     c = pd.read_csv(p)
@@ -161,7 +159,7 @@ def curve_stats(v: str) -> dict | None:
     seg = [r.iloc[i * n:(i + 1) * n].mean() for i in range(10)]             # 학습을 10구간으로 나눈 평균
     opt = [c["opt_out_rate"].iloc[i * n:(i + 1) * n].mean() if "opt_out_rate" in c else None for i in range(10)]
     if "episode_profit" in c:   # 판마다 수신거부했는지는 학습 기록(monitor)에서 — 없으면 그 열은 비움
-        m = RESULTS / f"train_{v}.monitor.csv"
+        m = CURVES / f"train_{v}.monitor.csv"
         if m.exists():
             mo = pd.read_csv(m, skiprows=1)
             k = len(mo) // 10
@@ -277,10 +275,12 @@ def diagnose(version: str) -> tuple[Path, Path]:
     md += ["", "## 문제 위치 (학습 → 관측 → 보상 → 환경 순서로 확인)", "",
            f"- 학습: {'문제 없음 (질문 1 예)' if q1 else ('학습 양보다 보상 쪽 문제로 보임 (곡선이 최고점에서 떨어짐)' if cs and cs['peaked'] else '문제 (질문 1 아니오)')}",
            f"- 관측: {'문제 없음 (질문 5 예 — 상황·피로도·남은 날에 따라 행동이 달라짐)' if q5 else '문제 (질문 5 아니오)'}",
-           f"- 환경: 시험 규칙 결과가 상식대로 (results/sanity_check.md 통과) → 문제 없음",
+           f"- 환경: 시험 규칙 결과가 상식대로 (docs/reports/sanity_check.md 통과) → 문제 없음",
            f"- 판정: {where}", "",
-           f"진단 그림: results/diagnosis_{version}.png"]
-    md_path = RESULTS / f"diagnosis_{version}.md"
+           f"진단 그림: results/diagnosis/diagnosis_{version}.png"]
+    REPORTS.mkdir(parents=True, exist_ok=True)
+    DIAGNOSIS.mkdir(parents=True, exist_ok=True)
+    md_path = REPORTS / f"diagnosis_{version}.md"
     md_path.write_text("\n".join(md) + "\n", encoding="utf-8")
     # 화면(7·8단계)용: 같은 진단을 JSON으로 — 화면이 숫자를 따로 계산하지 않게
     plain = lambda x: re.sub(r"\*\*", "", x)
@@ -292,7 +292,7 @@ def diagnose(version: str) -> tuple[Path, Path]:
           "segments": {"reward": [round(float(x), 2) for x in cs["seg"]],
                        "opt": [None if x is None else round(float(x), 4) for x in cs["opt"]], "peak": cs["peak_i"] + 1} if cs else None,
           "scenes": scenes, "policy": policy_stats(df)}
-    (RESULTS / f"diagnosis_{version}.json").write_text(json.dumps(js, ensure_ascii=False, indent=1), encoding="utf-8")
+    (DIAGNOSIS / f"diagnosis_{version}.json").write_text(json.dumps(js, ensure_ascii=False, indent=1), encoding="utf-8")
 
     # ---- 진단 그림: 2 × 3 (다섯 칸 + 요약) ----
     plt.rcParams["font.family"] = "Malgun Gothic"
@@ -367,7 +367,7 @@ def diagnose(version: str) -> tuple[Path, Path]:
            bbox=dict(boxstyle="round", facecolor="#f8f5ee", edgecolor="#e6dfd0"))
     a.set_title("진단 요약", fontsize=11)
     fig.tight_layout(rect=(0, 0, 1, 0.96))
-    png = RESULTS / f"diagnosis_{version}.png"
+    png = DIAGNOSIS / f"diagnosis_{version}.png"
     fig.savefig(png, dpi=110)
     plt.close(fig)
     from simulate import export_viewer_bundle   # 진단 결과를 화면 데이터 묶음에 다시 넣음 (평가 → 진단 순서라서)

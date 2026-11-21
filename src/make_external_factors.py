@@ -4,20 +4,20 @@
 - 공휴일: holidays 라이브러리의 한국 공휴일(대체공휴일 포함)
 - 요일·주말·월말: 날짜에서 계산
 
-실행: uv run python make_external_factors.py  →  data/external_factors.csv
+실행: uv run python src/make_external_factors.py  →  data/external_factors.csv
 출처: Open-Meteo Historical Weather API (CC BY 4.0), holidays (python-holidays)
 """
 import json
 import urllib.parse
 import urllib.request
-from pathlib import Path
 
 import holidays
 import pandas as pd
 
 from config import DATA_END, DATA_START, MONTH_END_START_DAY, STORE_LAT, STORE_LON
+from paths import DATA
 
-OUT = Path("data/external_factors.csv")
+OUT = DATA / "external_factors.csv"
 
 
 def load_weather() -> pd.DataFrame:

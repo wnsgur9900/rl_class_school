@@ -31,7 +31,7 @@
 
 - 학습: 문제 없음 (질문 1 예)
 - 관측: 문제 없음 (질문 5 예 — 상황·피로도·남은 날에 따라 행동이 달라짐)
-- 환경: 시험 규칙 결과가 상식대로 (results/sanity_check.md 통과) → 문제 없음
+- 환경: 시험 규칙 결과가 상식대로 (docs/reports/sanity_check.md 통과) → 문제 없음
 - 판정: **보상 (더 나아질 점)** — 다섯 질문 모두 문제 없음. 보조 지표 하나를 더 좋게 하는 수정을 시도
 
-진단 그림: results/diagnosis_v3.png
+진단 그림: results/diagnosis/diagnosis_v3.png

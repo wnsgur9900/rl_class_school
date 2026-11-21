@@ -3,11 +3,11 @@
 학습 기간: 1 매장 정의의 학습 기간(2016~2024년)에서 시작일·고객을 무작위로 골라 에피소드를 반복.
 출력
 - results/models/<버전>/model.zip           : 학습된 정책
-- results/learning_curve_<버전>.png / .csv  : 학습 곡선 (가로 학습 스텝, 세로 에피소드 평균 보상)
-- results/experience_sample_<버전>.csv      : 학습 중 처음 1,000스텝의 경험 (상태 · 행동 · 보상 · 다음 상태)
+- results/curves/learning_curve_<버전>.png / .csv  : 학습 곡선 (가로 학습 스텝, 세로 에피소드 평균 보상)
+- results/experience/experience_sample_<버전>.csv      : 학습 중 처음 1,000스텝의 경험 (상태 · 행동 · 보상 · 다음 상태)
 
-실행: uv run python train.py --trial      (1분 안쪽 시험 학습: 오류 없이 도는지, 스텝당 시간)
-      uv run python train.py              (본 학습)
+실행: uv run python src/train.py --trial      (1분 안쪽 시험 학습: 오류 없이 도는지, 스텝당 시간)
+      uv run python src/train.py              (본 학습)
 """
 import argparse
 import time
@@ -23,11 +23,11 @@ from stable_baselines3.common.vec_env import DummyVecEnv, VecMonitor
 import config as C
 import reward as R
 from env import LaunPotEnv, OBS_NAMES, load_factors, load_traits
+from paths import CURVES, EXPERIENCE, RESULTS
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-RESULTS = Path("results")
 
 # 학습 설정  # 가정 (4-6에서 시험 학습으로 정함)
 TOTAL_TIMESTEPS = 4_000_000      # 본 학습 스텝 수 — 3회차 v2 진단 '학습 부족'으로 200만 → 400만 (이 PC 약 11분)
@@ -100,7 +100,7 @@ def plot_curve(monitor_csv: Path, version: str) -> pd.DataFrame:
         curve["opt_out_rate"] = roll(m["ep_opt_out"])          # 그 판에서 수신거부한 비율
         for k in PARTS:
             curve[f"part_{k}"] = m[f"ep_part_{k}"]
-    curve.to_csv(RESULTS / f"learning_curve_{version}.csv", index=False)
+    curve.to_csv(CURVES / f"learning_curve_{version}.csv", index=False)
     plt.rcParams["font.family"] = "Malgun Gothic"
     plt.rcParams["axes.unicode_minus"] = False
     fig, ax = plt.subplots(figsize=(8, 4.5))
@@ -117,19 +117,20 @@ def plot_curve(monitor_csv: Path, version: str) -> pd.DataFrame:
     ax.set_title(f"학습 곡선 — 보상 {version} (고객 1명 × 90일)")
     ax.grid(alpha=0.3)
     fig.tight_layout()
-    fig.savefig(RESULTS / f"learning_curve_{version}.png", dpi=120)
+    fig.savefig(CURVES / f"learning_curve_{version}.png", dpi=120)
     plt.close(fig)
     return curve
 
 
 def train(version: str, timesteps: int, trial: bool) -> dict:
-    RESULTS.mkdir(exist_ok=True)
+    for d in (CURVES, EXPERIENCE):
+        d.mkdir(parents=True, exist_ok=True)
     traits, factors = load_traits(), load_factors()
     store: list = []
     fns = [(lambda i=i: EpisodeStats(ExperienceRecorder(LaunPotEnv(traits, factors), store) if i == 0 else LaunPotEnv(traits, factors)))
            for i in range(N_ENVS)]
     tag = f"{version}_trial" if trial else version
-    monitor = RESULTS / f"train_{tag}"
+    monitor = CURVES / f"train_{tag}"
     venv = VecMonitor(DummyVecEnv(fns), filename=str(monitor), info_keywords=EPISODE_KEYS)
     venv.seed(C.TRAIN_SEED)
     model = PPO("MlpPolicy", venv, device="cpu", seed=C.TRAIN_SEED, verbose=0, **PPO_KWARGS)
@@ -143,7 +144,7 @@ def train(version: str, timesteps: int, trial: bool) -> dict:
         return out
     (RESULTS / "models" / version).mkdir(parents=True, exist_ok=True)
     model.save(RESULTS / "models" / version / "model.zip")
-    pd.DataFrame(store).to_csv(RESULTS / f"experience_sample_{version}.csv", index=False, encoding="utf-8-sig")
+    pd.DataFrame(store).to_csv(EXPERIENCE / f"experience_sample_{version}.csv", index=False, encoding="utf-8-sig")
     curve = plot_curve(Path(f"{monitor}.monitor.csv"), version)
     n = max(1, len(curve) // 10)
     out |= {"episodes": len(curve), "first_return": curve["episode_return"].head(n).mean(),
@@ -162,8 +163,8 @@ def main() -> None:
     print(f"{'시험 학습' if a.trial else '본 학습'} {r['steps']:,}스텝 · {r['seconds']:.0f}초 · 스텝당 {r['ms_per_step']:.3f}ms")
     if not a.trial:
         print(f"에피소드 {r['episodes']:,}판 · 평균 보상 처음 10% {r['first_return']:.2f}점 → 마지막 10% {r['last_return']:.2f}점")
-        print(f"저장: results/models/{a.version}/model.zip, results/learning_curve_{a.version}.png/.csv, "
-              f"results/experience_sample_{a.version}.csv")
+        print(f"저장: results/models/{a.version}/model.zip, results/curves/learning_curve_{a.version}.png/.csv, "
+              f"results/experience/experience_sample_{a.version}.csv")
 
 
 if __name__ == "__main__":

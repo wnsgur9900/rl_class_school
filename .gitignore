@@ -7,7 +7,7 @@ __pycache__/
 
 # 실행 기록 사본 (내 PC에만 쌓음)
 results/runs/
-results/train_*.monitor.csv
+results/curves/train_*.monitor.csv
 
 # 실제 매장 데이터 원본 · API 키 · 비밀번호
 data/raw/

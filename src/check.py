@@ -1,19 +1,19 @@
-"""고객 성향 검사 — data/customer_traits.csv 가 project_spec.md 3절과 맞는지 본다.
+"""고객 성향 검사 — data/customer_traits.csv 가 docs/project_spec.md 3절과 맞는지 본다.
 
 검사: 100명이 모두 있음 · 값이 범위 안 · 근거 빈칸 없음 · 근거가 나이·성별뿐이 아님 · 칸별 평균이 목표 평균 ±10% 안.
 평균이 벗어난 칸만 확신도가 낮은 고객부터 값을 기준표 가운데 값으로 옮겨 맞추고, 원래 값을 adjusted 칸에 남긴다.
-실행: uv run python check.py
+실행: uv run python src/check.py
 """
 import re
 import sys
-from pathlib import Path
 
 import pandas as pd
 
 from config import NUM_CUSTOMERS
+from paths import DATA
 
-PATH = Path("data/customer_traits.csv")
-# 칸: (최소, 최대, 목표 평균) — project_spec.md 3절
+PATH = DATA / "customer_traits.csv"
+# 칸: (최소, 최대, 목표 평균) — docs/project_spec.md 3절
 TRAITS = {
     "report_propensity": (0.02, 0.20, 0.08),
     "reward_sensitivity": (0.0, 1.0, 0.5),

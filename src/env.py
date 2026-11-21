@@ -2,9 +2,8 @@
 
 한 스텝 = 하루 1번 결정(18:00), 한 에피소드 = 고객 한 명의 90일.
 고객마다 에피소드를 따로 진행하고 정책 하나를 같이 쓴다. 성공 척도는 100명 결과를 합산한다.
-명세: project_spec.md 1 매장 정의 · 2 반응 규칙 · 3 고객 성향 항목 · 4 설계 카드
+명세: docs/project_spec.md 1 매장 정의 · 2 반응 규칙 · 3 고객 성향 항목 · 4 설계 카드
 """
-from pathlib import Path
 
 import gymnasium as gym
 import numpy as np
@@ -13,9 +12,10 @@ from gymnasium import spaces
 
 import config as C
 import reward as R
+from paths import DATA as DATA_DIR
 
 # ---------------------------------------------------------------------------
-# 반응 규칙 가정값 (project_spec.md 2절, 규칙 번호를 주석으로)  # 모두 가정
+# 반응 규칙 가정값 (docs/project_spec.md 2절, 규칙 번호를 주석으로)  # 모두 가정
 # 고객마다 다른 값은 data/customer_traits.csv (3절), 여기엔 모두에게 같은 값만 둔다.
 # ---------------------------------------------------------------------------
 GENERAL_PUSH_MULTIPLIER = 2.5        # 규칙1: 일반 푸시 날 제보 확률 = 기본 제보 성향 × 2.5 (8% → 20%)
@@ -44,7 +44,6 @@ OBS_NAMES = [
     "days_left",
 ]
 
-DATA_DIR = Path(__file__).parent / "data"
 
 
 def load_traits() -> pd.DataFrame:

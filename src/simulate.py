@@ -5,18 +5,17 @@
 
 출력
 - results/logs/<규칙>.csv        : 날짜 · 판 · 고객 · 상태 · 행동 · 반응 · 이익 (사람이 보는 기록)
-- results/sanity_check.md        : 시험 규칙 비교표와 통과 기준 (환경 타당성 검증)
-- results/summary_<버전>.md      : 학습된 정책 vs 시험 규칙 (평가)
+- docs/reports/sanity_check.md        : 시험 규칙 비교표와 통과 기준 (환경 타당성 검증)
+- docs/reports/summary_<버전>.md      : 학습된 정책 vs 시험 규칙 (평가)
 - public/data/replay_<규칙>.json : 매장 화면(뷰어) 재생용, 날마다 받은 보상 포함
 - public/data/personas.json, public/data/project.json : 화면에 그릴 손님·프로젝트 정보
 - public/data/viewer_data.js     : 위 JSON + 학습 곡선 + 검증 결과를 한 파일로 (public/index.html을 더블클릭해도 열리게)
 
-실행: uv run python simulate.py            (시험 규칙 4개 → 환경 타당성 검증)
-      uv run python simulate.py --policy v1 (학습된 v1 정책 평가 → summary_v1.md)
+실행: uv run python src/simulate.py            (시험 규칙 4개 → 환경 타당성 검증)
+      uv run python src/simulate.py --policy v1 (학습된 v1 정책 평가 → summary_v1.md)
 """
 import argparse
 import json
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -26,10 +25,8 @@ import env as E
 import reward as R
 from check import MEAN_TOLERANCE, TRAITS
 from env import LaunPotEnv, OBS_NAMES, load_factors
+from paths import CURVES, DIAGNOSIS, LOGS, PUBLIC_DATA, REPORTS, RESULTS, REWARD_HISTORY
 
-RESULTS = Path("results")
-LOGS = RESULTS / "logs"
-PUBLIC_DATA = Path("public/data")
 VIEWER_BUNDLE = PUBLIC_DATA / "viewer_data.js"
 ACTION_KEYS = {C.ACTION_NO_PUSH: "none", C.ACTION_GENERAL_PUSH: "general", C.ACTION_REWARD_PUSH: "reward"}
 CURVE_POINTS = 400   # 화면에 넘기는 학습 곡선 점 개수 (2만여 줄을 줄여 담음)  # 가정
@@ -210,8 +207,9 @@ def reward_versions() -> list[dict]:
     """보관된 보상 파일(reward_v1.py …)과 지금 reward.py의 버전·한 줄 식 — 화면의 버전 설명용."""
     import importlib
     out = {}
-    for p in sorted(Path(".").glob("reward_v*.py")) + [Path("reward.py")]:
-        m = importlib.import_module(p.stem)
+    names = [f"reward_history.{p.stem}" for p in sorted(REWARD_HISTORY.glob("reward_v*.py"))] + ["reward"]
+    for name in names:
+        m = importlib.import_module(name)
         out[m.VERSION] = getattr(m, "SUMMARY", "그날 순이익 ÷ 1,000")
     return [{"version": v, "formula": f} for v, f in sorted(out.items(), key=lambda x: int(x[0][1:]))]
 
@@ -263,13 +261,13 @@ def export_viewer_bundle() -> None:
     load = lambda p: json.loads(p.read_text(encoding="utf-8"))
     out = {"project": load(PUBLIC_DATA / "project.json"), "personas": load(PUBLIC_DATA / "personas.json"),
            "replays": {}, "curves": {}, "sanity": [], "diagnosis": {}}
-    for p in sorted(RESULTS.glob("diagnosis_v*.json")):   # diagnose.py가 만든 진단 · 정책 해석 (화면 7·8단계)
+    for p in sorted(DIAGNOSIS.glob("diagnosis_v*.json")):   # diagnose.py가 만든 진단 · 정책 해석 (화면 7·8단계)
         out["diagnosis"][p.stem.removeprefix("diagnosis_")] = load(p)
     keys = list(TEST_RULES) + sorted(p.stem.removeprefix("replay_") for p in PUBLIC_DATA.glob("replay_ppo_*.json"))
     for k in keys:
         if (PUBLIC_DATA / f"replay_{k}.json").exists():
             out["replays"][k] = load(PUBLIC_DATA / f"replay_{k}.json")
-    for p in sorted(RESULTS.glob("learning_curve_*.csv")):
+    for p in sorted(CURVES.glob("learning_curve_*.csv")):
         c = pd.read_csv(p)
         pts = c.iloc[::max(1, len(c) // CURVE_POINTS)]
         if pts.index[-1] != c.index[-1]:
@@ -282,7 +280,7 @@ def export_viewer_bundle() -> None:
             "episodes": len(c), "timesteps": int(c["timesteps"].iloc[-1]),
             "first_return": round(float(c["episode_return"].head(n).mean()), 2),
             "last_return": round(float(c["episode_return"].tail(n).mean()), 2)}
-    sanity = RESULTS / "sanity_check.md"
+    sanity = REPORTS / "sanity_check.md"
     if sanity.exists():   # '통과 기준' 표의 줄을 그대로 옮김 (기준 숫자를 화면에 따로 적지 않게)
         rows = sanity.read_text(encoding="utf-8").split("## 통과 기준")[-1].splitlines()
         for line in rows:
@@ -316,8 +314,8 @@ def sanity_check() -> tuple[dict, bool]:
     md = (f"# 환경 타당성 검증\n\n평가 조건: {', '.join(C.EVAL_START_DATES)} 시작 90일 × 고객 {C.NUM_CUSTOMERS}명, "
           f"시드 {C.EVAL_SEED} · 값은 4판 평균 · 보상 버전 {R.VERSION}\n\n## 시험 규칙 비교\n\n{table}\n\n"
           f"## 통과 기준\n\n{checks}\n\n**종합: {'통과' if ok else '실패'}**\n")
-    RESULTS.mkdir(exist_ok=True)
-    (RESULTS / "sanity_check.md").write_text(md, encoding="utf-8")
+    REPORTS.mkdir(parents=True, exist_ok=True)
+    (REPORTS / "sanity_check.md").write_text(md, encoding="utf-8")
     export_viewer_bundle()
     return summaries, ok
 
@@ -370,7 +368,8 @@ def evaluate(version: str) -> dict:
           f"- **학습된 정책 {version}은 '현재 운영'보다 {verdict}** "
           f"(순이익 {s['profit']:,.0f}원 vs {cur['profit']:,.0f}원, 수신거부 {s['opt_outs']:.1f}명 vs {cur['opt_outs']:.1f}명)\n"
           f"- **지금까지의 채택 버전: {adopt.removeprefix('ppo_')}** — {adopt_why}\n")
-    (RESULTS / f"summary_{version}.md").write_text(md, encoding="utf-8")
+    REPORTS.mkdir(parents=True, exist_ok=True)
+    (REPORTS / f"summary_{version}.md").write_text(md, encoding="utf-8")
     export_viewer_bundle()
     return summaries
 
@@ -381,10 +380,10 @@ def main() -> None:
     a = ap.parse_args()
     if a.policy:
         summaries = evaluate(a.policy)
-        print((RESULTS / f"summary_{a.policy}.md").read_text(encoding="utf-8"))
+        print((REPORTS / f"summary_{a.policy}.md").read_text(encoding="utf-8"))
     else:
         summaries, ok = sanity_check()
-        print((RESULTS / "sanity_check.md").read_text(encoding="utf-8"))
+        print((REPORTS / "sanity_check.md").read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":
